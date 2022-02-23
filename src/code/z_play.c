@@ -1,5 +1,6 @@
 #include "global.h"
 #include "vt.h"
+#include "../rdb/rdb.h"
 
 void* D_8012D1F0 = NULL;
 UNK_TYPE D_8012D1F4 = 0; // unused
@@ -403,6 +404,7 @@ void Play_Init(GameState* thisx) {
 
     Fault_AddClient(&D_801614B8, ZeldaArena_Display, NULL, NULL);
     func_800304DC(this, &this->actorCtx, this->linkActorEntry);
+    rdb_lib_changed(NULL, NULL);
 
     while (!func_800973FC(this, &this->roomCtx)) {
         ; // Empty Loop

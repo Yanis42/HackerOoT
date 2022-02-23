@@ -1272,9 +1272,11 @@ void Fault_Init(void) {
     gFaultMgr.faultHandlerEnabled = true;
     osCreateMesgQueue(&sFaultInstance->queue, &sFaultInstance->msg, 1);
     StackCheck_Init(&sFaultThreadInfo, &sFaultStack, STACK_TOP(sFaultStack), 0, 0x100, "fault");
+#if 0
     osCreateThread(&sFaultInstance->thread, THREAD_ID_FAULT, Fault_ThreadEntry, 0, STACK_TOP(sFaultStack),
                    THREAD_PRI_FAULT);
     osStartThread(&sFaultInstance->thread);
+#endif
 }
 
 /**
