@@ -4,7 +4,7 @@
 #define OS_MESG_NOBLOCK         0
 #define OS_MESG_BLOCK           1
 
-#define OS_NUM_EVENTS           15
+#define OS_NUM_EVENTS           17
 
 #define OS_EVENT_SW1            0     /* CPU SW1 interrupt */
 #define OS_EVENT_SW2            1     /* CPU SW2 interrupt */
@@ -21,6 +21,8 @@
 #define OS_EVENT_FAULT          12    /* CPU fault event: used by rmon */
 #define OS_EVENT_THREADSTATUS   13    /* CPU thread status: used by rmon */
 #define OS_EVENT_PRENMI         14    /* Pre NMI interrupt */
+#define OS_EVENT_FIFO_OFF       15
+#define OS_EVENT_FIFO_RX        16
 
 #ifdef _LANGUAGE_C
 

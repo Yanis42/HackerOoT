@@ -106,6 +106,7 @@ CHECK_WARNINGS := -Wall -Wextra -Wno-format-security -Wno-unknown-pragmas -Wno-u
 CPP        := cpp
 MKLDSCRIPT := tools/mkldscript
 MKDMADATA  := tools/mkdmadata
+MKDEBUG    := tools/mkdebug
 ELF2ROM    := tools/elf2rom
 ZAPD       := tools/ZAPD/ZAPD.out
 FADO       := tools/fado/fado.elf
@@ -176,6 +177,17 @@ O_FILES       := $(foreach f,$(S_FILES:.s=.o),build/$f) \
 
 OVL_RELOC_FILES := $(shell $(CPP) $(CPPFLAGS) $(SPEC) | grep -o '[^"]*_reloc.o' )
 
+SEGMENTS        := $(shell $(CPP) $(CPPFLAGS) $(SPEC) | grep -o '^[ \t]*name[ \t]\+".\+"' | sed 's/.*"\(.*\)".*/\1/g' )
+DBG_DIR         := build/debug
+DBG_OBJ         := $(SEGMENTS:%=$(DBG_DIR)/%.o)
+DBG_OBJ_SCRIPT  := $(DBG_OBJ:.o=.ld)
+DBG_OBJ_DEP     := $(DBG_OBJ:.o=.d)
+DBG_ELF         := $(DBG_DIR)/zelda64.elf
+DBG_ELF_SCRIPT  := $(DBG_ELF:.elf=.ld)
+DBG_ELF_DEP     := $(DBG_ELF:.elf=.d)
+DBG_SCRIPT      := $(DBG_OBJ_SCRIPT) $(DBG_ELF_SCRIPT)
+DBG_DEP         := $(DBG_OBJ_DEP) $(DBG_ELF_DEP)
+
 # Automatic dependency files
 # (Only asm_processor dependencies and reloc dependencies are handled for now)
 DEP_FILES := $(O_FILES:.o=.asmproc.d) $(OVL_RELOC_FILES:.o=.d)
@@ -187,7 +199,7 @@ TEXTURE_FILES_OUT := $(foreach f,$(TEXTURE_FILES_PNG:.png=.inc.c),build/$f) \
 					 $(foreach f,$(TEXTURE_FILES_JPG:.jpg=.jpg.inc.c),build/$f) \
 
 # create build directories
-$(shell mkdir -p build/baserom build/assets/text $(foreach dir,$(SRC_DIRS) $(UNDECOMPILED_DATA_DIRS) $(ASSET_BIN_DIRS),build/$(dir)))
+$(shell mkdir -p build/baserom build/assets/text $(foreach dir,$(SRC_DIRS) $(UNDECOMPILED_DATA_DIRS) $(ASSET_BIN_DIRS),build/$(dir)) $(DBG_DIR))
 
 ifeq ($(COMPILER),ido)
 build/src/code/fault.o: CFLAGS += -trapuv
@@ -236,17 +248,24 @@ build/src/overlays/%.o: CC := python3 tools/asm_processor/build.py $(CC) -- $(AS
 
 build/assets/%.o: CC := python3 tools/asm_processor/build.py $(CC) -- $(AS) $(ASFLAGS) --
 else
-build/src/libultra/libc/ll.o: OPTFLAGS := -Ofast
+build/src/libultra/libc/ll.o: override OPTFLAGS := $(OPTFLAGS) -Ofast
+build/src/rdb/ed64_x.o: override OPTFLAGS := $(OPTFLAGS) -Ofast -g0
+build/src/rdb/io.o: override OPTFLAGS := $(OPTFLAGS) -Ofast -g0
+build/src/rdb/pi.o: override OPTFLAGS := $(OPTFLAGS) -Ofast -g0
+build/src/rdb/rdb.o: override OPTFLAGS := $(OPTFLAGS) -Ofast -g0
+build/src/rdb/vr4300.o: override OPTFLAGS := $(OPTFLAGS) -Ofast -g0
 build/src/%.o: CC := $(CC) -fexec-charset=euc-jp
 endif
 
 #### Main Targets ###
 
-all: $(ROM)
+all: $(ROM) debug
 ifeq ($(COMPARE),1)
 	@md5sum $(ROM)
 	@md5sum -c checksum.md5
 endif
+
+debug: $(DBG_OBJ) $(DBG_ELF)
 
 clean:
 	$(RM) -r $(ROM) $(ELF) build
@@ -271,7 +290,7 @@ test: $(ROM)
 	$(EMULATOR) $(EMU_FLAGS) $<
 
 
-.PHONY: all clean setup test distclean assetclean
+.PHONY: all debug clean setup test distclean assetclean
 
 #### Various Recipes ####
 
@@ -281,7 +300,27 @@ $(ROM): $(ELF)
 $(ELF): $(TEXTURE_FILES_OUT) $(ASSET_FILES_OUT) $(O_FILES) $(OVL_RELOC_FILES) build/ldscript.txt build/undefined_syms.txt
 	$(LD) -T build/undefined_syms.txt -T build/ldscript.txt --no-check-sections --accept-unknown-input-arch --emit-relocs -Map build/z64.map -o $@
 
-## Order-only prerequisites
+$(DBG_SCRIPT): build/$(SPEC)
+$(DBG_SCRIPT): %.ld: %.d
+
+$(DBG_OBJ_DEP): build/$(SPEC)
+	$(MKDEBUG) $< $(DBG_DIR) $(@:$(DBG_DIR)/%.d=%)
+
+$(DBG_ELF_DEP): build/$(SPEC)
+	$(MKDEBUG) $< $(DBG_DIR)
+
+ifeq ($(MAKECMDGOALS),$(filter-out clean assetclean distclean setup,$(MAKECMDGOALS)))
+-include $(DBG_DEP)
+endif
+
+$(DBG_OBJ): %.o: %.ld %.d
+	$(LD) -T $< -o $@ -Map $(@:.o=.map) -r --accept-unknown-input-arch
+
+$(DBG_ELF): build/undefined_syms.txt
+$(DBG_ELF): %.elf: %.ld %.d
+	$(LD) -T build/undefined_syms.txt -T $< --no-check-sections --accept-unknown-input-arch --emit-relocs -z undefs -Map $(@:.elf=.map) -o $@
+
+## Order-only prerequisites 
 # These ensure e.g. the O_FILES are built before the OVL_RELOC_FILES.
 # The intermediate phony targets avoid quadratically-many dependencies between the targets and prerequisites.
 

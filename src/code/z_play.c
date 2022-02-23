@@ -1,6 +1,7 @@
 #include "global.h"
 #include "quake.h"
 #include "terminal.h"
+#include "../rdb/rdb.h"
 
 void* gDebugCutsceneScript = NULL;
 UNK_TYPE D_8012D1F4 = 0; // unused
@@ -405,6 +406,7 @@ void Play_Init(GameState* thisx) {
 
     Fault_AddClient(&D_801614B8, ZeldaArena_Display, NULL, NULL);
     Actor_InitContext(this, &this->actorCtx, this->playerEntry);
+    rdb_lib_changed(NULL, NULL);
 
     while (!func_800973FC(this, &this->roomCtx)) {
         ; // Empty Loop
