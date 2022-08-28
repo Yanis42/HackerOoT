@@ -69,4 +69,41 @@
 // Frame advancing
 #define FA_CONTROL BTN_DUP
 
+// -------------------------------------------
+
+/**** [MESSAGES DEBUGGER] ****/
+// Controller port to use
+#define MSG_CONTROLLER_PORT CONTROLLER_PORT_1
+
+// Set to true to use a button combo
+#define MSG_USE_BTN_COMBO true
+#define MSG_BTN_HOLD_FOR_COMBO BTN_L
+
+// Advanced debug mode
+#define MSG_SHOW_MENU_CONTROL BTN_DDOWN
+
+// Select message's language (doesn't affect the game's language setting)
+#define MSG_CHANGE_LANG_CONTROL BTN_DLEFT
+
+// Increment text ID
+#define MSG_INCREMENT_CONTROL BTN_R
+
+// Decrement text ID
+#define MSG_DECREMENT_CONTROL BTN_Z
+
+// Change text ID by 1
+#define MSG_ONE_CONTROL BTN_CDOWN
+
+// Change text ID by 10
+#define MSG_TEN_CONTROL BTN_A
+
+// Change text ID by 100
+#define MSG_HUNDRED_CONTROL BTN_B
+
+// Change text ID by 1000
+#define MSG_THOUSAND_CONTROL BTN_CLEFT
+
+// Display text
+#define MSG_DISPLAY_CONTROL BTN_DUP
+
 #endif

@@ -23,8 +23,8 @@
 // #define SHOW_INPUT_DISPLAY
 
 /**** [CUTSCENE FEATURES] ****/
-// #define SHOW_CS_INFOS
-// #define ENABLE_CS_CONTROL
+#define SHOW_CS_INFOS
+#define ENABLE_CS_CONTROL
 
 // Allow skip on the title screen (if using ``ENABLE_CS_CONTROL``)
 #define CS_CTRL_SKIP_TITLE_SCREEN false
@@ -37,7 +37,7 @@
 #define ENABLE_FRAMERATE_OPTIONS
 
 /**** [MAP SELECT] ****/
-// #define ENABLE_MAP_SELECT
+#define ENABLE_MAP_SELECT
 
 /**** [DEBUG FILE 1] ****/
 #define ENABLE_DEBUG_SAVE
@@ -77,6 +77,6 @@
 // #define ENABLE_ACTOR_DEBUGGER
 
 /**** [MESSAGES DEBUGGER] ****/
-// #define ENABLE_MSG_DEBUGGER
+#define ENABLE_MSG_DEBUGGER
 
 #endif

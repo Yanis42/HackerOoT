@@ -46,7 +46,7 @@
 
 // TODO: find a better way to do that
 #ifndef DEBUG_ROM
-#define DISABLE_DEBUG_FEATURES
+// #define DISABLE_DEBUG_FEATURES
 #endif
 
 #ifdef DISABLE_DEBUG_FEATURES
