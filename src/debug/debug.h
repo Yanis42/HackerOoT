@@ -20,7 +20,6 @@ typedef struct {
 } GfxPrint; // size = 0x30
 
 #ifdef ENABLE_MSG_DEBUGGER
-
 typedef struct {
     /* 0x00 */ u8 useButtonCombo;      // `True` if the combo macro is `False`, otherwise checks for the button to hold
     /* 0x01 */ u8 canDisplay;          // `True` if the textbox should draw
@@ -35,7 +34,6 @@ typedef struct {
     /* 0x0C */ Input controller;       // The controller to use
     /* 0x24 */ GfxPrint printer;       // ``GfxPrint`` variable to use for printing functions
 } MsgDebug; // size = 0x54
-
 #endif
 
 #endif

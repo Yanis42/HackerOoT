@@ -1,4 +1,4 @@
-#include "message_debugger.h"
+#include "msg_dbg.h"
 
 #ifdef ENABLE_MSG_DEBUGGER
 

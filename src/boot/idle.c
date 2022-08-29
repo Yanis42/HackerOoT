@@ -1,5 +1,6 @@
 #include "global.h"
 #include "vt.h"
+#include "config.h"
 
 OSThread gMainThread;
 STACK(sMainStack, 0x900);
@@ -19,18 +20,40 @@ f32 gViConfigYScale = 1.0;
 void Main_ThreadEntry(void* arg) {
     OSTime time;
 
+    // "start of execution"
     osSyncPrintf("mainx 実行開始\n");
+
     DmaMgr_Init();
+
+    // "code segment loading..."
     osSyncPrintf("codeセグメントロード中...");
+
     time = osGetTime();
     DmaMgr_SendRequest1(_codeSegmentStart, (uintptr_t)_codeSegmentRomStart, _codeSegmentRomEnd - _codeSegmentRomStart,
                         "../idle.c", 238);
     time -= osGetTime();
+
+    // "code segment loading... Completed"
     osSyncPrintf("\rcodeセグメントロード中...完了\n");
+
+    // "transfer time"
     osSyncPrintf("転送時間 %6.3f\n");
+
     bzero(_codeSegmentBssStart, _codeSegmentBssEnd - _codeSegmentBssStart);
+    // "code segment BSS clear completed"
     osSyncPrintf("codeセグメントBSSクリア完了\n");
+
+#ifndef DISABLE_DEBUG_FEATURES
+    osSyncPrintf("[HACKEROOT:INFO]: Loading 'debug' segment...\n");
+    DmaMgr_SendRequest1(_debugSegmentStart, (uintptr_t)_debugSegmentRomStart, _debugSegmentRomEnd - _debugSegmentRomStart,
+                        __FILE__, __LINE__);
+    bzero(_debugSegmentBssStart, _debugSegmentBssEnd - _debugSegmentBssStart);
+    osSyncPrintf("[HACKEROOT:INFO]: Completed!\n");
+#endif
+
     Main(arg);
+
+    // "mainx execution terminated"
     osSyncPrintf("mainx 実行終了\n");
 }
 

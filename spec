@@ -534,10 +534,18 @@ beginseg
     include "build/data/audio_tables.rodata.o"
     include "build/data/rsp.text.o"
     include "build/data/rsp.rodata.o"
+endseg
+
+#ifndef DISABLE_DEBUG_FEATURES
+
+beginseg
+    name "debug"
 #ifdef ENABLE_MSG_DEBUGGER
-    include "build/src/debug/message_debugger/message_debugger.o"
+    include "build/src/debug/msg_dbg/msg_dbg.o"
 #endif
 endseg
+
+#endif
 
 beginseg
     name "buffers"

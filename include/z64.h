@@ -38,7 +38,7 @@
 #include "sched.h"
 #include "config.h"
 
-#ifdef ENABLE_MSG_DEBUGGER
+#ifndef DISABLE_DEBUG_FEATURES
 #include "debug/debug.h"
 #endif
 
