@@ -444,6 +444,10 @@ void Play_Init(GameState* thisx) {
         osSyncPrintf("\nkawauso_data=[%x]", D_8012D1F0);
         DmaMgr_DmaRomToRam(0x03FEB000, D_8012D1F0, sizeof(D_801614D0));
     }
+
+#ifdef ENABLE_MSG_DEBUGGER
+    MessageDebugger_Init(&this->msgDebug, this);
+#endif
 }
 
 void Play_Update(PlayState* this) {
@@ -1024,6 +1028,10 @@ skip:
     PLAY_LOG(3816);
     Environment_Update(this, &this->envCtx, &this->lightCtx, &this->pauseCtx, &this->msgCtx, &this->gameOverCtx,
                        this->state.gfxCtx);
+
+#ifdef ENABLE_MSG_DEBUGGER
+    MessageDebugger_Update(&this->msgDebug, this);
+#endif
 }
 
 void Play_DrawOverlayElements(PlayState* this) {
@@ -1284,6 +1292,9 @@ void Play_Draw(PlayState* this) {
                 Play_Draw_DrawOverlayElements:
                     if ((HREG(80) != 10) || (HREG(89) != 0)) {
                         Play_DrawOverlayElements(this);
+#ifdef ENABLE_MSG_DEBUGGER
+                        MessageDebugger_Draw(&this->msgDebug, this);
+#endif
                     }
                 }
             }

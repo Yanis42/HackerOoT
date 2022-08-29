@@ -60,21 +60,6 @@ MessageTableEntry sStaffMessageEntryTable[] = {
     { 0xFFFF, 0, NULL },
 };
 
-#ifdef ENABLE_MSG_DEBUGGER
-typedef enum {
-    /* 0x0 */ DBG_MODE_DISPLAY_ONLY,
-    /* 0x1 */ DBG_MODE_ON_DEMAND
-} MsgDebugMode;
-
-u8 msgDebugDisplay = false;
-u8 msgDebugMode = DBG_MODE_DISPLAY_ONLY;
-u8 msgDebugLanguage = LANGUAGE_ENG;
-u8 msgDebugModeDisplayTimer = 40;
-u8 msgDebugChangeByTimer = 40;
-s16 msgDebugChangeBy = 0;
-s16 msgDebugTextID = 0x0001; // Weird Egg Text by default
-#endif
-
 MessageTableEntry* sNesMessageEntryTablePtr = sNesMessageEntryTable;
 const char** sGerMessageEntryTablePtr = sGerMessageEntryTable;
 const char** sFraMessageEntryTablePtr = sFraMessageEntryTable;
@@ -314,7 +299,7 @@ void Message_FindMessage(PlayState* play, u16 textId) {
     u8 language = gSaveContext.language;
 
 #ifdef ENABLE_MSG_DEBUGGER
-    language = msgDebugLanguage;
+    language = play->msgDebug.language;
 #endif
 
     if (language == LANGUAGE_ENG) {
@@ -340,7 +325,7 @@ void Message_FindMessage(PlayState* play, u16 textId) {
         }
     } else {
         languageSegmentTable =
-            (msgDebugLanguage == LANGUAGE_GER) ? sGerMessageEntryTablePtr : sFraMessageEntryTablePtr;
+            (language == LANGUAGE_GER) ? sGerMessageEntryTablePtr : sFraMessageEntryTablePtr;
         seg = messageTableEntry->segment;
 
         while (messageTableEntry->textId != 0xFFFF) {
@@ -1181,7 +1166,7 @@ void Message_LoadItemIcon(PlayState* play, u16 itemId, s16 y) {
     u8 language = gSaveContext.language;
 
 #ifdef ENABLE_MSG_DEBUGGER
-    language = msgDebugLanguage;
+    language = play->msgDebug.language;
 #endif
 
     if (itemId == ITEM_DUNGEON_MAP) {
@@ -1614,7 +1599,7 @@ void Message_OpenText(PlayState* play, u16 textId) {
     u8 language = gSaveContext.language;
 
 #ifdef ENABLE_MSG_DEBUGGER
-    language = msgDebugLanguage;
+    language = play->msgDebug.language;
 #endif
 
     if (msgCtx->msgMode == MSGMODE_NONE) {
@@ -3011,73 +2996,6 @@ void Message_DrawDebugVariableChanged(s16* var, GraphicsContext* gfxCtx) {
     }
     CLOSE_DISPS(gfxCtx, "../z_message_PAL.c", 3513);
 }
-
-void Message_DrawDebugText(PlayState* play, Gfx** p, u16 textID) {
-    s32 pad;
-    GfxPrint printer;
-    s32 pad1;
-    char* mode, *spacing, *sign;
-    u8 isIncrement, isDecrement;
-
-    isIncrement = CHECK_BTN_ALL(play->state.input[MSG_CONTROLLER_PORT].cur.button, MSG_INCREMENT_CONTROL);
-    isDecrement = CHECK_BTN_ALL(play->state.input[MSG_CONTROLLER_PORT].cur.button, MSG_DECREMENT_CONTROL);
-
-    if ((msgDebugMode == DBG_MODE_ON_DEMAND)) {
-        mode = "on demand";
-    } else {
-        mode = "on display";
-    }
-
-    switch(msgDebugChangeBy) {
-        case 0x10:
-            spacing = "  ";
-            break;
-        case 0x100:
-            spacing = " ";
-            break;
-        case 0x1000:
-            spacing = "";
-            break;
-        default:
-            spacing = "   ";
-            break;
-    }
-
-    if (isIncrement) {
-        sign = "+";
-    } else if (isDecrement) {
-        sign = "-";
-    } else {
-        sign = " ";
-    }
-
-    GfxPrint_Init(&printer);
-    GfxPrint_Open(&printer, *p);
-
-    if (msgDebugModeDisplayTimer >= 1) {
-        GfxPrint_SetColor(&printer, 255, 60, 0, 255);
-        GfxPrint_SetPos(&printer, 1, 28);
-        GfxPrint_Printf(&printer, "MSG Mode: ", mode);
-        GfxPrint_SetColor(&printer, 255, 255, 255, 32);
-        GfxPrint_Printf(&printer, "%s", mode);
-    }
-
-    if ((msgDebugMode == DBG_MODE_ON_DEMAND) || (play->msgCtx.textId > 0)) {
-        GfxPrint_SetPos(&printer, 24, 28);
-        GfxPrint_SetColor(&printer, 255, 60, 0, 255);
-        GfxPrint_Printf(&printer, "Text ID: ", textID);
-        GfxPrint_SetColor(&printer, 255, 255, 255, 32);
-        GfxPrint_Printf(&printer, "0x%04X", textID);
-    }
-
-    if (msgDebugMode == DBG_MODE_ON_DEMAND) {
-        GfxPrint_SetPos(&printer, 34, 27);
-        GfxPrint_Printf(&printer, "%s%s%X", spacing, sign, msgDebugChangeBy);
-    }
-
-    *p = GfxPrint_Close(&printer);
-    GfxPrint_Destroy(&printer);
-}
 #endif
 
 void Message_Draw(PlayState* play) {
@@ -3088,15 +3006,14 @@ void Message_Draw(PlayState* play) {
     OPEN_DISPS(play->state.gfxCtx, "../z_message_PAL.c", 3554);
 
 #ifdef ENABLE_MSG_DEBUGGER
-    watchVar = gSaveContext.scarecrowLongSongSet;
-    Message_DrawDebugVariableChanged(&watchVar, play->state.gfxCtx);
+    // watchVar = gSaveContext.scarecrowLongSongSet;
+    // Message_DrawDebugVariableChanged(&watchVar, play->state.gfxCtx);
 
-    plusOne = Graph_GfxPlusOne(polyOpaP = POLY_OPA_DISP);
-    gSPDisplayList(OVERLAY_DISP++, plusOne);
-    Message_DrawDebugText(play, &plusOne, ((msgDebugMode == DBG_MODE_DISPLAY_ONLY) ? play->msgCtx.textId : msgDebugTextID));
-    gSPEndDisplayList(plusOne++);
-    Graph_BranchDlist(polyOpaP, plusOne);
-    POLY_OPA_DISP = plusOne;
+    // plusOne = Graph_GfxPlusOne(polyOpaP = POLY_OPA_DISP);
+    // gSPDisplayList(OVERLAY_DISP++, plusOne);
+    // gSPEndDisplayList(plusOne++);
+    // Graph_BranchDlist(polyOpaP, plusOne);
+    // POLY_OPA_DISP = plusOne;
 #endif
 
     if (1) {}
@@ -3140,98 +3057,9 @@ void Message_Update(PlayState* play) {
     s16 averageY;
     s16 playerFocusScreenPosY;
     s16 actorFocusScreenPosY;
-#ifdef ENABLE_MSG_DEBUGGER
-    Input* input = &play->state.input[MSG_CONTROLLER_PORT];
-    u16 i;
-    u8 buttonCombo = MSG_USE_BTN_COMBO ? CHECK_BTN_ALL(input->cur.button, MSG_BTN_HOLD_FOR_COMBO) : true;
-#endif
 
 #ifdef ENABLE_FAST_TEXT
     sTextboxSkipped = true;
-#endif
-
-#ifdef ENABLE_MSG_DEBUGGER
-    if (buttonCombo && CHECK_BTN_ALL(input->press.button, MSG_SHOW_MENU_CONTROL)) {
-        msgDebugModeDisplayTimer = 40;
-        msgDebugMode ^= DBG_MODE_ON_DEMAND;
-    }
-
-    if (buttonCombo && CHECK_BTN_ALL(input->press.button, MSG_CHANGE_LANG_CONTROL)) {
-        msgDebugLanguage = (msgDebugLanguage == LANGUAGE_FRA) ? LANGUAGE_ENG : (msgDebugLanguage + 1);
-
-        // re-open the textbox to update the language
-        msgDebugDisplay = !msgDebugDisplay;
-    }
-
-    // change-by reset timer
-    if (msgDebugModeDisplayTimer >= 1) {
-        msgDebugModeDisplayTimer--;
-    }
-
-    if (msgDebugMode == DBG_MODE_ON_DEMAND) {
-        // get the max ID, the last three text IDs are special values
-        s16 maxTextID = sNesMessageEntryTable[ARRAY_COUNT(sNesMessageEntryTable) - 4].textId;
-        s16 changeBy = 0;
-
-        // set the value to increment/decrement by holding a butto
-        if (CHECK_BTN_ALL(play->state.input[MSG_CONTROLLER_PORT].press.button, MSG_ONE_CONTROL)) {
-            msgDebugChangeBy = changeBy = 0x1;
-            msgDebugChangeByTimer = 40;
-        }
-
-        if (CHECK_BTN_ALL(play->state.input[MSG_CONTROLLER_PORT].press.button, MSG_TEN_CONTROL)) {
-            msgDebugChangeBy = changeBy = 0x10;
-            msgDebugChangeByTimer = 40;
-        }
-
-        if (CHECK_BTN_ALL(play->state.input[MSG_CONTROLLER_PORT].press.button, MSG_HUNDRED_CONTROL)) {
-            msgDebugChangeBy = changeBy = 0x100;
-            msgDebugChangeByTimer = 40;
-        }
-
-        if (CHECK_BTN_ALL(play->state.input[MSG_CONTROLLER_PORT].press.button, MSG_THOUSAND_CONTROL)) {
-            msgDebugChangeBy = changeBy = 0x1000;
-            msgDebugChangeByTimer = 40;
-        }
-
-        if (msgDebugChangeByTimer >= 1) {
-            msgDebugChangeByTimer--;
-        } else {
-            msgDebugChangeBy = 0;
-        }
-
-        // increment or decrement by pressing other buttons
-        if (CHECK_BTN_ALL(input->cur.button, MSG_INCREMENT_CONTROL)) {
-            msgDebugTextID += changeBy;
-
-            // if reaching maximum value, go back to 1
-            if (msgDebugTextID > maxTextID) {
-                msgDebugTextID = 0x1;
-            }
-        }
-
-        if (CHECK_BTN_ALL(input->cur.button, MSG_DECREMENT_CONTROL)) {
-            msgDebugTextID -= changeBy;
-
-            // if the ID is a 0 or less, go back to maximum value
-            if (msgDebugTextID <= 0) {
-                msgDebugTextID = maxTextID;
-            }
-        }
-
-        // finally, start the text
-        if (CHECK_BTN_ALL(input->press.button, MSG_DISPLAY_CONTROL)) {
-            msgDebugDisplay = !msgDebugDisplay;
-        }
-    }
-
-    if (msgDebugDisplay) {
-        Message_StartTextbox(play,
-            ((msgDebugMode == DBG_MODE_ON_DEMAND) ? (u16)msgDebugTextID : play->msgCtx.textId),
-            NULL
-        );
-        msgDebugDisplay = false;
-    }
 #endif
 
     if (msgCtx->msgLength == 0) {

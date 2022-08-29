@@ -1,7 +1,7 @@
 #ifndef MESSAGE_DATA_STATIC_H
 #define MESSAGE_DATA_STATIC_H
 
-#include "global.h"
+#include "ultra64.h"
 #include "message_data_fmt.h"
 
 typedef enum {

@@ -38,6 +38,10 @@
 #include "sched.h"
 #include "config.h"
 
+#ifdef ENABLE_MSG_DEBUGGER
+#include "debug/debug.h"
+#endif
+
 #define SCREEN_WIDTH  320
 #define SCREEN_HEIGHT 240
 
@@ -1224,7 +1228,10 @@ typedef struct PlayState {
     /* 0x1242B */ u8 viewpoint; // toggleable camera setting by shops or player. Is also equal to the bgCamIndex + 1
     /* 0x1242C */ SceneTableEntry* loadedScene;
     /* 0x12430 */ char unk_12430[0xE8];
-} PlayState; // size = 0x12518
+#ifdef ENABLE_MSG_DEBUGGER
+    /* 0x12518 */ MsgDebug msgDebug;
+#endif
+} PlayState; // size = 0x1256C
 
 typedef struct {
     /* 0x0000 */ GameState state;
@@ -1485,18 +1492,6 @@ typedef enum {
     MTXMODE_NEW,  // generates a new matrix
     MTXMODE_APPLY // applies transformation to the current matrix
 } MatrixMode;
-
-typedef struct {
-    /* 0x00 */ PrintCallback callback;
-    /* 0x04 */ Gfx* dList;
-    /* 0x08 */ u16 posX;
-    /* 0x0A */ u16 posY;
-    /* 0x0C */ u16 baseX;
-    /* 0x0E */ u8 baseY;
-    /* 0x0F */ u8 flags;
-    /* 0x10 */ Color_RGBA8_u32 color;
-    /* 0x14 */ char unk_14[0x1C]; // unused
-} GfxPrint; // size = 0x30
 
 #define GFX_CHAR_X_SPACING    8
 #define GFX_CHAR_Y_SPACING    8

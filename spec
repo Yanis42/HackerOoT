@@ -534,6 +534,9 @@ beginseg
     include "build/data/audio_tables.rodata.o"
     include "build/data/rsp.text.o"
     include "build/data/rsp.rodata.o"
+#ifdef ENABLE_MSG_DEBUGGER
+    include "build/src/debug/message_debugger/message_debugger.o"
+#endif
 endseg
 
 beginseg
