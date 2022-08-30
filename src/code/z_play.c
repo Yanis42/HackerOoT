@@ -2,6 +2,8 @@
 #include "vt.h"
 #include "config.h"
 
+#include "debug/debug_main/debug.h"
+
 void* D_8012D1F0 = NULL;
 UNK_TYPE D_8012D1F4 = 0; // unused
 Input* D_8012D1F8 = NULL;
@@ -446,7 +448,7 @@ void Play_Init(GameState* thisx) {
     }
 
 #ifdef ENABLE_MSG_DEBUGGER
-    MessageDebugger_Init(&this->msgDebug, this);
+    Debug_Init(&this->debug, this);
 #endif
 }
 
@@ -1030,7 +1032,7 @@ skip:
                        this->state.gfxCtx);
 
 #ifdef ENABLE_MSG_DEBUGGER
-    MessageDebugger_Update(&this->msgDebug, this);
+    Debug_Update(&this->debug, this);
 #endif
 }
 
@@ -1293,7 +1295,7 @@ void Play_Draw(PlayState* this) {
                     if ((HREG(80) != 10) || (HREG(89) != 0)) {
                         Play_DrawOverlayElements(this);
 #ifdef ENABLE_MSG_DEBUGGER
-                        MessageDebugger_Draw(&this->msgDebug, this);
+                        Debug_Draw(&this->debug, this);
 #endif
                     }
                 }

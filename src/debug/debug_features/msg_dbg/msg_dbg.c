@@ -9,7 +9,7 @@
 /**
  * Initialise this debugger's variables
  */
-void MessageDebugger_Init(MsgDebug* this, PlayState* play) {
+void MsgDbg_Init(MsgDebug* this, struct PlayState* play) {
     // on-display mode by default
     this->mode = MDBG_MODE_DISPLAY_ONLY;
 
@@ -35,7 +35,7 @@ void MessageDebugger_Init(MsgDebug* this, PlayState* play) {
 /**
  * Logic behind changing the mode
  */
-void MessageDebugger_UpdateMode(MsgDebug* this, PlayState* play) {
+void MsgDbg_UpdateMode(MsgDebug* this, struct PlayState* play) {
     // if the user want to change the mode,
     // invert the value and set the display timer to 40 frames
     // to display the new value on screen
@@ -53,7 +53,7 @@ void MessageDebugger_UpdateMode(MsgDebug* this, PlayState* play) {
 /**
  * Logic behind the text picker
  */
-void MessageDebugger_UpdateOnDemand(MsgDebug* this, PlayState* play) {
+void MsgDbg_UpdateOnDemand(MsgDebug* this, struct PlayState* play) {
     // get the max ID, the last ID is a special value
     // removing one more since it's an array
     u16 maxTextID = englishBank[ARRAY_COUNT(englishBank) - 2].textId;
@@ -101,7 +101,7 @@ void MessageDebugger_UpdateOnDemand(MsgDebug* this, PlayState* play) {
 /**
  * Main logic routine
  */
-void MessageDebugger_Update(MsgDebug* this, PlayState* play) {
+void MsgDbg_Update(MsgDebug* this, struct PlayState* play) {
     // update the controller values
     this->controller = play->state.input[MSG_CONTROLLER_PORT];
 
@@ -119,11 +119,11 @@ void MessageDebugger_Update(MsgDebug* this, PlayState* play) {
     }
 
     // run the mode logic
-    MessageDebugger_UpdateMode(this, play);
+    MsgDbg_UpdateMode(this, play);
 
     // if the mode is "on demand", run the on-demand logic
     if (this->mode == MDBG_MODE_ON_DEMAND) {
-        MessageDebugger_UpdateOnDemand(this, play);
+        MsgDbg_UpdateOnDemand(this, play);
     }
 
     // logic for displaying the textbox
@@ -145,7 +145,7 @@ void MessageDebugger_Update(MsgDebug* this, PlayState* play) {
 /**
  * Prints the debug mode
  */
-void MessageDebugger_PrintMode(MsgDebug* this, PlayState* play) {
+void MsgDbg_PrintMode(MsgDebug* this, struct PlayState* play) {
     Color_RGBA8_u32 rgba = { 255, 60, 0, 255 };
 
     GFXPRINT_COLORPOS(this->printer, rgba, 1, 28);
@@ -158,7 +158,7 @@ void MessageDebugger_PrintMode(MsgDebug* this, PlayState* play) {
  * Prints the text ID, the one the user chose,
  * or the ID of the current on-screen dialog
  */
-void MessageDebugger_PrintTextID(MsgDebug* this, PlayState* play) {
+void MsgDbg_PrintTextID(MsgDebug* this, struct PlayState* play) {
     Color_RGBA8_u32 rgba = { 255, 60, 0, 255 };
 
     GFXPRINT_COLORPOS(this->printer, rgba, 24, 28);
@@ -171,7 +171,7 @@ void MessageDebugger_PrintTextID(MsgDebug* this, PlayState* play) {
 /**
  * Prints information about the increment/decrement
  */
-void MessageDebugger_PrintIncrement(MsgDebug* this, PlayState* play) {
+void MsgDbg_PrintIncrement(MsgDebug* this, struct PlayState* play) {
     s8 xPos = (((this->incrementBy == 0x1) || (this->incrementBy == 0x0)) ? 37
                : (this->incrementBy == 0x10)                              ? 36
                : (this->incrementBy == 0x100)                             ? 35
@@ -186,7 +186,7 @@ void MessageDebugger_PrintIncrement(MsgDebug* this, PlayState* play) {
 /**
  * Main display routine
  */
-void MessageDebugger_Draw(MsgDebug* this, PlayState* play) {
+void MsgDbg_Draw(MsgDebug* this, struct PlayState* play) {
     Gfx* dl, *polyOpaP;
 
     OPEN_DISPS(play->state.gfxCtx, __FILE__, __LINE__);
@@ -195,15 +195,15 @@ void MessageDebugger_Draw(MsgDebug* this, PlayState* play) {
     GFXPRINT_INIT(this->printer, &dl);
 
     if (this->modePrintTimer >= 1) {
-        MessageDebugger_PrintMode(this, play);
+        MsgDbg_PrintMode(this, play);
     }
 
     if ((play->msgCtx.msgMode != MSGMODE_NONE) || (this->mode == MDBG_MODE_ON_DEMAND)) {
-        MessageDebugger_PrintTextID(this, play);
+        MsgDbg_PrintTextID(this, play);
     }
 
     if (this->mode == MDBG_MODE_ON_DEMAND) {
-        MessageDebugger_PrintIncrement(this, play);
+        MsgDbg_PrintIncrement(this, play);
     }
 
     GFXPRINT_DESTROY(this->printer, &dl);

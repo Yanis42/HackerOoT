@@ -6,7 +6,7 @@
 #include "config.h"
 
 #ifndef DISABLE_DEBUG_FEATURES
-#include "debug/debug.h"
+#include "debug/debug_headers/debug_common.h"
 #endif
 
 f32 fabsf(f32 f);
@@ -2302,16 +2302,5 @@ void TitleSetup_Init(GameState* thisx);
 void TitleSetup_Destroy(GameState* thisx);
 void FileSelect_Init(GameState* thisx);
 void FileSelect_Destroy(GameState* thisx);
-
-#ifdef ENABLE_MSG_DEBUGGER
-void MessageDebugger_Init(MsgDebug* this, PlayState* play);
-void MessageDebugger_Update(MsgDebug* this, PlayState* play);
-void MessageDebugger_UpdateMode(MsgDebug* this, PlayState* play);
-void MessageDebugger_UpdateOnDemand(MsgDebug* this, PlayState* play);
-void MessageDebugger_Draw(MsgDebug* this, PlayState* play);
-void MessageDebugger_PrintMode(MsgDebug* this, PlayState* play);
-void MessageDebugger_PrintTextID(MsgDebug* this, PlayState* play);
-void MessageDebugger_PrintIncrement(MsgDebug* this, PlayState* play);
-#endif
 
 #endif

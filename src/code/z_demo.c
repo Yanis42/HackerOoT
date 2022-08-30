@@ -114,14 +114,17 @@ void Cutscene_DrawDebugInfo(PlayState* play, Gfx** dlist, CutsceneContext* csCtx
     GfxPrint_Init(&printer);
     GfxPrint_Open(&printer, *dlist);
 
-    GfxPrint_SetPos(&printer, 22, 25);
+    GfxPrint_SetPos(&printer, 1, 25);
     GfxPrint_SetColor(&printer, 255, 255, 55, 32);
-    GfxPrint_Printf(&printer, "%s", "FLAME ");
+    GfxPrint_Printf(&printer, "%s", "CS Frame Count: ");
     GfxPrint_SetColor(&printer, 255, 255, 255, 32);
     GfxPrint_Printf(&printer, "%06d", csCtx->frames);
-    GfxPrint_SetColor(&printer, 50, 255, 255, 60);
-    GfxPrint_SetPos(&printer, 10, 26);
-    GfxPrint_Printf(&printer, "%s", "SKIP=(START) or (Cursole Right)");
+
+    GfxPrint_SetPos(&printer, 1, 24);
+    GfxPrint_SetColor(&printer, 255, 255, 55, 32);
+    GfxPrint_Printf(&printer, "%s", "CS Script: ");
+    GfxPrint_SetColor(&printer, 255, 255, 255, 32);
+    GfxPrint_Printf(&printer, "0x%08X", &csCtx->segment);
 
     *dlist = GfxPrint_Close(&printer);
     GfxPrint_Destroy(&printer);
@@ -1964,19 +1967,17 @@ void func_80068C3C(PlayState* play, CutsceneContext* csCtx) {
         if (0) {} // Also necessary to match
 
 #ifdef SHOW_CS_INFOS
-        if (BREG(0) != 0) {
-            OPEN_DISPS(play->state.gfxCtx, "../z_demo.c", 4101);
+        OPEN_DISPS(play->state.gfxCtx, "../z_demo.c", 4101);
 
-            prevDisplayList = POLY_OPA_DISP;
-            displayList = Graph_GfxPlusOne(POLY_OPA_DISP);
-            gSPDisplayList(OVERLAY_DISP++, displayList);
-            Cutscene_DrawDebugInfo(play, &displayList, csCtx);
-            gSPEndDisplayList(displayList++);
-            Graph_BranchDlist(prevDisplayList, displayList);
-            POLY_OPA_DISP = displayList;
+        prevDisplayList = POLY_OPA_DISP;
+        displayList = Graph_GfxPlusOne(POLY_OPA_DISP);
+        gSPDisplayList(OVERLAY_DISP++, displayList);
+        Cutscene_DrawDebugInfo(play, &displayList, csCtx);
+        gSPEndDisplayList(displayList++);
+        Graph_BranchDlist(prevDisplayList, displayList);
+        POLY_OPA_DISP = displayList;
 
-            CLOSE_DISPS(play->state.gfxCtx, "../z_demo.c", 4108);
-        }
+        CLOSE_DISPS(play->state.gfxCtx, "../z_demo.c", 4108);
 #endif
 
         csCtx->frames++;
