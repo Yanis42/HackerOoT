@@ -1,6 +1,6 @@
 #include "msg_dbg.h"
 #include "debug/debug_common/debug_macros.h"
-#include "z64.h"
+#include "functions.h"
 #include "macros.h"
 
 #ifdef ENABLE_MSG_DEBUGGER
@@ -155,74 +155,40 @@ void MsgDbg_Update(MsgDebug* this, PlayState* play) {
  ************************/
 
 /**
- * Prints the debug mode
- */
-void MsgDbg_PrintMode(MsgDebug* this) {
-    Color_RGBA8_u32 rgba = { 255, 60, 0, 255 };
-
-    GFXP_COLORPOS(this->printer, rgba, 1, 28);
-    GfxPrint_Printf(&this->printer, "MSG Mode: ");
-    GfxPrint_SetColor(&this->printer, 255, 255, 255, 32);
-    GfxPrint_Printf(&this->printer, ((this->mode == MDBG_MODE_ON_DEMAND) ? "on demand" : "on display"));
-}
-
-/**
- * Prints the text ID, the one the user chose,
- * or the ID of the current on-screen dialog
- */
-void MsgDbg_PrintTextID(MsgDebug* this, PlayState* play) {
-    Color_RGBA8_u32 rgba = { 255, 60, 0, 255 };
-
-    GFXP_COLORPOS(this->printer, rgba, 24, 28);
-    GfxPrint_Printf(&this->printer, "Text ID: ");
-    GfxPrint_SetColor(&this->printer, 255, 255, 255, 32);
-    GfxPrint_Printf(&this->printer, "0x%04X",
-                    ((this->mode == MDBG_MODE_ON_DEMAND) ? this->textID : play->msgCtx.textId));
-}
-
-/**
- * Prints information about the increment/decrement
- */
-void MsgDbg_PrintIncrement(MsgDebug* this) {
-    s8 xPos = (((this->incrementBy == 0x1) || (this->incrementBy == 0x0)) ? 37
-               : (this->incrementBy == 0x10)                              ? 36
-               : (this->incrementBy == 0x100)                             ? 35
-                                                                          : 34);
-    char* sign = CHECK_BTN_ALL(this->controller.cur.button, MSG_DECREMENT_CONTROL)   ? "-"
-                  : CHECK_BTN_ALL(this->controller.cur.button, MSG_INCREMENT_CONTROL) ? "+" : " ";
-
-    GfxPrint_SetPos(&this->printer, xPos, 27);
-    GfxPrint_Printf(&this->printer, "%s%X", sign, ((this->incrementPrintTimer >= 1) ? this->incrementBy : 0x0));
-}
-
-/**
  * Main display routine
  */
 void MsgDbg_Draw(MsgDebug* this, PlayState* play) {
-    Gfx* dl, *polyOpaP;
+    Vec2s pos = { 1, 28 };
+    ColorStrFmt colors = {
+        { 255, 60, 0, 255 },
+        { 255, 255, 255, 255 }
+    };
 
-    OPEN_DISPS(play->state.gfxCtx, __FILE__, __LINE__);
-    dl = Graph_GfxPlusOne(polyOpaP = POLY_OPA_DISP);
-    gSPDisplayList(OVERLAY_DISP++, dl);
-    GFXP_INIT(this->printer, &dl);
-
+    // print current mode
     if (this->modePrintTimer >= 1) {
-        MsgDbg_PrintMode(this);
+        Debug_PrintStrFmt(&play->debug, play, colors, pos, "MSG Mode: ",
+                            ((this->mode == MDBG_MODE_ON_DEMAND) ? "on demand" : "on display"));
     }
 
+    // print text id
     if ((play->msgCtx.msgMode != MSGMODE_NONE) || (this->mode == MDBG_MODE_ON_DEMAND)) {
-        MsgDbg_PrintTextID(this, play);
+        pos.x = 24;
+        Debug_PrintStrFmt(&play->debug, play, colors, pos, "Text ID: ", "0x%04X",
+                    ((this->mode == MDBG_MODE_ON_DEMAND) ? this->textID : play->msgCtx.textId));
     }
 
+    // print increment with sign
     if (this->mode == MDBG_MODE_ON_DEMAND) {
-        MsgDbg_PrintIncrement(this);
+        char* sign = CHECK_BTN_ALL(this->controller.cur.button, MSG_DECREMENT_CONTROL)   ? "-"
+                  : CHECK_BTN_ALL(this->controller.cur.button, MSG_INCREMENT_CONTROL) ? "+" : " ";
+        pos.y -= 1;
+        pos.x = (((this->incrementBy == 0x1) || (this->incrementBy == 0x0)) ? 37
+                 : (this->incrementBy == 0x10)                              ? 36
+                 : (this->incrementBy == 0x100)                             ? 35
+                                                                            : 34);
+        Debug_Print(&play->debug, play, colors.fmt, pos, "%s%X", sign,
+                    ((this->incrementPrintTimer >= 1) ? this->incrementBy : 0x0));
     }
-
-    GFXP_DESTROY(this->printer, &dl);
-    gSPEndDisplayList(dl++);
-    Graph_BranchDlist(polyOpaP, dl);
-    POLY_OPA_DISP = dl;
-    CLOSE_DISPS(play->state.gfxCtx, __FILE__, __LINE__);
 }
 
 #endif

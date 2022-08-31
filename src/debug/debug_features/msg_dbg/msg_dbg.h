@@ -40,10 +40,6 @@ void MsgDbg_Draw(MsgDebug* this, struct PlayState* play);
 void MsgDbg_UpdateMode(MsgDebug* this);
 void MsgDbg_UpdateOnDemand(MsgDebug* this);
 
-void MsgDbg_PrintMode(MsgDebug* this);
-void MsgDbg_PrintTextID(MsgDebug* this, struct PlayState* play);
-void MsgDbg_PrintIncrement(MsgDebug* this);
-
 #endif
 
 #endif

@@ -38,5 +38,6 @@ void GfxPrint_Destroy(GfxPrint* this);
 void GfxPrint_Open(GfxPrint* this, Gfx* dList);
 Gfx* GfxPrint_Close(GfxPrint* this);
 s32 GfxPrint_Printf(GfxPrint* this, const char* fmt, ...);
+s32 GfxPrint_VPrintf(GfxPrint* this, const char* fmt, va_list args);
 
 #endif
