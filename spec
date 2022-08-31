@@ -442,7 +442,6 @@ beginseg
     include "build/src/code/audio_external_data.o"
     include "build/src/code/audio_init_params.o"
     include "build/src/code/logseverity.o"
-    include "build/src/code/gfxprint.o"
     include "build/src/code/rcp_utils.o"
     include "build/src/code/loadfragment2.o"
     include "build/src/code/mtxuty-cvt.o"
@@ -456,7 +455,6 @@ beginseg
     include "build/src/code/system_malloc.o"
     include "build/src/code/code_800FD970.o"
     include "build/src/code/__osMalloc.o"
-    include "build/src/code/printutils.o"
     include "build/src/code/sleep.o"
     include "build/src/code/jpegutils.o"
     include "build/src/code/jpegdecoder.o"
@@ -540,6 +538,8 @@ endseg
 
 beginseg
     name "debug"
+    include "build/src/debug/debug_common/print/printutils.o"
+    include "build/src/debug/debug_common/print/gfxprint.o"
     include "build/src/debug/debug_main/debug.o"
 #ifdef ENABLE_MSG_DEBUGGER
     include "build/src/debug/debug_features/msg_dbg/msg_dbg.o"

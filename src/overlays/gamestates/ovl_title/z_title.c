@@ -11,6 +11,8 @@
 #include "config.h"
 
 #ifdef DEBUG_ROM
+#include "debug/debug_common/debug_common.h"
+
 void ConsoleLogo_PrintBuildInfo(Gfx** gfxp) {
     Gfx* g;
     GfxPrint* printer;

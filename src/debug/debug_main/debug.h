@@ -1,9 +1,8 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#include "config.h"
 #include "padmgr.h"
-#include "debug/debug_headers/debug_common.h"
+#include "debug/debug_common/debug_common.h"
 #include "debug/debug_features/msg_dbg/msg_dbg.h"
 
 typedef struct DebugState {

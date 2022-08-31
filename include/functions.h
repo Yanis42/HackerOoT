@@ -6,7 +6,7 @@
 #include "config.h"
 
 #ifndef DISABLE_DEBUG_FEATURES
-#include "debug/debug_headers/debug_common.h"
+#include "debug/debug_common/debug_common.h"
 #endif
 
 f32 fabsf(f32 f);
@@ -2028,15 +2028,6 @@ void func_800FA3DC(void);
 u8 func_800FAD34(void);
 void func_800FADF8(void);
 void func_800FAEB4(void);
-void GfxPrint_SetColor(GfxPrint* this, u32 r, u32 g, u32 b, u32 a);
-void GfxPrint_SetPosPx(GfxPrint* this, s32 x, s32 y);
-void GfxPrint_SetPos(GfxPrint* this, s32 x, s32 y);
-void GfxPrint_SetBasePosPx(GfxPrint* this, s32 x, s32 y);
-void GfxPrint_Init(GfxPrint* this);
-void GfxPrint_Destroy(GfxPrint* this);
-void GfxPrint_Open(GfxPrint* this, Gfx* dList);
-Gfx* GfxPrint_Close(GfxPrint* this);
-s32 GfxPrint_Printf(GfxPrint* this, const char* fmt, ...);
 void RcpUtils_PrintRegisterStatus(void);
 void RcpUtils_Reset(void);
 void* Overlay_AllocateAndLoad(uintptr_t vRomStart, uintptr_t vRomEnd, void* vRamStart, void* vRamEnd);
@@ -2143,8 +2134,6 @@ void __osDisplayArena(Arena* arena);
 void ArenaImpl_FaultClient(Arena* arena);
 u32 __osCheckArena(Arena* arena);
 u8 func_800FF334(Arena* arena);
-s32 PrintUtils_VPrintf(PrintCallback* pfn, const char* fmt, va_list args);
-s32 PrintUtils_Printf(PrintCallback* pfn, const char* fmt, ...);
 void Sleep_Cycles(OSTime cycles);
 void Sleep_Nsec(u32 nsec);
 void Sleep_Usec(u32 usec);

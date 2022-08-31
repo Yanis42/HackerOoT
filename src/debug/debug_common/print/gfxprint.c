@@ -1,4 +1,6 @@
-#include "global.h"
+#include "debug/debug_common/debug_macros.h"
+
+#ifndef DISABLE_DEBUG_FEATURES
 
 u16 sGfxPrintFontTLUT[64] = {
     0x0000, 0xFFFF, 0x0000, 0xFFFF, 0x0000, 0xFFFF, 0x0000, 0xFFFF, 0x0000, 0xFFFF, 0x0000, 0xFFFF, 0x0000,
@@ -371,3 +373,5 @@ s32 GfxPrint_Printf(GfxPrint* this, const char* fmt, ...) {
 
     return ret;
 }
+
+#endif

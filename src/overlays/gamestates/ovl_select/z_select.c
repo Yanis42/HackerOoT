@@ -8,6 +8,7 @@
 
 #ifdef ENABLE_MAP_SELECT
 
+#include "debug/debug_common/debug_macros.h"
 #include "ultra64.h"
 #include "global.h"
 #include "vt.h"

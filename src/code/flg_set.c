@@ -2,6 +2,7 @@
 
 #ifdef ENABLE_EVENT_EDITOR
 
+#include "debug/debug_common/debug_common.h"
 #include "global.h"
 
 void FlagSet_Update(PlayState* play) {

@@ -1,5 +1,6 @@
 #include "msg_dbg.h"
-#include "debug/debug_headers/debug_macros.h"
+#include "debug/debug_common/debug_macros.h"
+#include "z64.h"
 #include "macros.h"
 
 #ifdef ENABLE_MSG_DEBUGGER
@@ -28,7 +29,7 @@ void MsgDbg_Init(MsgDebug* this) {
     this->mode = MDBG_MODE_DISPLAY_ONLY;
 
     // using the english bank by default
-    this->language = LANGUAGE_ENG;
+    this->language = MDBG_LANG_ENG;
 
     // Weird Egg text by default
     this->textID = 0x0001;
@@ -125,7 +126,7 @@ void MsgDbg_Update(MsgDebug* this, PlayState* play) {
     // if the user inputs the button combo, use the next language bank
     // then draw the dialog again
     if (this->useButtonCombo && CHECK_BTN_ALL(this->controller.press.button, MSG_CHANGE_LANG_CONTROL)) {
-        this->language = (this->language == LANGUAGE_FRA) ? LANGUAGE_ENG : (this->language + 1);
+        this->language = (this->language == MDBG_LANG_FRA) ? MDBG_LANG_ENG : (this->language + 1);
         this->canDisplay = !this->canDisplay;
     }
 
@@ -159,7 +160,7 @@ void MsgDbg_Update(MsgDebug* this, PlayState* play) {
 void MsgDbg_PrintMode(MsgDebug* this) {
     Color_RGBA8_u32 rgba = { 255, 60, 0, 255 };
 
-    GFXPRINT_COLORPOS(this->printer, rgba, 1, 28);
+    GFXP_COLORPOS(this->printer, rgba, 1, 28);
     GfxPrint_Printf(&this->printer, "MSG Mode: ");
     GfxPrint_SetColor(&this->printer, 255, 255, 255, 32);
     GfxPrint_Printf(&this->printer, ((this->mode == MDBG_MODE_ON_DEMAND) ? "on demand" : "on display"));
@@ -172,7 +173,7 @@ void MsgDbg_PrintMode(MsgDebug* this) {
 void MsgDbg_PrintTextID(MsgDebug* this, PlayState* play) {
     Color_RGBA8_u32 rgba = { 255, 60, 0, 255 };
 
-    GFXPRINT_COLORPOS(this->printer, rgba, 24, 28);
+    GFXP_COLORPOS(this->printer, rgba, 24, 28);
     GfxPrint_Printf(&this->printer, "Text ID: ");
     GfxPrint_SetColor(&this->printer, 255, 255, 255, 32);
     GfxPrint_Printf(&this->printer, "0x%04X",
@@ -203,7 +204,7 @@ void MsgDbg_Draw(MsgDebug* this, PlayState* play) {
     OPEN_DISPS(play->state.gfxCtx, __FILE__, __LINE__);
     dl = Graph_GfxPlusOne(polyOpaP = POLY_OPA_DISP);
     gSPDisplayList(OVERLAY_DISP++, dl);
-    GFXPRINT_INIT(this->printer, &dl);
+    GFXP_INIT(this->printer, &dl);
 
     if (this->modePrintTimer >= 1) {
         MsgDbg_PrintMode(this);
@@ -217,7 +218,7 @@ void MsgDbg_Draw(MsgDebug* this, PlayState* play) {
         MsgDbg_PrintIncrement(this);
     }
 
-    GFXPRINT_DESTROY(this->printer, &dl);
+    GFXP_DESTROY(this->printer, &dl);
     gSPEndDisplayList(dl++);
     Graph_BranchDlist(polyOpaP, dl);
     POLY_OPA_DISP = dl;

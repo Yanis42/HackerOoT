@@ -1,3 +1,6 @@
+#ifndef DISABLE_DEBUG_FEATURES
+#include "debug/debug_common/debug_common.h"
+#endif
 #include "global.h"
 #include "vt.h"
 #include "config.h"

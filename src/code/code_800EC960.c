@@ -1,3 +1,7 @@
+#ifndef DISABLE_DEBUG_FEATURES
+#include "debug/debug_common/debug_common.h"
+#endif
+
 #include "ultra64.h"
 #include "global.h"
 #include "config.h"

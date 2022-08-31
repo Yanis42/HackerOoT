@@ -1,10 +1,16 @@
 #ifndef MESSAGE_DEBUGGER_H
 #define MESSAGE_DEBUGGER_H
 
-#include "debug/debug_headers/debug_common.h"
-#include "config.h"
+#include "debug/debug_common/debug_common.h"
 
 #ifdef ENABLE_MSG_DEBUGGER
+
+typedef enum {
+    /* 0x0 */ MDBG_LANG_ENG,
+    /* 0x1 */ MDBG_LANG_GER,
+    /* 0x2 */ MDBG_LANG_FRA,
+    /* 0x3 */ MDBG_LANG_MAX
+} MsgDebugLanguage;
 
 typedef enum {
     /* 0x0 */ MDBG_MODE_DISPLAY_ONLY,

@@ -1,3 +1,7 @@
+#ifndef DISABLE_DEBUG_FEATURES
+#include "debug/debug_common/debug_common.h"
+#endif
+
 #include "global.h"
 #include "z64camera.h"
 #include "config.h"

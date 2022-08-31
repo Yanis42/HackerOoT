@@ -2,6 +2,7 @@
 
 #ifdef ENABLE_INV_EDITOR
 
+#include "debug/debug_common/debug_macros.h"
 #include "z_kaleido_scope.h"
 #include "assets/textures/parameter_static/parameter_static.h"
 
