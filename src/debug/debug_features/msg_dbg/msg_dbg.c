@@ -15,6 +15,7 @@ u16 textIDs[] = {
     #undef DEFINE_MESSAGE
 };
 
+#define MIN_TEXT_ID (textIDs[0])
 #define MAX_TEXT_ID (textIDs[ARRAY_COUNT(textIDs) - 2])
 
 /************************
@@ -80,17 +81,16 @@ void MsgDbg_UpdateOnDemand(MsgDebug* this) {
                          : CHECK_BTN_ALL(this->controller.cur.button, MSG_ONE_CONTROL)     ? 0x1 : 0x0);
 
     // increment or decrement by pressing other buttons
-    if (this->isIncrement || this->isDecrement) {
-        this->textID = (this->isIncrement ? (this->textID + this->incrementBy) : (this->textID - this->incrementBy));
+    if (this->isIncrement) {
+        this->textID += this->incrementBy;
+    } else if (this->isDecrement) {
+        this->textID -= this->incrementBy;
     }
 
-    // if reaching maximum value, go back to 1
+    // stay in the range of IDs
     if (this->textID > MAX_TEXT_ID) {
-        this->textID = 0x1;
-    }
-
-    // if the ID is a 0 or less, go back to maximum value
-    if (this->textID <= 0) {
+        this->textID = this->isIncrement ? MIN_TEXT_ID : this->isDecrement ? MAX_TEXT_ID : this->textID;
+    } else if (this->isDecrement && (this->textID == (MIN_TEXT_ID - 1))) {
         this->textID = MAX_TEXT_ID;
     }
 
@@ -142,7 +142,7 @@ void MsgDbg_Update(MsgDebug* this, PlayState* play) {
     if (this->canDisplay) {
         // depending on the mode use a different variable for the text ID
         // the 3rd parameter is `NULL` since no actor is tied to the textbox
-        Message_StartTextbox(play, ((this->mode == MDBG_MODE_ON_DEMAND) ? (u16)this->textID : play->msgCtx.textId),
+        Message_StartTextbox(play, ((this->mode == MDBG_MODE_ON_DEMAND) ? this->textID : play->msgCtx.textId),
                              NULL);
 
         // set ``canDisplay`` to `False` to display the textbox once

@@ -27,7 +27,7 @@ typedef struct {
     /* 0x05 */ u8 incrementPrintTimer; // Allows the increment to be printed if higher than 0
     /* 0x06 */ u8 mode;                // Stores the current mode, as defined by ``MsgDebugMode``
     /* 0x07 */ u8 language;            // Stores the language, different than ``gSaveContext.language``
-    /* 0x08 */ s16 textID;             // Stores the text ID to display for on-demand mode
+    /* 0x08 */ u16 textID;             // Stores the text ID to display for on-demand mode
     /* 0x0A */ s16 incrementBy;        // How much the text ID should be changed
     /* 0x0C */ Input controller;       // The controller to use
     /* 0x24 */ GfxPrint printer;       // ``GfxPrint`` variable to use for printing functions
