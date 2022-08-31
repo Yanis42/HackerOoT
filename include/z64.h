@@ -1228,8 +1228,10 @@ typedef struct PlayState {
     /* 0x1242B */ u8 viewpoint; // toggleable camera setting by shops or player. Is also equal to the bgCamIndex + 1
     /* 0x1242C */ SceneTableEntry* loadedScene;
     /* 0x12430 */ char unk_12430[0xE8];
-    DebugState debug;
-} PlayState; // size = 0x1256C
+#ifndef DISABLE_DEBUG_FEATURES
+    /* 0x1256C */ DebugState debug;
+#endif
+} PlayState; // size = 0x1256C + sizeof(DebugState)
 
 typedef struct {
     /* 0x0000 */ GameState state;

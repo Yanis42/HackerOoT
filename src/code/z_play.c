@@ -445,7 +445,7 @@ void Play_Init(GameState* thisx) {
         DmaMgr_DmaRomToRam(0x03FEB000, D_8012D1F0, sizeof(D_801614D0));
     }
 
-#ifdef ENABLE_MSG_DEBUGGER
+#ifndef DISABLE_DEBUG_FEATURES
     Debug_Init(&this->debug, this);
 #endif
 }
@@ -1029,7 +1029,7 @@ skip:
     Environment_Update(this, &this->envCtx, &this->lightCtx, &this->pauseCtx, &this->msgCtx, &this->gameOverCtx,
                        this->state.gfxCtx);
 
-#ifdef ENABLE_MSG_DEBUGGER
+#ifndef DISABLE_DEBUG_FEATURES
     Debug_Update(&this->debug, this);
 #endif
 }
@@ -1292,7 +1292,7 @@ void Play_Draw(PlayState* this) {
                 Play_Draw_DrawOverlayElements:
                     if ((HREG(80) != 10) || (HREG(89) != 0)) {
                         Play_DrawOverlayElements(this);
-#ifdef ENABLE_MSG_DEBUGGER
+#ifndef DISABLE_DEBUG_FEATURES
                         Debug_Draw(&this->debug, this);
 #endif
                     }
