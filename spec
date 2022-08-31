@@ -540,8 +540,9 @@ endseg
 
 beginseg
     name "debug"
+    include "build/src/debug/debug_main/debug.o"
 #ifdef ENABLE_MSG_DEBUGGER
-    include "build/src/debug/msg_dbg/msg_dbg.o"
+    include "build/src/debug/debug_features/msg_dbg/msg_dbg.o"
 #endif
 endseg
 

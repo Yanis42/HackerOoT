@@ -1,21 +1,10 @@
 #ifndef MESSAGE_DEBUGGER_H
 #define MESSAGE_DEBUGGER_H
 
+#include "debug/debug_headers/debug_common.h"
 #include "config.h"
 
 #ifdef ENABLE_MSG_DEBUGGER
-
-#include "debug/debug_headers/debug_macros.h"
-#include "debug/debug_headers/debug_common.h"
-#include "message_data_static.h"
-#include "macros.h"
-
-MessageTableEntry englishBank[] = {
-    #define DEFINE_MESSAGE(textId, type, yPos, nesMessage, gerMessage, fraMessage) \
-        { textId, (_SHIFTL(type, 4, 8) | _SHIFTL(yPos, 0, 8)), _message_##textId##_nes },
-    #include "assets/text/message_data.h"
-    #undef DEFINE_MESSAGE
-};
 
 typedef enum {
     /* 0x0 */ MDBG_MODE_DISPLAY_ONLY,
@@ -38,16 +27,16 @@ typedef struct {
     /* 0x24 */ GfxPrint printer;       // ``GfxPrint`` variable to use for printing functions
 } MsgDebug; // size = 0x54
 
-void MsgDbg_Init(MsgDebug* this, struct PlayState* play);
+void MsgDbg_Init(MsgDebug* this);
 void MsgDbg_Update(MsgDebug* this, struct PlayState* play);
 void MsgDbg_Draw(MsgDebug* this, struct PlayState* play);
 
-void MsgDbg_UpdateMode(MsgDebug* this, struct PlayState* play);
-void MsgDbg_UpdateOnDemand(MsgDebug* this, struct PlayState* play);
+void MsgDbg_UpdateMode(MsgDebug* this);
+void MsgDbg_UpdateOnDemand(MsgDebug* this);
 
-void MsgDbg_PrintMode(MsgDebug* this, struct PlayState* play);
+void MsgDbg_PrintMode(MsgDebug* this);
 void MsgDbg_PrintTextID(MsgDebug* this, struct PlayState* play);
-void MsgDbg_PrintIncrement(MsgDebug* this, struct PlayState* play);
+void MsgDbg_PrintIncrement(MsgDebug* this);
 
 #endif
 

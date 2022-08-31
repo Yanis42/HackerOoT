@@ -4,9 +4,10 @@
 #include "ultra64/types.h"
 #include "ultra64/printf.h"
 #include "ultra64/gbi.h"
+#include "padmgr.h"
 #include "color.h"
 
-struct DebugState;
+struct PlayState;
 
 typedef struct {
     /* 0x00 */ PrintCallback callback;

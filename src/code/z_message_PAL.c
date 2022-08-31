@@ -299,7 +299,7 @@ void Message_FindMessage(PlayState* play, u16 textId) {
     u8 language = gSaveContext.language;
 
 #ifdef ENABLE_MSG_DEBUGGER
-    language = play->msgDebug.language;
+    language = play->debug.msgDbg.language;
 #endif
 
     if (language == LANGUAGE_ENG) {
@@ -1166,7 +1166,7 @@ void Message_LoadItemIcon(PlayState* play, u16 itemId, s16 y) {
     u8 language = gSaveContext.language;
 
 #ifdef ENABLE_MSG_DEBUGGER
-    language = play->msgDebug.language;
+    language = play->debug.msgDbg.language;
 #endif
 
     if (itemId == ITEM_DUNGEON_MAP) {
@@ -1599,7 +1599,7 @@ void Message_OpenText(PlayState* play, u16 textId) {
     u8 language = gSaveContext.language;
 
 #ifdef ENABLE_MSG_DEBUGGER
-    language = play->msgDebug.language;
+    language = play->debug.msgDbg.language;
 #endif
 
     if (msgCtx->msgMode == MSGMODE_NONE) {

@@ -39,7 +39,7 @@
 #include "config.h"
 
 #ifndef DISABLE_DEBUG_FEATURES
-#include "debug/debug_headers/debug_common.h"
+#include "debug/debug_main/debug.h"
 #endif
 
 #define SCREEN_WIDTH  320
@@ -1228,9 +1228,7 @@ typedef struct PlayState {
     /* 0x1242B */ u8 viewpoint; // toggleable camera setting by shops or player. Is also equal to the bgCamIndex + 1
     /* 0x1242C */ SceneTableEntry* loadedScene;
     /* 0x12430 */ char unk_12430[0xE8];
-#ifdef ENABLE_MSG_DEBUGGER
-    /* 0x12518 */ DebugState debug;
-#endif
+    DebugState debug;
 } PlayState; // size = 0x1256C
 
 typedef struct {

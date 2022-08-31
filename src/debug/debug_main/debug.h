@@ -8,11 +8,11 @@
 
 typedef struct DebugState {
     /* 0x00 */ GfxPrint printer;
-    /* 0x30 */ MsgDebug* msgDbg;
+    /* 0x30 */ MsgDebug msgDbg;
 } DebugState; // size = 0x84
 
-void Debug_Init(DebugState* debug, struct PlayState* play);
-void Debug_Update(DebugState* debug, struct PlayState* play);
-void Debug_Draw(DebugState* debug, struct PlayState* play);
+void Debug_Init(DebugState* this, struct PlayState* play);
+void Debug_Update(DebugState* this, struct PlayState* play);
+void Debug_Draw(DebugState* this, struct PlayState* play);
 
 #endif
