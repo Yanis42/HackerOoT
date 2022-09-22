@@ -1100,23 +1100,39 @@ typedef struct {
 typedef struct MapSelectState {
     /* 0x0000 */ GameState state;
     /* 0x00A8 */ View view;
+#ifdef BETTER_MAP_SELECT
+    /* 0x01D0 */ s32 sceneTotal;
+#else
     /* 0x01D0 */ s32 count;
+#endif
     /* 0x01D4 */ SceneSelectEntry* scenes;
     /* 0x01D8 */ s32 currentScene;
     /* 0x01DC */ s32 pageDownIndex; // Index of pageDownStops
     /* 0x01E0 */ s32 pageDownStops[7];
+#ifndef BETTER_MAP_SELECT
     /* 0x01FC */ char unk_1FC[0x0C];
     /* 0x0208 */ s32 opt;
+#endif
     /* 0x020C */ s32 topDisplayedScene; // The scene which is currently at the top of the screen
+#ifndef BETTER_MAP_SELECT
     /* 0x0210 */ char unk_210[0x0C];
+#endif
     /* 0x021C */ s32 verticalInputAccumulator;
     /* 0x0220 */ s32 verticalInput;
     /* 0x0224 */ s32 timerUp;
     /* 0x0228 */ s32 timerDown;
     /* 0x022C */ s32 lockUp;
     /* 0x0230 */ s32 lockDown;
+#ifdef BETTER_MAP_SELECT
+                 u8 showControls;
+                 u8 toggleBGM;
+                 u8 isBGMPlaying;
+                 u8 sceneLayer;
+                 u8 selectedSceneColor;
+#else
     /* 0x0234 */ s32 unk_234; // unused
     /* 0x0238 */ u8* staticSegment;
+#endif
 } MapSelectState; // size = 0x240
 
 typedef struct {

@@ -1,5 +1,6 @@
 #include "global.h"
 #include "vt.h"
+#include "config.h"
 
 #define GFXPOOL_HEAD_MAGIC 0x1234
 #define GFXPOOL_TAIL_MAGIC 0x5678
@@ -105,9 +106,17 @@ GameStateOverlay* Graph_GetNextGameState(GameState* gameState) {
     if (gameStateInitFunc == Setup_Init) {
         return &gGameStateOverlayTable[0];
     }
+
+#ifdef BETTER_MAP_SELECT
+    if (gameStateInitFunc == New_MapSelect_Init) {
+        return &gGameStateOverlayTable[1];
+    }
+#else
     if (gameStateInitFunc == MapSelect_Init) {
         return &gGameStateOverlayTable[1];
     }
+#endif
+
     if (gameStateInitFunc == ConsoleLogo_Init) {
         return &gGameStateOverlayTable[2];
     }
@@ -385,7 +394,11 @@ void Graph_Update(GraphicsContext* gfxCtx, GameState* gameState) {
     if (gIsCtrlr2Valid && CHECK_BTN_ALL(gameState->input[0].press.button, BTN_Z) &&
         CHECK_BTN_ALL(gameState->input[0].cur.button, BTN_L | BTN_R)) {
         gSaveContext.gameMode = GAMEMODE_NORMAL;
+#ifdef BETTER_MAP_SELECT
+        SET_NEXT_GAMESTATE(gameState, New_MapSelect_Init, MapSelectState);
+#else
         SET_NEXT_GAMESTATE(gameState, MapSelect_Init, MapSelectState);
+#endif
         gameState->running = false;
     }
 

@@ -17,6 +17,8 @@
 // Fixes scenes being signed
 #define FIX_SCENE_BYTE
 
+#define BETTER_MAP_SELECT
+
 // ------------------------------------------------
 
 

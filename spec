@@ -1,3 +1,5 @@
+#include "include/config.h"
+
 /*
  * ROM spec file
  */
@@ -539,11 +541,19 @@ beginseg
     include "build/src/overlays/gamestates/ovl_title/ovl_title_reloc.o"
 endseg
 
+#ifdef BETTER_MAP_SELECT
+beginseg
+    name "map_select"
+    include "build/hackeroot/src/map_select/map_select.o"
+    include "build/hackeroot/src/map_select/map_select_reloc.o"
+endseg
+#else
 beginseg
     name "ovl_select"
     include "build/src/overlays/gamestates/ovl_select/z_select.o"
     include "build/src/overlays/gamestates/ovl_select/ovl_select_reloc.o"
 endseg
+#endif
 
 beginseg
     name "ovl_opening"

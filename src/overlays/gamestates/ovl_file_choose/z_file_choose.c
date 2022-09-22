@@ -1448,7 +1448,11 @@ void FileSelect_LoadGame(GameState* thisx) {
         gSaveContext.fileNum = this->buttonIndex;
         Sram_OpenSave(&this->sramCtx);
         gSaveContext.gameMode = GAMEMODE_NORMAL;
+#ifdef BETTER_MAP_SELECT
+        SET_NEXT_GAMESTATE(&this->state, New_MapSelect_Init, MapSelectState);
+#else
         SET_NEXT_GAMESTATE(&this->state, MapSelect_Init, MapSelectState);
+#endif
         this->state.running = false;
     } else {
 #endif

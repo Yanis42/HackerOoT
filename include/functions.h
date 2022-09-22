@@ -2215,6 +2215,12 @@ void ConsoleLogo_Init(GameState* thisx);
 void ConsoleLogo_Destroy(GameState* thisx);
 void MapSelect_Init(GameState* thisx);
 void MapSelect_Destroy(GameState* thisx);
+
+#ifdef BETTER_MAP_SELECT
+void New_MapSelect_Init(GameState* thisx);
+void New_MapSelect_Destroy(GameState* thisx);
+#endif
+
 void TitleSetup_Init(GameState* thisx);
 void TitleSetup_Destroy(GameState* thisx);
 void FileSelect_Init(GameState* thisx);
