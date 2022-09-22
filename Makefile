@@ -22,10 +22,26 @@ DEBUG_BUILD ?= 1
 # If NON_MATCHING is 1, define the NON_MATCHING C flag when building
 NON_MATCHING ?= 1
 
+# Set PACKAGE_VERSION define for printing commit hash
+ifeq ($(origin PACKAGE_VERSION), undefined)
+  PACKAGE_VERSION := $(shell git log -1 --pretty=%h | tr -d '\n')
+  ifeq ('$(PACKAGE_VERSION)', '')
+    PACKAGE_VERSION = Unknown version
+  endif
+endif
+
+# Set PACKAGE_AUTHOR define for printing author's git name
+ifeq ($(origin PACKAGE_AUTHOR), undefined)
+  PACKAGE_AUTHOR := $(shell git config --get user.name)
+  ifeq ('$(PACKAGE_AUTHOR)', '')
+    PACKAGE_AUTHOR = Unknown author
+  endif
+endif
+
 ifeq ($(DEBUG_BUILD),1)
   ifeq ($(NON_MATCHING),1)
-    CFLAGS += -DDEBUG_ROM
-    CPPFLAGS += -DDEBUG_ROM
+    CFLAGS += -DDEBUG_ROM -DPACKAGE_VERSION='$(PACKAGE_VERSION)' -DPACKAGE_AUTHOR='$(PACKAGE_AUTHOR)'
+    CPPFLAGS += -DDEBUG_ROM -DPACKAGE_VERSION='$(PACKAGE_VERSION)' -DPACKAGE_AUTHOR='$(PACKAGE_AUTHOR)'
     COMPILER := gcc
   endif
 endif

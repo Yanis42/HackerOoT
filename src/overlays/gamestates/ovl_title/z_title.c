@@ -7,6 +7,7 @@
 #include "global.h"
 #include "alloca.h"
 #include "assets/textures/nintendo_rogo_static/nintendo_rogo_static.h"
+#include "config.h"
 
 void ConsoleLogo_PrintBuildInfo(Gfx** gfxp) {
     Gfx* g;
@@ -17,14 +18,37 @@ void ConsoleLogo_PrintBuildInfo(Gfx** gfxp) {
     printer = alloca(sizeof(GfxPrint));
     GfxPrint_Init(printer);
     GfxPrint_Open(printer, g);
+
+#ifndef DEBUG_ROM
     GfxPrint_SetColor(printer, 255, 155, 255, 255);
     GfxPrint_SetPos(printer, 9, 21);
     GfxPrint_Printf(printer, "NOT MARIO CLUB VERSION");
+#endif
+
     GfxPrint_SetColor(printer, 255, 255, 255, 255);
+
+#ifdef DEBUG_ROM
+    GfxPrint_SetPos(printer, 7, 22);
+    GfxPrint_Printf(printer, "[Author:%s]", gBuildAuthor);
+#endif
+
     GfxPrint_SetPos(printer, 7, 23);
+
+#ifndef DEBUG_ROM
     GfxPrint_Printf(printer, "[Creator:%s]", gBuildTeam);
     GfxPrint_SetPos(printer, 7, 24);
+#endif
+
     GfxPrint_Printf(printer, "[Date:%s]", gBuildDate);
+
+#ifdef DEBUG_ROM
+    GfxPrint_SetPos(printer, 7, 24);
+    GfxPrint_Printf(printer, "[Version:%s]", gBuildGitVersion);
+
+    GfxPrint_SetPos(printer, 7, 25);
+    GfxPrint_Printf(printer, "[Build Option:%s]", gBuildMakeOption);
+#endif
+
     g = GfxPrint_Close(printer);
     GfxPrint_Destroy(printer);
     *gfxp = g;
@@ -33,7 +57,29 @@ void ConsoleLogo_PrintBuildInfo(Gfx** gfxp) {
 // Note: In other rom versions this function also updates unk_1D4, coverAlpha, addAlpha, visibleDuration to calculate
 // the fade-in/fade-out + the duration of the n64 logo animation
 void ConsoleLogo_Calc(ConsoleLogoState* this) {
+#ifdef SKIP_N64_BOOT_LOGO
     this->exit = true;
+#else
+    if (this->coverAlpha == 0 && this->visibleDuration != 0) {
+        this->unk_1D4--;
+        this->visibleDuration--;
+        if (this->unk_1D4 == 0) {
+            this->unk_1D4 = 400;
+        }
+    } else {
+        this->coverAlpha += this->addAlpha;
+        if (this->coverAlpha <= 0) {
+            this->coverAlpha = 0;
+            this->addAlpha = 3;
+        } else if (this->coverAlpha >= 255) {
+            this->coverAlpha = 255;
+            this->exit = true;
+        }
+    }
+
+    this->uls = this->ult & 0x7F;
+    this->ult++;
+#endif
 }
 
 void ConsoleLogo_SetupView(ConsoleLogoState* this, f32 x, f32 y, f32 z) {
@@ -128,6 +174,9 @@ void ConsoleLogo_Main(GameState* thisx) {
     ConsoleLogo_Calc(this);
     ConsoleLogo_Draw(this);
 
+#ifdef DEBUG_ROM
+    ConsoleLogo_PrintBuildInfo(&POLY_OPA_DISP);
+#else
     if (gIsCtrlr2Valid) {
         Gfx* gfx = POLY_OPA_DISP;
         s32 pad;
@@ -135,6 +184,7 @@ void ConsoleLogo_Main(GameState* thisx) {
         ConsoleLogo_PrintBuildInfo(&gfx);
         POLY_OPA_DISP = gfx;
     }
+#endif
 
     if (this->exit) {
         gSaveContext.seqId = (u8)NA_BGM_DISABLED;

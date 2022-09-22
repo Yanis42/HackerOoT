@@ -22,8 +22,14 @@
 #undef FIX_FAULT_C
 #endif
 
+
 /*****************
  * config_game.h
+ */
+
+
+/*****************
+ * Matching
  */
 #ifndef NON_MATCHING
 #undef ROM_NTSC
@@ -31,10 +37,14 @@
 #undef MM_BUNNYHOOD
 #undef FW_SPLIT_AGE
 #undef FIX_PAUSE_CRASH
+#undef DISABLE_POLYCHKTBL
+#undef DIALOGUE_PRINT_SPEED
+#undef BLOCK_PUSH_SPEED
 
 #define DIALOGUE_PRINT_SPEED 1
 #define BLOCK_PUSH_SPEED 1.0f
 #define ENABLE_LOW_HEALTH_BEEP
+#define SKIP_N64_BOOT_LOGO
 #endif
 
 #endif

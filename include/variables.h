@@ -40,9 +40,16 @@ extern OSViContext* __osViCurr;
 extern OSViContext* __osViNext;
 extern OSViMode osViModeFpalLan1;
 extern u32 __additional_scanline;
+#if defined(PACKAGE_VERSION) && defined(PACKAGE_AUTHOR)
+extern char const gBuildAuthor[];
+extern char const gBuildDate[];
+extern char const gBuildMakeOption[];
+extern char const gBuildGitVersion[];
+#else
 extern u8 gBuildTeam[];
 extern u8 gBuildDate[];
 extern u8 gBuildMakeOption[];
+#endif
 extern OSMesgQueue gPiMgrCmdQueue;
 extern OSViMode gViConfigMode;
 extern u8 D_80013960;
