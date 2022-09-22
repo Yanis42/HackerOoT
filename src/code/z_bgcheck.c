@@ -1,5 +1,6 @@
 #include "global.h"
 #include "vt.h"
+#include "config.h"
 
 u16 DynaSSNodeList_GetNextNodeIdx(DynaSSNodeList* nodeList);
 void BgCheck_GetStaticLookupIndicesFromPos(CollisionContext* colCtx, Vec3f* pos, Vec3i* sector);
@@ -22,7 +23,9 @@ s32 BgCheck_CheckLineAgainstDyna(CollisionContext* colCtx, u16 xpFlags, Vec3f* p
                                  s32 bccFlags);
 s32 BgCheck_SphVsFirstDynaPoly(CollisionContext* colCtx, u16 xpFlags, CollisionPoly** outPoly, s32* outBgId,
                                Vec3f* center, f32 radius, Actor* actor, u16 bciFlags);
+#ifndef DISABLE_POLYCHKTBL
 void BgCheck_ResetPolyCheckTbl(SSNodeList* nodeList, s32 numPolys);
+#endif
 
 #define SS_NULL 0xFFFF
 
@@ -957,7 +960,9 @@ s32 BgCheck_CheckLineAgainstSSList(SSList* ssList, CollisionContext* colCtx, u16
                                    Vec3f* posB, Vec3f* outPos, CollisionPoly** outPoly, f32* outDistSq, f32 chkDist,
                                    s32 bccFlags) {
     SSNode* curNode;
+#ifndef DISABLE_POLYCHKTBL
     u8* checkedPoly;
+#endif
     Vec3f polyIntersect;
     CollisionPoly* polyList;
     CollisionPoly* curPoly;
@@ -975,9 +980,12 @@ s32 BgCheck_CheckLineAgainstSSList(SSList* ssList, CollisionContext* colCtx, u16
     curNode = &colCtx->polyNodes.tbl[ssList->head];
     while (true) {
         polyId = curNode->polyId;
+#ifndef DISABLE_POLYCHKTBL
         checkedPoly = &colCtx->polyNodes.polyCheckTbl[polyId];
-
         if (*checkedPoly == true || COLPOLY_VIA_FLAG_TEST(polyList[polyId].flags_vIA, xpFlags1) ||
+#else
+        if (COLPOLY_VIA_FLAG_TEST(polyList[polyId].flags_vIA, xpFlags1) ||
+#endif
             !(xpFlags2 == 0 || COLPOLY_VIA_FLAG_TEST(polyList[polyId].flags_vIA, xpFlags2))) {
 
             if (curNode->next == SS_NULL) {
@@ -987,7 +995,9 @@ s32 BgCheck_CheckLineAgainstSSList(SSList* ssList, CollisionContext* colCtx, u16
                 continue;
             }
         }
+#ifndef DISABLE_POLYCHKTBL
         *checkedPoly = true;
+#endif
         curPoly = &polyList[polyId];
         minY = CollisionPoly_GetMinY(curPoly, colCtx->colHeader->vtxList);
         if (posA->y < minY && posB->y < minY) {
@@ -2240,7 +2250,9 @@ s32 BgCheck_CheckLineImpl(CollisionContext* colCtx, u16 xpFlags1, u16 xpFlags2, 
         }
     }
 
+#ifndef DISABLE_POLYCHKTBL
     BgCheck_ResetPolyCheckTbl(&colCtx->polyNodes, colCtx->colHeader->numPolygons);
+#endif
     BgCheck_GetStaticLookupIndicesFromPos(colCtx, posA, (Vec3i*)&subdivMin);
     BgCheck_GetStaticLookupIndicesFromPos(colCtx, &posBTemp, (Vec3i*)&subdivMax);
     *posResult = *posB;
@@ -2490,7 +2502,9 @@ void SSNodeList_Initialize(SSNodeList* this) {
     this->max = 0;
     this->count = 0;
     this->tbl = NULL;
+#ifndef DISABLE_POLYCHKTBL
     this->polyCheckTbl = NULL;
+#endif
 }
 
 /**
@@ -2505,9 +2519,11 @@ void SSNodeList_Alloc(PlayState* play, SSNodeList* this, s32 tblMax, s32 numPoly
 
     ASSERT(this->tbl != NULL, "this->short_slist_node_tbl != NULL", "../z_bgcheck.c", 5975);
 
+#ifndef DISABLE_POLYCHKTBL
     this->polyCheckTbl = GameState_Alloc(&play->state, numPolys, "../z_bgcheck.c", 5979);
 
     ASSERT(this->polyCheckTbl != NULL, "this->polygon_check != NULL", "../z_bgcheck.c", 5981);
+#endif
 }
 
 /**
@@ -3889,6 +3905,7 @@ void func_800418D0(CollisionContext* colCtx, PlayState* play) {
     }
 }
 
+#ifndef DISABLE_POLYCHKTBL
 /**
  * Reset SSNodeList polyCheckTbl
  */
@@ -3899,6 +3916,7 @@ void BgCheck_ResetPolyCheckTbl(SSNodeList* nodeList, s32 numPolys) {
         *t = 0;
     }
 }
+#endif
 
 /**
  * Get SurfaceType property set

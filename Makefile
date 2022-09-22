@@ -8,8 +8,6 @@ SHELL = /bin/bash
 
 # If COMPARE is 1, check the output md5sum after building
 COMPARE ?= 1
-# If NON_MATCHING is 1, define the NON_MATCHING C flag when building
-NON_MATCHING ?= 0
 # If ORIG_COMPILER is 1, compile with QEMU_IRIX and the original compiler
 ORIG_COMPILER ?= 0
 # If COMPILER is "gcc", compile with GCC instead of IDO.
@@ -17,6 +15,20 @@ COMPILER ?= ido
 
 CFLAGS ?=
 CPPFLAGS ?=
+
+# If DEBUG_BUILD is 1, compile with DEBUG_ROM defined and GCC
+DEBUG_BUILD ?= 1
+
+# If NON_MATCHING is 1, define the NON_MATCHING C flag when building
+NON_MATCHING ?= 1
+
+ifeq ($(DEBUG_BUILD),1)
+  ifeq ($(NON_MATCHING),1)
+    CFLAGS += -DDEBUG_ROM
+    CPPFLAGS += -DDEBUG_ROM
+    COMPILER := gcc
+  endif
+endif
 
 # ORIG_COMPILER cannot be combined with a non-IDO compiler. Check for this case and error out if found.
 ifneq ($(COMPILER),ido)
@@ -70,7 +82,7 @@ endif
 # Detect compiler and set variables appropriately.
 ifeq ($(COMPILER),gcc)
   CC       := $(MIPS_BINUTILS_PREFIX)gcc
-else 
+else
 ifeq ($(COMPILER),ido)
   CC       := tools/ido_recomp/$(DETECTED_OS)/7.1/cc
   CC_OLD   := tools/ido_recomp/$(DETECTED_OS)/5.3/cc
@@ -121,7 +133,7 @@ ASFLAGS := -march=vr4300 -32 -no-pad-sections -Iinclude
 ifeq ($(COMPILER),gcc)
   CFLAGS += -G 0 -nostdinc $(INC) -march=vr4300 -mfix4300 -mabi=32 -mno-abicalls -mdivide-breaks -fno-zero-initialized-in-bss -fno-toplevel-reorder -ffreestanding -fno-common -fno-merge-constants -mno-explicit-relocs -mno-split-addresses $(CHECK_WARNINGS) -funsigned-char
   MIPS_VERSION := -mips3
-else 
+else
   # we support Microsoft extensions such as anonymous structs, which the compiler does support but warns for their usage. Surpress the warnings with -woff.
   CFLAGS += -G 0 -non_shared -fullwarn -verbose -Xcpluscomm $(INC) -Wab,-r4300_mul -woff 516,649,838,712
   MIPS_VERSION := -mips2
@@ -130,7 +142,7 @@ endif
 ifeq ($(COMPILER),ido)
   # Have CC_CHECK pretend to be a MIPS compiler
   MIPS_BUILTIN_DEFS := -D_MIPS_ISA_MIPS2=2 -D_MIPS_ISA=_MIPS_ISA_MIPS2 -D_ABIO32=1 -D_MIPS_SIM=_ABIO32 -D_MIPS_SZINT=32 -D_MIPS_SZLONG=32 -D_MIPS_SZPTR=32
-  CC_CHECK  = gcc -fno-builtin -fsyntax-only -funsigned-char -std=gnu90 -D_LANGUAGE_C -DNON_MATCHING $(MIPS_BUILTIN_DEFS) $(INC) $(CHECK_WARNINGS)
+  CC_CHECK  = gcc -fno-builtin -fsyntax-only -funsigned-char -std=gnu90 -D_LANGUAGE_C $(MIPS_BUILTIN_DEFS) $(INC) $(CHECK_WARNINGS)
   ifeq ($(shell getconf LONG_BIT), 32)
     # Work around memory allocation bug in QEMU
     export QEMU_GUEST_BASE := 1
@@ -281,7 +293,7 @@ $(ROM): $(ELF)
 $(ELF): $(TEXTURE_FILES_OUT) $(ASSET_FILES_OUT) $(O_FILES) $(OVL_RELOC_FILES) build/ldscript.txt build/undefined_syms.txt
 	$(LD) -T build/undefined_syms.txt -T build/ldscript.txt --no-check-sections --accept-unknown-input-arch --emit-relocs -Map build/z64.map -o $@
 
-## Order-only prerequisites 
+## Order-only prerequisites
 # These ensure e.g. the O_FILES are built before the OVL_RELOC_FILES.
 # The intermediate phony targets avoid quadratically-many dependencies between the targets and prerequisites.
 
