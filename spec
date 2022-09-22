@@ -544,8 +544,7 @@ endseg
 #ifdef BETTER_MAP_SELECT
 beginseg
     name "map_select"
-    include "build/hackeroot/src/map_select/map_select.o"
-    include "build/hackeroot/src/map_select/map_select_reloc.o"
+    include "build/src/hackeroot/map_select/map_select.o"
 endseg
 #else
 beginseg

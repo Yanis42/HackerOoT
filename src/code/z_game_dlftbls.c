@@ -1,4 +1,5 @@
 #include "global.h"
+#include "config.h"
 
 #define GAMESTATE_OVERLAY(name, init, destroy, size)                                                         \
     {                                                                                                        \
@@ -11,7 +12,7 @@
 GameStateOverlay gGameStateOverlayTable[] = {
     GAMESTATE_OVERLAY_INTERNAL(Setup_Init, Setup_Destroy, sizeof(SetupState)),
 #ifdef BETTER_MAP_SELECT
-        GAMESTATE_OVERLAY(select, New_MapSelect_Init, New_MapSelect_Destroy, sizeof(MapSelectState)),
+        GAMESTATE_OVERLAY_INTERNAL(New_MapSelect_Init, New_MapSelect_Destroy, sizeof(MapSelectState)),
 #else
         GAMESTATE_OVERLAY(select, MapSelect_Init, MapSelect_Destroy, sizeof(MapSelectState)),
 #endif
