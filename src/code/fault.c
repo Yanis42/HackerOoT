@@ -43,6 +43,7 @@
 #include "global.h"
 #include "vt.h"
 #include "alloca.h"
+#include "config.h"
 
 void FaultDrawer_Init(void);
 void FaultDrawer_SetOsSyncPrintfEnabled(u32 enabled);
@@ -352,11 +353,18 @@ void Fault_Sleep(u32 msec) {
     Fault_SleepImpl(msec);
 }
 
+#ifdef FIX_FAULT_C
+void PadMgr_RequestPadData(PadMgr* padmgr, Input* inputs, s32 gameRequest);
+#else
 #ifndef AVOID_UB
 void PadMgr_RequestPadData(Input* inputs, s32 gameRequest);
 #endif
+#endif
 
 void Fault_PadCallback(Input* inputs) {
+#ifdef FIX_FAULT_C
+    PadMgr_RequestPadData(&gPadMgr, inputs, false);
+#else
     //! @bug This function is not called correctly, it is missing a leading PadMgr* argument. This
     //! renders the crash screen unusable.
     //! In Majora's Mask, PadMgr functions were changed to not require this argument, and this was
@@ -366,6 +374,7 @@ void Fault_PadCallback(Input* inputs) {
 #else
     // Guarantee crashing behavior: false -> NULL, previous value in a2 is more often non-zero than zero
     PadMgr_RequestPadData((PadMgr*)inputs, NULL, true);
+#endif
 #endif
 }
 
@@ -652,6 +661,7 @@ void Fault_Wait5Seconds(void) {
     sFaultInstance->autoScroll = true;
 }
 
+#ifndef FIX_FAULT_C
 /**
  * Waits for the following button combination to be entered before returning:
  *
@@ -801,6 +811,7 @@ void Fault_WaitForButtonCombo(void) {
         osWritebackDCacheAll();
     }
 }
+#endif
 
 void Fault_DrawMemDumpContents(const char* title, uintptr_t addr, u32 arg2) {
     uintptr_t alignedAddr = addr;
@@ -1213,7 +1224,9 @@ void Fault_ThreadEntry(void* arg) {
         } else {
             // Draw error bar signifying the crash screen is available
             Fault_DrawCornerRec(GPACK_RGBA5551(255, 0, 0, 1));
+#ifndef FIX_FAULT_C
             Fault_WaitForButtonCombo();
+#endif
         }
 
         // Set auto-scrolling and default colors

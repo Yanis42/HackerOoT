@@ -3,6 +3,7 @@
 #include "assets/textures/parameter_static/parameter_static.h"
 #include "assets/textures/do_action_static/do_action_static.h"
 #include "assets/textures/icon_item_static/icon_item_static.h"
+#include "config.h"
 
 // TODO extract this information from the texture definitions themselves
 #define DO_ACTION_TEX_WIDTH 48
@@ -3086,6 +3087,15 @@ void Interface_Draw(PlayState* play) {
     s16 svar5;
     s16 svar6;
 
+#ifdef MM_WALLET_ICON_COLORS
+    static Color_RGB8 const walletColors[] = {
+            { 200, 255, 100 },
+            { 130, 130, 255 },
+            { 255, 100, 100 },
+    };
+    u8 walletUpg = CUR_UPG_VALUE(UPG_WALLET);
+#endif
+
     OPEN_DISPS(play->state.gfxCtx, "../z_parameter.c", 3405);
 
     gSPSegment(OVERLAY_DISP++, 0x02, interfaceCtx->parameterSegment);
@@ -3101,7 +3111,11 @@ void Interface_Draw(PlayState* play) {
         Gfx_SetupDL_39Overlay(play->state.gfxCtx);
 
         // Rupee Icon
+#ifdef MM_WALLET_ICON_COLORS
+        gDPSetPrimColor(OVERLAY_DISP++, 0, 0, walletColors[walletUpg].r, walletColors[walletUpg].g, walletColors[walletUpg].b, interfaceCtx->magicAlpha);
+#else
         gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 200, 255, 100, interfaceCtx->magicAlpha);
+#endif
         gDPSetEnvColor(OVERLAY_DISP++, 0, 80, 0, 255);
         OVERLAY_DISP = Gfx_TextureIA8(OVERLAY_DISP, gRupeeCounterIconTex, 16, 16, 26, 206, 16, 16, 1 << 10, 1 << 10);
 

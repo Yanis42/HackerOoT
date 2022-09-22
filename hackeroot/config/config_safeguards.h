@@ -19,6 +19,7 @@
 #undef BOOT_TO_SCENE
 #undef BOOT_TO_SCENE_NEW_GAME_ONLY
 #undef BOOT_TO_FILE_SELECT
+#undef FIX_FAULT_C
 #endif
 
 /*****************
@@ -29,9 +30,10 @@
 #undef MM_WALLET_ICON_COLORS
 #undef MM_BUNNYHOOD
 #undef FW_SPLIT_AGE
-#undef DIALOGUE_PRINT_SPEED
-#undef BLOCK_PUSH_SPEED
+#undef FIX_PAUSE_CRASH
 
+#define DIALOGUE_PRINT_SPEED 1
+#define BLOCK_PUSH_SPEED 1.0f
 #define ENABLE_LOW_HEALTH_BEEP
 #endif
 

@@ -2,6 +2,7 @@
 #include "vt.h"
 #include "assets/objects/gameplay_keep/gameplay_keep.h"
 #include "assets/textures/parameter_static/parameter_static.h"
+#include "config.h"
 
 MapData* gMapData;
 
@@ -364,7 +365,11 @@ void Minimap_Draw(PlayState* play) {
 
     OPEN_DISPS(play->state.gfxCtx, "../z_map_exp.c", 626);
 
+#ifdef FIX_PAUSE_CRASH
+    if (play->pauseCtx.state < 3) {
+#else
     if (play->pauseCtx.state < 4) {
+#endif
         switch (play->sceneId) {
             case SCENE_YDAN:
             case SCENE_DDAN:

@@ -14,6 +14,9 @@
 // Disables ``polyChkTable``
 #define DISABLE_POLYCHKTBL
 
+// Fixes OoB read in map_exp
+#define FIX_PAUSE_CRASH
+
 // ------------------------------------------------
 
 
