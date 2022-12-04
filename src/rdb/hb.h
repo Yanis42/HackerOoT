@@ -1,6 +1,6 @@
 #ifndef HB_H
 
-#include <ultra64/types.h>
+#include <ultra64/ultratypes.h>
 
 #define hb_regs			(*(volatile hb_regs_t *) 0xA8050000)
 

@@ -100,9 +100,9 @@ static void dma_write(u32 dev_addr, u32 ram_addr, size_t size)
 	}
 
 	osWritebackDCache((void *) ram_addr, size);
-	HW_REG(PI_DRAM_ADDR_REG, u32) = ram_addr & 0x1FFFFFFF;
-	HW_REG(PI_CART_ADDR_REG, u32) = dev_addr & 0x1FFFFFFF;
-	HW_REG(PI_RD_LEN_REG, u32) = size - 1;
+	IO_WRITE(PI_DRAM_ADDR_REG, ram_addr & 0x1FFFFFFF);
+	IO_WRITE(PI_CART_ADDR_REG, dev_addr & 0x1FFFFFFF);
+	IO_WRITE(PI_RD_LEN_REG, size - 1);
 
 	if (irqf)
 	{
@@ -113,7 +113,7 @@ static void dma_write(u32 dev_addr, u32 ram_addr, size_t size)
 	else
 	{
 		__pi_wait();
-		HW_REG(PI_STATUS_REG, u32) = PI_STATUS_CLR_INTR;
+		IO_WRITE(PI_STATUS_REG, PI_STATUS_CLR_INTR);
 	}
 }
 
@@ -138,9 +138,9 @@ static void dma_read(u32 dev_addr, u32 ram_addr, size_t size)
 
 	osWritebackDCache((void *) ram_addr, size);
 	osInvalDCache((void *) ram_addr, size);
-	HW_REG(PI_DRAM_ADDR_REG, u32) = ram_addr & 0x1FFFFFFF;
-	HW_REG(PI_CART_ADDR_REG, u32) = dev_addr & 0x1FFFFFFF;
-	HW_REG(PI_WR_LEN_REG, u32) = size - 1;
+	IO_WRITE(PI_DRAM_ADDR_REG, ram_addr & 0x1FFFFFFF);
+	IO_WRITE(PI_CART_ADDR_REG, dev_addr & 0x1FFFFFFF);
+	IO_WRITE(PI_WR_LEN_REG, size - 1);
 
 	if (irqf)
 	{
@@ -151,7 +151,7 @@ static void dma_read(u32 dev_addr, u32 ram_addr, size_t size)
 	else
 	{
 		__pi_wait();
-		HW_REG(PI_STATUS_REG, u32) = PI_STATUS_CLR_INTR;
+		IO_WRITE(PI_STATUS_REG, PI_STATUS_CLR_INTR);
 	}
 }
 
@@ -219,7 +219,7 @@ void pi_read(u32 dev_addr, void *dst, size_t size)
 
 int __pi_busy(void)
 {
-	return HW_REG(PI_STATUS_REG, u32) & (PI_STATUS_BUSY | PI_STATUS_IOBUSY);
+	return IO_READ(PI_STATUS_REG) & (PI_STATUS_DMA_BUSY | PI_STATUS_IO_BUSY);
 }
 
 void __pi_wait(void)

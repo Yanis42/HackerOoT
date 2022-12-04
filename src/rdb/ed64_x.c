@@ -21,22 +21,22 @@ static void cart_lock_safe(void)
 
 	cart_irqf = __osDisableInt();
 
-	cart_lat = HW_REG(PI_BSD_DOM1_LAT_REG, u32);
-	cart_pwd = HW_REG(PI_BSD_DOM1_PWD_REG, u32);
+	cart_lat = IO_READ(PI_BSD_DOM1_LAT_REG);
+	cart_pwd = IO_READ(PI_BSD_DOM1_PWD_REG);
 }
 
 static void cart_lock(void)
 {
 	cart_lock_safe();
 
-	HW_REG(PI_BSD_DOM1_LAT_REG, u32) = 4;
-	HW_REG(PI_BSD_DOM1_PWD_REG, u32) = 12;
+	IO_WRITE(PI_BSD_DOM1_LAT_REG, 4);
+	IO_WRITE(PI_BSD_DOM1_PWD_REG, 12);
 }
 
 static void cart_unlock(void)
 {
-	HW_REG(PI_BSD_DOM1_LAT_REG, u32) = cart_lat;
-	HW_REG(PI_BSD_DOM1_PWD_REG, u32) = cart_pwd;
+	IO_WRITE(PI_BSD_DOM1_LAT_REG, cart_lat);
+	IO_WRITE(PI_BSD_DOM1_PWD_REG, cart_pwd);
 
 	__osPiRelAccess();
 

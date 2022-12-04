@@ -1,7 +1,7 @@
 #ifndef ED64_X_H
 #define ED64_X_H
 
-#include <ultra64/types.h>
+#include <ultra64/ultratypes.h>
 
 /*
  *  SD_CMD: 8-bit shift register for IO on CMD.
