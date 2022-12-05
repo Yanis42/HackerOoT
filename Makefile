@@ -12,6 +12,19 @@ COMPILER ?= gcc
 # If DEBUG_BUILD is 1, compile with DEBUG_ROM defined
 DEBUG_BUILD ?= 1
 
+# Valid compression algorithms are yaz0 and lzo
+COMPRESSION ?= lzo
+
+ifeq ($(COMPRESSION),lzo)
+  CFLAGS += -DCOMPRESSION_LZO
+  CPPFLAGS += -DCOMPRESSION_LZO
+endif
+
+ifeq ($(COMPRESSION),yaz0)
+  CFLAGS += -DCOMPRESSION_YAZ0
+  CPPFLAGS += -DCOMPRESSION_YAZ0
+endif
+
 CFLAGS ?=
 CPPFLAGS ?=
 
@@ -84,7 +97,7 @@ endif
 # Detect compiler and set variables appropriately.
 ifeq ($(COMPILER),gcc)
   CC       := $(MIPS_BINUTILS_PREFIX)gcc
-else 
+else
 $(error Unsupported compiler. Please use either gcc as the COMPILER variable.)
 endif
 
@@ -118,7 +131,7 @@ ASFLAGS := -march=vr4300 -32 -no-pad-sections -Iinclude
 ifeq ($(COMPILER),gcc)
   CFLAGS += -G 0 -nostdinc $(INC) -march=vr4300 -mfix4300 -mabi=32 -mno-abicalls -mdivide-breaks -fno-zero-initialized-in-bss -fno-toplevel-reorder -ffreestanding -fno-common -fno-merge-constants -mno-explicit-relocs -mno-split-addresses $(CHECK_WARNINGS) -funsigned-char
   MIPS_VERSION := -mips3
-else 
+else
   # we support Microsoft extensions such as anonymous structs, which the compiler does support but warns for their usage. Surpress the warnings with -woff.
   CFLAGS += -G 0 -non_shared -fullwarn -verbose -Xcpluscomm $(INC) -Wab,-r4300_mul -woff 516,649,838,712
   MIPS_VERSION := -mips2
@@ -131,8 +144,10 @@ OBJDUMP_FLAGS := -d -r -z -Mreg-names=32
 #### Files ####
 
 # ROM image
-ROM := zelda_ocarina_mq_dbg.z64
+ROM := HackerOOT.z64
 ELF := $(ROM:.z64=.elf)
+ROMC := $(ROM:.z64=_compressed.z64)
+WAD := $(ROM:.z64=.wad)
 # description of ROM segments
 SPEC := spec
 
@@ -176,8 +191,16 @@ build/src/%.o: CC := $(CC) -fexec-charset=euc-jp
 
 all: $(ROM)
 
+compress:
+	$(ROMC)
+
+wad:
+	$(MAKE) compress
+	gzinject -a inject -w basewad.wad -m $(ROMC) -o $(WAD) -p tools/gzinject/patches.gzi
+	$(RM) -r wadextract
+
 clean:
-	$(RM) -r $(ROM) $(ELF) build
+	$(RM) -r $(ROM) $(ROMC) $(WAD) $(ELF) build
 
 assetclean:
 	$(RM) -r $(ASSET_BIN_DIRS)
@@ -199,17 +222,20 @@ test: $(ROM)
 	$(EMULATOR) $(EMU_FLAGS) $<
 
 
-.PHONY: all clean setup test distclean assetclean
+.PHONY: all clean setup test distclean assetclean compress wad
 
 #### Various Recipes ####
 
 $(ROM): $(ELF)
 	$(ELF2ROM) -cic 6105 $< $@
 
+$(ROMC): $(ROM)
+	python3 tools/z64compress_wrapper.py --codec $(COMPRESSION) --cache cache --threads $(shell nproc) $< $@ $(ELF) build/$(SPEC)
+
 $(ELF): $(TEXTURE_FILES_OUT) $(ASSET_FILES_OUT) $(O_FILES) $(OVL_RELOC_FILES) build/ldscript.txt build/undefined_syms.txt
 	$(LD) -T build/undefined_syms.txt -T build/ldscript.txt --no-check-sections --accept-unknown-input-arch --emit-relocs -Map build/z64.map -o $@
 
-## Order-only prerequisites 
+## Order-only prerequisites
 # These ensure e.g. the O_FILES are built before the OVL_RELOC_FILES.
 # The intermediate phony targets avoid quadratically-many dependencies between the targets and prerequisites.
 

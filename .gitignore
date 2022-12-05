@@ -13,6 +13,7 @@ venv/
 
 # Project-specific ignores
 build/
+cache/
 expected/
 notes/
 baserom/
@@ -24,6 +25,7 @@ docs/doxygen/
 *.v64
 *.map
 *.dump
+*.wad
 out.txt
 
 # Tool artifacts
