@@ -18,7 +18,7 @@ parser.add_argument("elf", help="path to the uncompressed rom elf file")
 parser.add_argument("spec", help="path to processed spec file")
 parser.add_argument("--cache", help="cache directory")
 parser.add_argument("--threads", help="number of threads to run compression on, 0 disables multithreading")
-parser.add_argument("--codec", help="z64compress algorithm (yaz0, lzo, ucl, aplib)", default="yaz0")
+parser.add_argument("--codec", help="z64compress algorithm (yaz, lzo, ucl, aplib)", default="yaz")
 
 args = parser.parse_args()
 

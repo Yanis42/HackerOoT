@@ -12,17 +12,17 @@ COMPILER ?= gcc
 # If DEBUG_BUILD is 1, compile with DEBUG_ROM defined
 DEBUG_BUILD ?= 1
 
-# Valid compression algorithms are yaz0 and lzo
-COMPRESSION ?= lzo
+# Valid compression algorithms are yaz and lzo
+COMPRESSION ?= yaz
 
 ifeq ($(COMPRESSION),lzo)
   CFLAGS += -DCOMPRESSION_LZO
   CPPFLAGS += -DCOMPRESSION_LZO
 endif
 
-ifeq ($(COMPRESSION),yaz0)
-  CFLAGS += -DCOMPRESSION_YAZ0
-  CPPFLAGS += -DCOMPRESSION_YAZ0
+ifeq ($(COMPRESSION),yaz)
+  CFLAGS += -DCOMPRESSION_YAZ
+  CPPFLAGS += -DCOMPRESSION_YAZ
 endif
 
 CFLAGS ?=
@@ -144,7 +144,7 @@ OBJDUMP_FLAGS := -d -r -z -Mreg-names=32
 #### Files ####
 
 # ROM image
-ROM := HackerOOT.z64
+ROM := HackerOoT.z64
 ELF := $(ROM:.z64=.elf)
 ROMC := $(ROM:.z64=_compressed.z64)
 WAD := $(ROM:.z64=.wad)
@@ -191,13 +191,13 @@ build/src/%.o: CC := $(CC) -fexec-charset=euc-jp
 
 all: $(ROM)
 
-compress:
-	$(ROMC)
+compress: $(ROMC)
 
 wad:
-	$(MAKE) compress
-	gzinject -a inject -w basewad.wad -m $(ROMC) -o $(WAD) -p tools/gzinject/patches.gzi
-	$(RM) -r wadextract
+	$(MAKE) compress CFLAGS="-DCONSOLE_WIIVC $(CFLAGS)" CPPFLAGS="-DCONSOLE_WIIVC $(CPPFLAGS)"
+	@echo 45e | tools/gzinject/gzinject -a genkey -k common-key.bin >/dev/null
+	tools/gzinject/gzinject -a inject -r 1 -k common-key.bin -w basewad.wad -m $(ROMC) -o $(WAD) -t "HackerOoT" -i NHOE -p tools/gzinject/patches/NACE.gzi -p tools/gzinject/patches/ootr_dpad_remap.gzi
+	$(RM) -r wadextract/ common-key.bin
 
 clean:
 	$(RM) -r $(ROM) $(ROMC) $(WAD) $(ELF) build
@@ -230,7 +230,7 @@ $(ROM): $(ELF)
 	$(ELF2ROM) -cic 6105 $< $@
 
 $(ROMC): $(ROM)
-	python3 tools/z64compress_wrapper.py --codec $(COMPRESSION) --cache cache --threads $(shell nproc) $< $@ $(ELF) build/$(SPEC)
+	python3 tools/z64compress_wrapper.py --codec $(COMPRESSION) --cache cache --threads $(N_THREADS) $< $@ $(ELF) build/$(SPEC)
 
 $(ELF): $(TEXTURE_FILES_OUT) $(ASSET_FILES_OUT) $(O_FILES) $(OVL_RELOC_FILES) build/ldscript.txt build/undefined_syms.txt
 	$(LD) -T build/undefined_syms.txt -T build/ldscript.txt --no-check-sections --accept-unknown-input-arch --emit-relocs -Map build/z64.map -o $@
