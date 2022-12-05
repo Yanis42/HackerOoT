@@ -129,7 +129,7 @@ endif
 ASFLAGS := -march=vr4300 -32 -no-pad-sections -Iinclude
 
 ifeq ($(COMPILER),gcc)
-  CFLAGS += -G 0 -nostdinc $(INC) -march=vr4300 -mfix4300 -mabi=32 -mno-abicalls -mdivide-breaks -fno-zero-initialized-in-bss -fno-toplevel-reorder -ffreestanding -fno-common -fno-merge-constants -mno-explicit-relocs -mno-split-addresses $(CHECK_WARNINGS) -funsigned-char
+  CFLAGS += -G 0 -nostdinc $(INC) -march=vr4300 -mfix4300 -mabi=32 -fno-pic -mno-abicalls -mdivide-breaks -fno-zero-initialized-in-bss -fno-toplevel-reorder -ffreestanding -fno-common -fno-merge-constants -mno-explicit-relocs -mno-split-addresses $(CHECK_WARNINGS) -funsigned-char
   MIPS_VERSION := -mips3
 else
   # we support Microsoft extensions such as anonymous structs, which the compiler does support but warns for their usage. Surpress the warnings with -woff.
@@ -196,7 +196,7 @@ compress: $(ROMC)
 wad:
 	$(MAKE) compress CFLAGS="-DCONSOLE_WIIVC $(CFLAGS)" CPPFLAGS="-DCONSOLE_WIIVC $(CPPFLAGS)"
 	@echo 45e | tools/gzinject/gzinject -a genkey -k common-key.bin >/dev/null
-	tools/gzinject/gzinject -a inject -r 1 -k common-key.bin -w basewad.wad -m $(ROMC) -o $(WAD) -t "HackerOoT" -i NHOE -p tools/gzinject/patches/NACE.gzi -p tools/gzinject/patches/ootr_dpad_remap.gzi
+	tools/gzinject/gzinject -a inject -r 1 -k common-key.bin -w basewad.wad -m $(ROMC) -o $(WAD) -t "HackerOoT" -i NHOE -p tools/gzinject/patches/NACE.gzi -p tools/gzinject/patches/gz_default_remap.gzi
 	$(RM) -r wadextract/ common-key.bin
 
 clean:
@@ -207,6 +207,10 @@ assetclean:
 	$(RM) -r assets/text/*.h
 	$(RM) -r build/assets
 	$(RM) -r .extracted-assets.json
+
+rebuildtools:
+	$(MAKE) -C tools distclean
+	$(MAKE) -C tools
 
 distclean: clean assetclean
 	$(RM) -r baserom/
@@ -222,7 +226,7 @@ test: $(ROM)
 	$(EMULATOR) $(EMU_FLAGS) $<
 
 
-.PHONY: all clean setup test distclean assetclean compress wad
+.PHONY: all clean setup test distclean assetclean compress wad rebuildtools
 
 #### Various Recipes ####
 

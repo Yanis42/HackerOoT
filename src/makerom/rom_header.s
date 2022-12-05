@@ -21,4 +21,9 @@
 
 .ascii "ZL"                     /* Cartridge ID */
 .ascii "E"                      /* Region */
+
+#ifdef CONSOLE_WIIVC
+.byte  0x00                     /* Version */
+#else
 .byte  0x0F                     /* Version */
+#endif
