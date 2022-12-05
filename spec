@@ -20,7 +20,11 @@ beginseg
     include "build/src/boot/idle.o"
     include "build/src/boot/viconfig.o"
     include "build/src/boot/z_std_dma.o"
+#ifdef COMPRESSION_LZO
+    include "build/src/boot/lzo.o"
+#else
     include "build/src/boot/yaz0.o"
+#endif
     include "build/src/boot/z_locale.o"
     include "build/src/boot/assert.o"
     include "build/src/boot/is_debug.o"
