@@ -187,6 +187,10 @@ $(shell mkdir -p build/baserom build/assets/text $(foreach dir,$(SRC_DIRS) $(UND
 build/src/libultra/libc/ll.o: OPTFLAGS := -Ofast
 build/src/%.o: CC := $(CC) -fexec-charset=euc-jp
 
+# Wii VC crash fixes
+build/src/overlays/actors/ovl_Item_B_Heart/%.o: OPTFLAGS := -O0
+build/src/overlays/actors/ovl_Bg_Mori_Hineri/%.o: OPTFLAGS := -O0
+
 #### Main Targets ###
 
 all: $(ROM)
@@ -194,7 +198,7 @@ all: $(ROM)
 compress: $(ROMC)
 
 wad:
-	$(MAKE) compress CFLAGS="-DCONSOLE_WIIVC $(CFLAGS)" CPPFLAGS="-DCONSOLE_WIIVC $(CPPFLAGS)"
+	$(MAKE) compress CFLAGS="-DCONSOLE_WIIVC $(CFLAGS) -fno-reorder-blocks -fno-optimize-sibling-calls" CPPFLAGS="-DCONSOLE_WIIVC $(CPPFLAGS)"
 	@echo 45e | tools/gzinject/gzinject -a genkey -k common-key.bin >/dev/null
 	tools/gzinject/gzinject -a inject -r 1 -k common-key.bin -w basewad.wad -m $(ROMC) -o $(WAD) -t "HackerOoT" -i NHOE -p tools/gzinject/patches/NACE.gzi -p tools/gzinject/patches/gz_default_remap.gzi
 	$(RM) -r wadextract/ common-key.bin
