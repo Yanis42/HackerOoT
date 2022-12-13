@@ -3,6 +3,7 @@
 #include "terminal.h"
 
 #include "config.h"
+#include "print.h"
 
 void* D_8012D1F0 = NULL;
 UNK_TYPE D_8012D1F4 = 0; // unused
@@ -1056,6 +1057,8 @@ void Play_Draw(PlayState* this) {
     GraphicsContext* gfxCtx = this->state.gfxCtx;
     Lights* sp228;
     Vec3f sp21C;
+
+    Print_sprintf(print, "Hacker\n\tOoT");
 
     OPEN_DISPS(gfxCtx, "../z_play.c", 3907);
 

@@ -550,6 +550,7 @@ beginseg
     include "build/data/audio_tables.rodata.o"
     include "build/data/rsp.text.o"
     include "build/data/rsp.rodata.o"
+    include "build/src/code/print.o"
 endseg
 
 beginseg

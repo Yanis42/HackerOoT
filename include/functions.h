@@ -1803,6 +1803,8 @@ void GfxPrint_Destroy(GfxPrint* this);
 void GfxPrint_Open(GfxPrint* this, Gfx* dList);
 Gfx* GfxPrint_Close(GfxPrint* this);
 s32 GfxPrint_Printf(GfxPrint* this, const char* fmt, ...);
+void GfxPrint_PrintStringWithSize(GfxPrint* this, const void* buffer, u32 charSize, u32 charCount);
+void GfxPrint_PrintString(GfxPrint* this, const char* str);
 void RcpUtils_PrintRegisterStatus(void);
 void RcpUtils_Reset(void);
 void* Overlay_AllocateAndLoad(uintptr_t vRomStart, uintptr_t vRomEnd, void* vRamStart, void* vRamEnd);

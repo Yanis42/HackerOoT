@@ -2,6 +2,7 @@
 #include "terminal.h"
 
 #include "config.h"
+#include "print.h"
 
 SpeedMeter D_801664D0;
 struct_801664F0 D_801664F0;
@@ -10,6 +11,8 @@ VisMono sMonoColors;
 ViMode sViMode;
 FaultClient sGameFaultClient;
 u16 sLastButtonPressed;
+
+PrintState print;
 
 void GameState_FaultPrint(void) {
     static char sBtnChars[] = "ABZSuldr*+LRudlr";
@@ -445,6 +448,8 @@ void GameState_Init(GameState* gameState, GameStateFunc init, GraphicsContext* g
     Fault_AddClient(&sGameFaultClient, GameState_FaultPrint, NULL, NULL);
 
     osSyncPrintf("game コンストラクタ終了\n"); // "game constructor end"
+
+    print.gfxCtx = gameState->gfxCtx;
 }
 
 void GameState_Destroy(GameState* gameState) {
