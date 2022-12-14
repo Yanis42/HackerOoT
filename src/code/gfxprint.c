@@ -257,7 +257,7 @@ void GfxPrint_PrintChar(GfxPrint* this, u8 c) {
                 this->posY += GFX_CHAR_Y_SPACING << 2;
                 FALLTHROUGH;
             case '\r':
-                this->posX = this->baseX;
+                this->baseX = this->posX;
                 break;
             case '\t':
                 do {

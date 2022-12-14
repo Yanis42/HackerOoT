@@ -23,11 +23,15 @@ void Print_sprintf(PrintState this, u16 x, u16 y, Color_RGBA8 rgba, const char* 
 }
 
 void Print_sprint(PrintState this, u16 x, u16 y, Color_RGBA8 rgba, const char* string) {
+    this.pos.x = x;
+    this.pos.y = y;
+    this.rgba = rgba;
+
     if (this.gfxCtx != NULL) {
         OPEN_DISPS(this.gfxCtx, __FILE__, __LINE__);
         INIT_PRINT(this.printer, this.dl, this.disp, this.pos, this.rgba);
 
-        GfxPrint_PrintStringWithSize(&this.printer, string, sizeof(char), 3);
+        GfxPrint_PrintString(&this.printer, string);
 
         DESTROY_PRINT(this.printer, this.dl, this.disp);
         CLOSE_DISPS(this.gfxCtx, __FILE__, __LINE__);
