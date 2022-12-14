@@ -1058,7 +1058,8 @@ void Play_Draw(PlayState* this) {
     Lights* sp228;
     Vec3f sp21C;
 
-    Print_sprintf(print, "Hacker\n\tOoT");
+    Color_RGBA8 rgba = { 255, 255, 255, 255 };
+    Print_sprintf(print, 10, 15, rgba, "HackerOo%X", 7);
 
     OPEN_DISPS(gfxCtx, "../z_play.c", 3907);
 
