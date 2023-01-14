@@ -53,6 +53,9 @@
 /**** [TEST SCENES] ****/
 // #define INCLUDE_TEST_SCENES
 
+/**** [COLLISION VIEW] ****/
+// #define ENABLE_COLLISION_VIEW
+
 // -------------------------------------------
 
 /**

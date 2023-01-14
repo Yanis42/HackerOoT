@@ -1,6 +1,8 @@
 #include "global.h"
 #include "terminal.h"
 
+#include "config.h"
+
 u16 DynaSSNodeList_GetNextNodeIdx(DynaSSNodeList* nodeList);
 void BgCheck_GetStaticLookupIndicesFromPos(CollisionContext* colCtx, Vec3f* pos, Vec3i* sector);
 s32 BgCheck_PosInStaticBoundingBox(CollisionContext* colCtx, Vec3f* pos);
@@ -4393,6 +4395,7 @@ s32 func_800427B4(CollisionPoly* polyA, CollisionPoly* polyB, Vec3f* pointA, Vec
     return result;
 }
 
+#ifdef ENABLE_COLLISION_VIEW
 /**
  * Draw a list of dyna polys, specified by `ssList`
  */
@@ -4540,3 +4543,4 @@ void BgCheck_DrawStaticCollision(PlayState* play, CollisionContext* colCtx) {
         BgCheck_DrawStaticPolyList(play, colCtx, &lookup->ceiling, 255, 0, 0);
     }
 }
+#endif

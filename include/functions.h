@@ -631,8 +631,12 @@ u16 WaterBox_GetBgCamSetting(CollisionContext* colCtx, WaterBox* waterBox);
 u32 WaterBox_GetLightIndex(CollisionContext* colCtx, WaterBox* waterBox);
 s32 func_80042708(CollisionPoly* polyA, CollisionPoly* polyB, Vec3f* point, Vec3f* closestPoint);
 s32 func_800427B4(CollisionPoly* polyA, CollisionPoly* polyB, Vec3f* pointA, Vec3f* pointB, Vec3f* closestPoint);
+
+#ifdef ENABLE_COLLISION_VIEW
 void BgCheck_DrawDynaCollision(PlayState*, CollisionContext*);
 void BgCheck_DrawStaticCollision(PlayState*, CollisionContext*);
+#endif
+
 void func_80043334(CollisionContext* colCtx, Actor* actor, s32 bgId);
 s32 DynaPolyActor_TransformCarriedActor(CollisionContext* colCtx, s32 bgId, Actor* carriedActor);
 void DynaPolyActor_Init(DynaPolyActor* dynaActor, s32 transformFlags);
@@ -677,8 +681,12 @@ s32 func_8005B198(void);
 s16 func_8005B1A4(Camera* camera);
 DamageTable* DamageTable_Get(s32 index);
 void DamageTable_Clear(DamageTable* table);
+
+#ifdef ENABLE_COLLISION_VIEW
 void Collider_DrawRedPoly(GraphicsContext* gfxCtx, Vec3f* vA, Vec3f* vB, Vec3f* vC);
 void Collider_DrawPoly(GraphicsContext* gfxCtx, Vec3f* vA, Vec3f* vB, Vec3f* vC, u8 r, u8 g, u8 b);
+#endif
+
 s32 Collider_InitJntSph(PlayState* play, ColliderJntSph* collider);
 s32 Collider_FreeJntSph(PlayState* play, ColliderJntSph* collider);
 s32 Collider_DestroyJntSph(PlayState* play, ColliderJntSph* collider);
@@ -727,8 +735,12 @@ void CollisionCheck_DestroyContext(PlayState* play, CollisionCheckContext* colCh
 void CollisionCheck_ClearContext(PlayState* play, CollisionCheckContext* colChkCtx);
 void CollisionCheck_EnableSAC(PlayState* play, CollisionCheckContext* colChkCtx);
 void CollisionCheck_DisableSAC(PlayState* play, CollisionCheckContext* colChkCtx);
+
+#ifdef ENABLE_COLLISION_VIEW
 void Collider_Draw(PlayState* play, Collider* collider);
 void CollisionCheck_DrawCollision(PlayState* play, CollisionCheckContext* colChkCtx);
+#endif
+
 s32 CollisionCheck_SetAT(PlayState* play, CollisionCheckContext* colChkCtx, Collider* collider);
 s32 CollisionCheck_SetAT_SAC(PlayState* play, CollisionCheckContext* colChkCtx, Collider* collider, s32 index);
 s32 CollisionCheck_SetAC(PlayState* play, CollisionCheckContext* colChkCtx, Collider* collider);
@@ -1509,8 +1521,12 @@ s32 Math3D_TriVsTriIntersect(TriNorm* ta, TriNorm* tb, Vec3f* intersect);
 s32 Math3D_XZInSphere(Sphere16* sphere, f32 x, f32 z);
 s32 Math3D_XYInSphere(Sphere16* sphere, f32 x, f32 y);
 s32 Math3D_YZInSphere(Sphere16* sphere, f32 y, f32 z);
+
+#ifdef ENABLE_COLLISION_VIEW
 void Math3D_DrawSphere(PlayState* play, Sphere16* sph);
 void Math3D_DrawCylinder(PlayState* play, Cylinder16* cyl);
+#endif
+
 s16 Math_Atan2S(f32 x, f32 y);
 f32 Math_Atan2F(f32 x, f32 y);
 void Matrix_Init(GameState* gameState);
