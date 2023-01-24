@@ -228,6 +228,15 @@ void Play_Init(GameState* thisx) {
     u8 baseSceneLayer;
     s32 pad[2];
 
+#ifdef ENABLE_COL_VIEW
+    AREG(15) = true;
+    // AREG(21) = true;
+    AREG(22) = true;
+    AREG(23) = true;
+    // AREG(24) = true;
+    // AREG(25) = true;
+#endif
+
     if (gSaveContext.entranceIndex == ENTR_LOAD_OPENING) {
         gSaveContext.entranceIndex = 0;
         this->state.running = false;
@@ -337,7 +346,7 @@ void Play_Init(GameState* thisx) {
         osSyncPrintf("出戻り？\n"); // "Return?"
     }
 
-    Cutscene_HandleEntranceTriggers(this);
+    // Cutscene_HandleEntranceTriggers(this);
     KaleidoScopeCall_Init(this);
     Interface_Init(this);
 

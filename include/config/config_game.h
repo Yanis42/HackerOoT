@@ -17,13 +17,13 @@
 #define MM_WALLET_ICON_COLORS
 
 // Configure block push speed multiplier
-#define BLOCK_PUSH_SPEED 1.0f
+#define BLOCK_PUSH_SPEED 2.0f
 
 // Enables the beep sound at low health (vanilla behaviour)
 #define ENABLE_LOW_HEALTH_BEEP
 
 // Make the Bunnyhood Mask behave like in Majora's Mask where it increases Link's speed when equipped.
-// #define MM_BUNNYHOOD
+#define MM_BUNNYHOOD
 
 /**
  * Enable fast text
@@ -33,7 +33,7 @@
 /**
  * Splits Farore's Wind warp point across ages. One point for child Link, one point for adult Link.
  */
-// #define FW_SPLIT_AGE
+#define FW_SPLIT_AGE
 
 /**
  * Applies the anti-aliasing filter for the background of the pause menu.

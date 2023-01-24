@@ -64,6 +64,7 @@ static const Color_RGBA8 sColors[] = {
 
 static SceneSelectEntry sScenes[] = {
     { "Title Screen", (void*)MapSelect_LoadTitle, 0 },
+    { "ZD Front KZ", MapSelect_LoadGame, ENTR_ZORAS_DOMAIN_3 },
     { "Hyrule Field", MapSelect_LoadGame, ENTR_HYRULE_FIELD_0 },
     { "Kakariko Village", MapSelect_LoadGame, ENTR_KAKARIKO_VILLAGE_0 },
     { "Graveyard", MapSelect_LoadGame, ENTR_GRAVEYARD_0 },

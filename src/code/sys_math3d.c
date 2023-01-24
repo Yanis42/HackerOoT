@@ -2146,9 +2146,3 @@ s32 Math3D_YZInSphere(Sphere16* sphere, f32 y, f32 z) {
     }
     return false;
 }
-
-void Math3D_DrawSphere(PlayState* play, Sphere16* sph) {
-}
-
-void Math3D_DrawCylinder(PlayState* play, Cylinder16* cyl) {
-}

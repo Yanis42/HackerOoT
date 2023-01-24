@@ -556,6 +556,9 @@ beginseg
     include "build/data/audio_tables.rodata.o"
     include "build/data/rsp.text.o"
     include "build/data/rsp.rodata.o"
+#ifdef ENABLE_COL_VIEW
+    include "build/src/code/z_col_view.o"
+#endif
 endseg
 
 beginseg

@@ -7,7 +7,16 @@
 #include "z_bg_ice_shelter.h"
 #include "assets/objects/object_ice_objects/object_ice_objects.h"
 
+#include "config.h"
+#include "overlays/actors/ovl_En_Arrow/z_en_arrow.h"
+
 #define FLAGS 0
+
+#ifdef ENABLE_BLUE_FIRE_ARROWS
+    #define AC_TYPES (AC_TYPE_PLAYER | AC_HARD | AC_TYPE_OTHER)
+#else
+    #define AC_TYPES (AC_TYPE_PLAYER | AC_HARD)
+#endif
 
 #define BGICESHELTER_GET_TYPE(thisx) (((thisx)->params >> 8) & 7)
 #define BGICESHELTER_NO_SWITCH_FLAG(thisx) (((thisx)->params >> 6) & 1)
@@ -64,7 +73,7 @@ static ColliderCylinderInit sCylinderInit2 = {
     {
         COLTYPE_HARD,
         AT_NONE,
-        AC_ON | AC_HARD | AC_TYPE_PLAYER,
+        AC_ON | AC_TYPES,
         OC1_NONE,
         OC2_TYPE_2,
         COLSHAPE_CYLINDER,
@@ -72,7 +81,11 @@ static ColliderCylinderInit sCylinderInit2 = {
     {
         ELEMTYPE_UNK0,
         { 0x00000000, 0x00, 0x00 },
+#ifdef ENABLE_BLUE_FIRE_ARROWS
+        { 0x4FC1EFF6, 0x00, 0x00 },
+#else
         { 0x4FC1FFF6, 0x00, 0x00 },
+#endif
         TOUCH_NONE,
         BUMP_ON,
         OCELEM_NONE,
@@ -96,6 +109,11 @@ void BgIceShelter_InitColliders(BgIceShelter* this, PlayState* play) {
 
     this->cylinder1.dim.radius = cylinderRadii[type];
     this->cylinder1.dim.height = cylinderHeights[type];
+
+#ifdef ENABLE_BLUE_FIRE_ARROWS
+    this->cylinder1.dim.radius += 9;
+    this->cylinder1.dim.height += 30;
+#endif
 
     // The wall and platform types use DynaPoly for collision, so they don't need the second collider
     if (type == RED_ICE_LARGE || type == RED_ICE_SMALL || type == RED_ICE_KING_ZORA) {
@@ -329,6 +347,7 @@ void BgIceShelter_SetupIdle(BgIceShelter* this) {
 void BgIceShelter_Idle(BgIceShelter* this, PlayState* play) {
     s32 pad;
     s16 type = BGICESHELTER_GET_TYPE(&this->dyna.actor);
+    u8 canMelt = false;
 
     // Freeze King Zora
     if (type == RED_ICE_KING_ZORA) {
@@ -341,7 +360,11 @@ void BgIceShelter_Idle(BgIceShelter* this, PlayState* play) {
     if (this->cylinder1.base.acFlags & AC_HIT) {
         this->cylinder1.base.acFlags &= ~AC_HIT;
 
-        if ((this->cylinder1.base.ac != NULL) && (this->cylinder1.base.ac->id == ACTOR_EN_ICE_HONO)) {
+        if ((this->cylinder1.base.ac != NULL) && ((this->cylinder1.base.ac->id == ACTOR_EN_ICE_HONO)
+#ifdef ENABLE_BLUE_FIRE_ARROWS
+            || ((this->cylinder1.base.ac->id == ACTOR_EN_ARROW) && (this->cylinder1.base.ac->params & ARROW_ICE))
+#endif
+            )) {
             if (type == RED_ICE_KING_ZORA) {
                 if (this->dyna.actor.parent != NULL) {
                     this->dyna.actor.parent->freezeTimer = 50;

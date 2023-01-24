@@ -7,7 +7,15 @@
 #include "z_en_arrow.h"
 #include "assets/objects/gameplay_keep/gameplay_keep.h"
 
+#include "config.h"
+
 #define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_5)
+
+#ifdef ENABLE_BLUE_FIRE_ARROWS
+    #define AT_TYPES (AT_TYPE_PLAYER | AT_TYPE_OTHER)
+#else
+    #define AT_TYPES (AT_TYPE_PLAYER)
+#endif
 
 void EnArrow_Init(Actor* thisx, PlayState* play);
 void EnArrow_Destroy(Actor* thisx, PlayState* play);
@@ -34,7 +42,7 @@ ActorInit En_Arrow_InitVars = {
 static ColliderQuadInit sColliderInit = {
     {
         COLTYPE_NONE,
-        AT_ON | AT_TYPE_PLAYER,
+        AT_ON | AT_TYPES,
         AC_NONE,
         OC1_NONE,
         OC2_TYPE_PLAYER,
