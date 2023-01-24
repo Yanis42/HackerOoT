@@ -45,10 +45,10 @@
 // #define ENABLE_FRAMERATE_OPTIONS
 
 /**** [MAP SELECT] ****/
-// #define ENABLE_MAP_SELECT
+#define ENABLE_MAP_SELECT
 
 /**** [DEBUG FILE 1] ****/
-#define ENABLE_DEBUG_SAVE
+// #define ENABLE_DEBUG_SAVE
 
 /**** [TEST SCENES] ****/
 // #define INCLUDE_TEST_SCENES
@@ -60,7 +60,7 @@
  */
 
 /**** [INVENTORY EDITOR] ****/
-// #define ENABLE_INV_EDITOR
+#define ENABLE_INV_EDITOR
 
 /**** [EVENT EDITOR] ****/
 // #define ENABLE_EVENT_EDITOR
