@@ -9,7 +9,7 @@ SHELL = /bin/bash
 # If COMPILER is "gcc", compile with GCC.
 COMPILER ?= gcc
 
-# If DEBUG_BUILD is 1, compile with DEBUG_ROM defined
+# If DEBUG_BUILD is 0, compile with ``RELEASE_ROM`` defined
 DEBUG_BUILD ?= 1
 
 # Valid compression algorithms are yaz, lzo and aplib
@@ -39,8 +39,8 @@ ifeq ($(COMPILER),gcc)
 endif
 
 ifeq ($(DEBUG_BUILD),1)
-  CFLAGS += -DDEBUG_ROM
-  CPPFLAGS += -DDEBUG_ROM
+  CFLAGS += -DRELEASE_ROM
+  CPPFLAGS += -DRELEASE_ROM
 endif
 
 # Set PACKAGE_VERSION define for printing commit hash

@@ -60,7 +60,7 @@
  */
 
 /**** [INVENTORY EDITOR] ****/
-// #define ENABLE_INV_EDITOR
+#define ENABLE_INV_EDITOR
 
 /**** [EVENT EDITOR] ****/
 // #define ENABLE_EVENT_EDITOR
