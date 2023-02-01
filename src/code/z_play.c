@@ -228,6 +228,13 @@ void Play_Init(GameState* thisx) {
     u8 baseSceneLayer;
     s32 pad[2];
 
+#ifndef DISABLE_DEBUG_FEATURES
+    gDebug.play = this;
+    gDebug.input = &this->state.input[0];
+    gDebug.invDebug.gfxCtx = this->state.gfxCtx;
+    gDebug.invDebug.pauseCtx = &this->pauseCtx;
+#endif
+
     if (gSaveContext.entranceIndex == ENTR_LOAD_OPENING) {
         gSaveContext.entranceIndex = 0;
         this->state.running = false;

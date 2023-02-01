@@ -1428,4 +1428,8 @@ typedef struct {
 #define ROM_FILE_UNSET \
     { 0 }
 
+#ifndef DISABLE_DEBUG_FEATURES
+#include "debug.h"
+#endif
+
 #endif

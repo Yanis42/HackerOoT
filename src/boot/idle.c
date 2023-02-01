@@ -30,6 +30,15 @@ void Main_ThreadEntry(void* arg) {
     osSyncPrintf("転送時間 %6.3f\n");
     bzero(_codeSegmentBssStart, _codeSegmentBssEnd - _codeSegmentBssStart);
     osSyncPrintf("codeセグメントBSSクリア完了\n");
+
+#ifndef DISABLE_DEBUG_FEATURES
+    osSyncPrintf("[HACKEROOT:INFO]: Loading 'debug' segment...\n");
+    DmaMgr_RequestSyncDebug(_debugSegmentStart, (uintptr_t)_debugSegmentRomStart, _debugSegmentRomEnd - _debugSegmentRomStart,
+                        __BASE_FILE__, __LINE__);
+    bzero(_debugSegmentBssStart, _debugSegmentBssEnd - _debugSegmentBssStart);
+    osSyncPrintf("[HACKEROOT:INFO]: Completed!\n");
+#endif
+
     Main(arg);
     osSyncPrintf("mainx 実行終了\n");
 }

@@ -27,6 +27,10 @@ AudioMgr gAudioMgr;
 OSMesgQueue sSerialEventQueue;
 OSMesg sSerialMsgBuf[1];
 
+#ifndef DISABLE_DEBUG_FEATURES
+Debug gDebug;
+#endif
+
 void Main_LogSystemHeap(void) {
     osSyncPrintf(VT_FGCOL(GREEN));
     // "System heap size% 08x (% dKB) Start address% 08x"

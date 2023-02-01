@@ -38,7 +38,7 @@ ifeq ($(COMPILER),gcc)
   CPPFLAGS += -DCOMPILER_GCC
 endif
 
-ifeq ($(DEBUG_BUILD),1)
+ifeq ($(DEBUG_BUILD),0)
   CFLAGS += -DRELEASE_ROM
   CPPFLAGS += -DRELEASE_ROM
 endif

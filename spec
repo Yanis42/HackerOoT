@@ -558,6 +558,18 @@ beginseg
     include "build/data/rsp.rodata.o"
 endseg
 
+#ifndef DISABLE_DEBUG_FEATURES
+beginseg
+    name "debug"
+    compress
+    include "build/src/debug/print.o"
+    include "build/src/debug/utility.o"
+#ifdef ENABLE_INV_EDITOR
+    include "build/src/debug/inventory_debug.o"
+#endif
+endseg
+#endif
+
 beginseg
     name "buffers"
     align 0x40
