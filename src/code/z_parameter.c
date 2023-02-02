@@ -3147,7 +3147,11 @@ void Interface_Draw(PlayState* play) {
     gSPSegment(OVERLAY_DISP++, 0x0B, interfaceCtx->mapSegment);
 
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-    if (pauseCtx->debugState == 0) {
+    if ((pauseCtx->debugState == 0)
+    #ifdef ENABLE_INV_EDITOR
+    || (pauseCtx->debugState == 5 && gDebug.invDebug.showInfos == false)
+    #endif
+    ) {
 #endif
         Interface_InitVertices(play);
         func_8008A994(interfaceCtx);

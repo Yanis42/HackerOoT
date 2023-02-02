@@ -200,6 +200,9 @@ static s16 sCursorColors[][3] = {
     { 255, 255, 255 },
     { 255, 255, 0 },
     { 0, 255, 50 },
+#ifdef ENABLE_INV_EDITOR
+    { 255, 50, 0 },
+#endif
 };
 
 static void* sSavePromptTexs[] = {
@@ -395,7 +398,7 @@ void KaleidoScope_SwitchPage(PauseContext* pauseCtx, u8 pt) {
 
 void KaleidoScope_HandlePageToggles(PauseContext* pauseCtx, Input* input) {
 #ifdef ENABLE_INV_EDITOR
-    if ((pauseCtx->debugState == 0) && CHECK_BTN_ALL(input->press.button, BTN_L)) {
+    if ((pauseCtx->debugState == 0) && CHECK_BTN_ALL(input->press.button, BTN_CUP)) {
         pauseCtx->debugState = 1;
         return;
     }
@@ -446,13 +449,17 @@ void KaleidoScope_DrawCursor(PlayState* play, u16 pageIndex) {
         if (pauseCtx->pageIndex == pageIndex) {
             s16 i;
             s16 j;
-
+#ifdef ENABLE_INV_EDITOR
+            s16 cursorColorIndex = pauseCtx->debugState == 5 ? 3 : pauseCtx->cursorColorSet >> 2;
+#else
+            s16 cursorColorIndex = pauseCtx->cursorColorSet >> 2;
+#endif
             gDPPipeSync(POLY_OPA_DISP++);
             gDPSetCombineLERP(POLY_OPA_DISP++, PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0,
                               PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0);
-            gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, sCursorColors[pauseCtx->cursorColorSet >> 2][0],
-                            sCursorColors[pauseCtx->cursorColorSet >> 2][1],
-                            sCursorColors[pauseCtx->cursorColorSet >> 2][2], 255);
+            gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, sCursorColors[cursorColorIndex][0],
+                            sCursorColors[cursorColorIndex][1],
+                            sCursorColors[cursorColorIndex][2], 255);
             gDPSetEnvColor(POLY_OPA_DISP++, D_8082AB8C, D_8082AB90, D_8082AB94, 255);
             gSPVertex(POLY_OPA_DISP++, pauseCtx->cursorVtx, 16, 0);
 
@@ -507,8 +514,12 @@ Gfx* KaleidoScope_DrawPageSections(Gfx* gfx, Vtx* vertices, void** textures) {
 
 void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
     static s16 D_8082ACF4[][3] = {
-        { 0, 0, 0 }, { 0, 0, 0 },     { 0, 0, 0 },    { 0, 0, 0 }, { 255, 255, 0 }, { 0, 0, 0 },
-        { 0, 0, 0 }, { 255, 255, 0 }, { 0, 255, 50 }, { 0, 0, 0 }, { 0, 0, 0 },     { 0, 255, 50 },
+        { 0, 0, 0 },     { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 },     // pauseCtx->cursorColorSet = 0, white
+        { 255, 255, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 255, 255, 0 }, // pauseCtx->cursorColorSet = 4, yellow
+        { 0, 255, 50 },  { 0, 0, 0 }, { 0, 0, 0 }, { 0, 255, 50 },  // pauseCtx->cursorColorSet = 8, green
+#ifdef ENABLE_INV_EDITOR
+        { 255, 50, 0 },  { 0, 0, 0 }, { 0, 0, 0 }, { 255, 50, 0 },
+#endif
     };
     static s16 D_8082AD3C = 20;
     static s16 D_8082AD40 = 0;
@@ -525,20 +536,28 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
 
     if ((pauseCtx->state < 8) || (pauseCtx->state > 0x11)) {
         if (pauseCtx->state != 7) {
-            stepR = ABS(D_8082AB8C - D_8082ACF4[pauseCtx->cursorColorSet + D_8082AD40][0]) / D_8082AD3C;
-            stepG = ABS(D_8082AB90 - D_8082ACF4[pauseCtx->cursorColorSet + D_8082AD40][1]) / D_8082AD3C;
-            stepB = ABS(D_8082AB94 - D_8082ACF4[pauseCtx->cursorColorSet + D_8082AD40][2]) / D_8082AD3C;
-            if (D_8082AB8C >= D_8082ACF4[pauseCtx->cursorColorSet + D_8082AD40][0]) {
+#ifdef ENABLE_INV_EDITOR
+            s16 cursorColorIndex = pauseCtx->debugState == 5 ? (3 << 2) : pauseCtx->cursorColorSet;
+#else
+            s16 cursorColorIndex = pauseCtx->cursorColorSet;
+#endif
+            cursorColorIndex += D_8082AD40;
+
+            stepR = ABS(D_8082AB8C - D_8082ACF4[cursorColorIndex][0]) / D_8082AD3C;
+            stepG = ABS(D_8082AB90 - D_8082ACF4[cursorColorIndex][1]) / D_8082AD3C;
+            stepB = ABS(D_8082AB94 - D_8082ACF4[cursorColorIndex][2]) / D_8082AD3C;
+
+            if (D_8082AB8C >= D_8082ACF4[cursorColorIndex][0]) {
                 D_8082AB8C -= stepR;
             } else {
                 D_8082AB8C += stepR;
             }
-            if (D_8082AB90 >= D_8082ACF4[pauseCtx->cursorColorSet + D_8082AD40][1]) {
+            if (D_8082AB90 >= D_8082ACF4[cursorColorIndex][1]) {
                 D_8082AB90 -= stepG;
             } else {
                 D_8082AB90 += stepG;
             }
-            if (D_8082AB94 >= D_8082ACF4[pauseCtx->cursorColorSet + D_8082AD40][2]) {
+            if (D_8082AB94 >= D_8082ACF4[cursorColorIndex][2]) {
                 D_8082AB94 -= stepB;
             } else {
                 D_8082AB94 += stepB;
@@ -546,9 +565,9 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
 
             D_8082AD3C--;
             if (D_8082AD3C == 0) {
-                D_8082AB8C = D_8082ACF4[pauseCtx->cursorColorSet + D_8082AD40][0];
-                D_8082AB90 = D_8082ACF4[pauseCtx->cursorColorSet + D_8082AD40][1];
-                D_8082AB94 = D_8082ACF4[pauseCtx->cursorColorSet + D_8082AD40][2];
+                D_8082AB8C = D_8082ACF4[cursorColorIndex][0];
+                D_8082AB90 = D_8082ACF4[cursorColorIndex][1];
+                D_8082AB94 = D_8082ACF4[cursorColorIndex][2];
                 D_8082AD3C = ZREG(28 + D_8082AD40);
                 D_8082AD40++;
                 if (D_8082AD40 >= 4) {
@@ -1123,7 +1142,11 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
                       ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0);
     gDPSetEnvColor(POLY_OPA_DISP++, 20, 30, 40, 0);
 
-    if ((pauseCtx->state == 6) && (pauseCtx->namedItem != PAUSE_ITEM_NONE) && (pauseCtx->nameDisplayTimer < WREG(89)) &&
+    if ((pauseCtx->state == 6) && (pauseCtx->namedItem != PAUSE_ITEM_NONE)
+#ifdef ENABLE_INV_EDITOR
+    && (pauseCtx->namedItem != ITEM_NONE)
+#endif
+    && (pauseCtx->nameDisplayTimer < WREG(89)) &&
         (!pauseCtx->unk_1E4 || (pauseCtx->unk_1E4 == 2) || ((pauseCtx->unk_1E4 >= 4) && (pauseCtx->unk_1E4 <= 7)) ||
          (pauseCtx->unk_1E4 == 8)) &&
         (pauseCtx->cursorSpecialPos == 0)) {
@@ -1247,7 +1270,11 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
                 }
             }
         } else {
-            if (!pauseCtx->pageIndex) { // pageIndex == PAUSE_ITEM
+            if (!pauseCtx->pageIndex // pageIndex == PAUSE_ITEM
+#ifdef ENABLE_INV_EDITOR
+            && (pauseCtx->cursorItem[PAUSE_ITEM] != ITEM_NONE)
+#endif
+            ) {
                 pauseCtx->infoPanelVtx[16].v.ob[0] = pauseCtx->infoPanelVtx[18].v.ob[0] =
                     WREG(49 + gSaveContext.language);
 
@@ -1351,7 +1378,11 @@ void KaleidoScope_UpdateNamePanel(PlayState* play) {
 
         osCreateMesgQueue(&pauseCtx->loadQueue, &pauseCtx->loadMsg, 1);
 
-        if (pauseCtx->namedItem != PAUSE_ITEM_NONE) {
+        if ((pauseCtx->namedItem != PAUSE_ITEM_NONE)
+#ifdef ENABLE_INV_EDITOR
+        && (pauseCtx->namedItem != ITEM_NONE)
+#endif
+        ) {
             if ((pauseCtx->pageIndex == PAUSE_MAP) && !sInDungeonScene) {
                 if (gSaveContext.language) {
                     sp2A += 12;
@@ -2288,7 +2319,7 @@ void KaleidoScope_Draw(PlayState* play) {
     gSPSegment(POLY_OPA_DISP++, 0x0D, pauseCtx->iconItemLangSegment);
 
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-    if (pauseCtx->debugState == 0) {
+    if ((pauseCtx->debugState == 0) || (pauseCtx->debugState == 5)) {
 #endif
         KaleidoScope_SetView(pauseCtx, pauseCtx->eye.x, pauseCtx->eye.y, pauseCtx->eye.z);
 
@@ -2314,8 +2345,16 @@ void KaleidoScope_Draw(PlayState* play) {
     }
 
 #ifdef ENABLE_INV_EDITOR
-    if ((pauseCtx->debugState == 1) || (pauseCtx->debugState == 2)) {
-        KaleidoScope_DrawDebugEditor(play);
+    switch (pauseCtx->debugState) {
+        case 1:
+        case 2:
+            KaleidoScope_DrawDebugEditor(play);
+            break;
+        case 5:
+            InventoryDebug_Draw(&gDebug.invDebug);
+            break;
+        default:
+            break;
     }
 #endif
 
@@ -3532,4 +3571,21 @@ void KaleidoScope_Update(PlayState* play) {
             osSyncPrintf(VT_RST);
             break;
     }
+
+#ifdef ENABLE_INV_EDITOR
+    if ((pauseCtx->debugState == 0) && CHECK_BTN_ALL(play->state.input[0].press.button, BTN_L)) {
+        pauseCtx->debugState = 4;
+    }
+
+    switch (pauseCtx->debugState) {
+        case 4:
+            InventoryDebug_Init(&gDebug.invDebug);
+            break;
+        case 5:
+            InventoryDebug_Update(&gDebug.invDebug);
+            break;
+        default:
+            break;
+    }
+#endif
 }

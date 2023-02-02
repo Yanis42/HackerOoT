@@ -134,7 +134,11 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
                             pauseCtx->cursorX[PAUSE_ITEM] -= 1;
                             pauseCtx->cursorPoint[PAUSE_ITEM] -= 1;
 
-                            if (gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM]] != ITEM_NONE) {
+                            if ((gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM]] != ITEM_NONE)
+#ifdef ENABLE_INV_EDITOR
+                            || (pauseCtx->debugState == 5)
+#endif
+                            ) {
                                 moveCursorResult = 1;
                             }
                         } else {
@@ -166,7 +170,11 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
                             pauseCtx->cursorX[PAUSE_ITEM] += 1;
                             pauseCtx->cursorPoint[PAUSE_ITEM] += 1;
 
-                            if (gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM]] != ITEM_NONE) {
+                            if ((gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM]] != ITEM_NONE)
+#ifdef ENABLE_INV_EDITOR
+                            || (pauseCtx->debugState == 5)
+#endif
+                            ) {
                                 moveCursorResult = 1;
                             }
                         } else {
@@ -214,8 +222,11 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
 
                 cursorPoint = cursorX = cursorY = 0;
                 while (true) {
-                    if (gSaveContext.inventory.items[cursorPoint] != ITEM_NONE) {
-                        pauseCtx->cursorPoint[PAUSE_ITEM] = cursorPoint;
+                    if ((gSaveContext.inventory.items[cursorPoint] != ITEM_NONE)
+#ifdef ENABLE_INV_EDITOR
+                            || (pauseCtx->debugState == 5)
+#endif
+                            ) {                        pauseCtx->cursorPoint[PAUSE_ITEM] = cursorPoint;
                         pauseCtx->cursorX[PAUSE_ITEM] = cursorX;
                         pauseCtx->cursorY[PAUSE_ITEM] = cursorY;
                         moveCursorResult = 1;
@@ -250,7 +261,11 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
                 cursorPoint = cursorX = 5;
                 cursorY = 0;
                 while (true) {
-                    if (gSaveContext.inventory.items[cursorPoint] != ITEM_NONE) {
+                    if ((gSaveContext.inventory.items[cursorPoint] != ITEM_NONE)
+#ifdef ENABLE_INV_EDITOR
+                            || (pauseCtx->debugState == 5)
+#endif
+                            ) {
                         pauseCtx->cursorPoint[PAUSE_ITEM] = cursorPoint;
                         pauseCtx->cursorX[PAUSE_ITEM] = cursorX;
                         pauseCtx->cursorY[PAUSE_ITEM] = cursorY;
@@ -290,7 +305,11 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
                                 pauseCtx->cursorY[PAUSE_ITEM] -= 1;
                                 pauseCtx->cursorPoint[PAUSE_ITEM] -= 6;
 
-                                if (gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM]] != ITEM_NONE) {
+                                if ((gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM]] != ITEM_NONE)
+#ifdef ENABLE_INV_EDITOR
+                            || (pauseCtx->debugState == 5)
+#endif
+                                ) {
                                     moveCursorResult = 1;
                                 }
                             } else {
@@ -304,7 +323,11 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
                                 pauseCtx->cursorY[PAUSE_ITEM] += 1;
                                 pauseCtx->cursorPoint[PAUSE_ITEM] += 6;
 
-                                if (gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM]] != ITEM_NONE) {
+                                if ((gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM]] != ITEM_NONE)
+#ifdef ENABLE_INV_EDITOR
+                            || (pauseCtx->debugState == 5)
+#endif
+                                ) {
                                     moveCursorResult = 1;
                                 }
                             } else {
