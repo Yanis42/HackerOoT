@@ -184,8 +184,8 @@ void InventoryDebug_Init(InventoryDebug* this) {
     osSyncPrintf("[INVENTORY DEBUG]: Init Start!\n");
 
     // Execute this for one frame
-    if (this->pauseCtx->debugState == KALEIDO_DEBUG_STATE_INVEDIT_NEW_INIT) {
-        this->pauseCtx->debugState = KALEIDO_DEBUG_STATE_INVEDIT_NEW_UPDATE;
+    if (this->pauseCtx->debugState == 4) {
+        this->pauseCtx->debugState = 5;
     }
 
     // Init general variables
@@ -219,11 +219,10 @@ void InventoryDebug_Init(InventoryDebug* this) {
     osSyncPrintf("[INVENTORY DEBUG]: Init Complete!\n");
 }
 
-
 void InventoryDebug_Update(InventoryDebug* this) {
     // Handles exiting the inventory editor with the L button
-    if ((this->pauseCtx->debugState == KALEIDO_DEBUG_STATE_INVEDIT_NEW_UPDATE) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_L)) {
-        this->pauseCtx->debugState = KALEIDO_DEBUG_STATE_OFF;
+    if ((this->pauseCtx->debugState == 5) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_L)) {
+        this->pauseCtx->debugState = 0;
         this->pauseCtx->cursorSpecialPos = PAUSE_CURSOR_PAGE_LEFT; // avoids having the cursor on a blank slot
         osSyncPrintf("[INVENTORY DEBUG]: Quitting!\n");
     }
