@@ -21,8 +21,6 @@ typedef struct PrintUtils {
     Color_RGBA8 rgba;
 } PrintUtils;
 
-void Print_Init(PrintUtils* this);
-void Print_Destroy(PrintUtils* this);
 void Print_DebugPos(PrintUtils* this, Input* input, s16 posXChangeBy, s16 posYChangeBy);
 void Print_SetInfos(PrintUtils* this, GraphicsContext* gfxCtx, s16 x, s16 y, Color_RGBA8 rgba);
 void Print_Screen(PrintUtils* this, const char* fmt, ...);
