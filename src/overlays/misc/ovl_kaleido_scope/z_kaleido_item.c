@@ -18,6 +18,20 @@ void KaleidoScope_DrawAmmoCount(PauseContext* pauseCtx, GraphicsContext* gfxCtx,
     s16 ammo;
     s16 i;
 
+    s16 alpha = pauseCtx->alpha;
+
+#ifdef ENABLE_INV_EDITOR
+    if (gDebug.invDebug.showInfos) {
+        alpha = gDebug.invDebug.invIconAlpha;
+
+        if (alpha == 0) {
+            return;
+        }
+    } else {
+        alpha = gDebug.invDebug.invIconAlpha < 255 ? gDebug.invDebug.invIconAlpha : pauseCtx->alpha;
+    }
+#endif
+
     OPEN_DISPS(gfxCtx, "../z_kaleido_item.c", 69);
 
     ammo = AMMO(item);
@@ -25,19 +39,19 @@ void KaleidoScope_DrawAmmoCount(PauseContext* pauseCtx, GraphicsContext* gfxCtx,
     gDPPipeSync(POLY_OPA_DISP++);
 
     if (!((gSlotAgeReqs[SLOT(item)] == 9) || gSlotAgeReqs[SLOT(item)] == ((void)0, gSaveContext.linkAge))) {
-        gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 100, 100, 100, pauseCtx->alpha);
+        gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 100, 100, 100, alpha);
     } else {
-        gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, pauseCtx->alpha);
+        gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, alpha);
 
         if (ammo == 0) {
-            gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 130, 130, 130, pauseCtx->alpha);
+            gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 130, 130, 130, alpha);
         } else if ((item == ITEM_BOMB && AMMO(item) == CUR_CAPACITY(UPG_BOMB_BAG)) ||
                    (item == ITEM_BOW && AMMO(item) == CUR_CAPACITY(UPG_QUIVER)) ||
                    (item == ITEM_SLINGSHOT && AMMO(item) == CUR_CAPACITY(UPG_BULLET_BAG)) ||
                    (item == ITEM_DEKU_STICK && AMMO(item) == CUR_CAPACITY(UPG_DEKU_STICKS)) ||
                    (item == ITEM_DEKU_NUT && AMMO(item) == CUR_CAPACITY(UPG_DEKU_NUTS)) ||
                    (item == ITEM_BOMBCHU && ammo == 50) || (item == ITEM_MAGIC_BEAN && ammo == 15)) {
-            gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 120, 255, 0, pauseCtx->alpha);
+            gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 120, 255, 0, alpha);
         }
     }
 
@@ -94,6 +108,20 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
     s16 oldCursorPoint;
     s16 moveCursorResult;
 
+    s16 alpha = pauseCtx->alpha;
+
+#ifdef ENABLE_INV_EDITOR
+    if (gDebug.invDebug.showInfos) {
+        alpha = gDebug.invDebug.invIconAlpha;
+
+        if (alpha == 0) {
+            return;
+        }
+    } else {
+        alpha = gDebug.invDebug.invIconAlpha < 255 ? gDebug.invDebug.invIconAlpha : pauseCtx->alpha;
+    }
+#endif
+
     OPEN_DISPS(play->state.gfxCtx, "../z_kaleido_item.c", 234);
 
     Gfx_SetupDL_42Opa(play->state.gfxCtx);
@@ -136,7 +164,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
 
                             if ((gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM]] != ITEM_NONE)
 #ifdef ENABLE_INV_EDITOR
-                            || (pauseCtx->debugState == 5)
+                            || INV_EDITOR_ENABLED
 #endif
                             ) {
                                 moveCursorResult = 1;
@@ -172,7 +200,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
 
                             if ((gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM]] != ITEM_NONE)
 #ifdef ENABLE_INV_EDITOR
-                            || (pauseCtx->debugState == 5)
+                            || INV_EDITOR_ENABLED
 #endif
                             ) {
                                 moveCursorResult = 1;
@@ -224,7 +252,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
                 while (true) {
                     if ((gSaveContext.inventory.items[cursorPoint] != ITEM_NONE)
 #ifdef ENABLE_INV_EDITOR
-                            || (pauseCtx->debugState == 5)
+                            || INV_EDITOR_ENABLED
 #endif
                             ) {                        pauseCtx->cursorPoint[PAUSE_ITEM] = cursorPoint;
                         pauseCtx->cursorX[PAUSE_ITEM] = cursorX;
@@ -263,7 +291,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
                 while (true) {
                     if ((gSaveContext.inventory.items[cursorPoint] != ITEM_NONE)
 #ifdef ENABLE_INV_EDITOR
-                            || (pauseCtx->debugState == 5)
+                            || INV_EDITOR_ENABLED
 #endif
                             ) {
                         pauseCtx->cursorPoint[PAUSE_ITEM] = cursorPoint;
@@ -307,7 +335,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
 
                                 if ((gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM]] != ITEM_NONE)
 #ifdef ENABLE_INV_EDITOR
-                            || (pauseCtx->debugState == 5)
+                            || INV_EDITOR_ENABLED
 #endif
                                 ) {
                                     moveCursorResult = 1;
@@ -325,7 +353,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
 
                                 if ((gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM]] != ITEM_NONE)
 #ifdef ENABLE_INV_EDITOR
-                            || (pauseCtx->debugState == 5)
+                            || INV_EDITOR_ENABLED
 #endif
                                 ) {
                                     moveCursorResult = 1;
@@ -368,7 +396,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
                 KaleidoScope_SetCursorVtx(pauseCtx, index, pauseCtx->itemVtx);
 
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-                if ((pauseCtx->debugState == 0) && (pauseCtx->state == 6) && (pauseCtx->unk_1E4 == 0)) {
+                if (!INV_EDITOR_ENABLED && (pauseCtx->debugState == 0) && (pauseCtx->state == 6) && (pauseCtx->unk_1E4 == 0)) {
 #else
                 if ((pauseCtx->state == 6) && (pauseCtx->unk_1E4 == 0)) {
 #endif
@@ -441,8 +469,8 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
     }
 
     gDPSetCombineLERP(OVERLAY_DISP++, PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0, PRIMITIVE,
-                      ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0);
-    gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, pauseCtx->alpha);
+                    ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0);
+    gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, alpha);
     gDPSetEnvColor(POLY_OPA_DISP++, 0, 0, 0, 0);
 
     for (i = 0, j = 24 * 4; i < 3; i++, j += 4) {
@@ -456,7 +484,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
     gDPSetCombineMode(POLY_OPA_DISP++, G_CC_MODULATEIA_PRIM, G_CC_MODULATEIA_PRIM);
 
     for (i = j = 0; i < 24; i++, j += 4) {
-        gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, pauseCtx->alpha);
+        gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, alpha);
 
         if (gSaveContext.inventory.items[i] != ITEM_NONE) {
             if ((pauseCtx->unk_1E4 == 0) && (pauseCtx->pageIndex == PAUSE_ITEM) && (pauseCtx->cursorSpecialPos == 0)) {
@@ -464,7 +492,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
                     if ((sEquipState == 2) && (i == 3)) {
                         gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, magicArrowEffectsR[pauseCtx->equipTargetItem - 0xBF],
                                         magicArrowEffectsG[pauseCtx->equipTargetItem - 0xBF],
-                                        magicArrowEffectsB[pauseCtx->equipTargetItem - 0xBF], pauseCtx->alpha);
+                                        magicArrowEffectsB[pauseCtx->equipTargetItem - 0xBF], alpha);
 
                         pauseCtx->itemVtx[j + 0].v.ob[0] = pauseCtx->itemVtx[j + 2].v.ob[0] =
                             pauseCtx->itemVtx[j + 0].v.ob[0] - 2;

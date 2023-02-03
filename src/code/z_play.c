@@ -231,8 +231,10 @@ void Play_Init(GameState* thisx) {
 #ifndef DISABLE_DEBUG_FEATURES
     gDebug.play = this;
     gDebug.input = &this->state.input[0];
+    gDebug.invDebug.state = INV_DEBUG_STATE_OFF;
     gDebug.invDebug.gfxCtx = this->state.gfxCtx;
     gDebug.invDebug.pauseCtx = &this->pauseCtx;
+    gDebug.invDebug.invIconAlpha = 255;
 #endif
 
     if (gSaveContext.entranceIndex == ENTR_LOAD_OPENING) {
@@ -866,7 +868,7 @@ void Play_Update(PlayState* this) {
 
             PLAY_LOG(3551);
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-            sp80 = (this->pauseCtx.state != 0) || (this->pauseCtx.debugState != 0);
+            sp80 = (this->pauseCtx.state != 0) || (this->pauseCtx.debugState != 0) || INV_EDITOR_ENABLED;
 #else
         sp80 = (this->pauseCtx.state != 0);
 #endif
@@ -947,7 +949,7 @@ void Play_Update(PlayState* this) {
             if (this->viewpoint != VIEWPOINT_NONE) {
                 if (CHECK_BTN_ALL(input[0].press.button, BTN_CUP)) {
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-                    if ((this->pauseCtx.state != 0) || (this->pauseCtx.debugState != 0)) {
+                    if ((this->pauseCtx.state != 0) || (this->pauseCtx.debugState != 0) || INV_EDITOR_ENABLED) {
 #else
                 if (this->pauseCtx.state != 0) {
 #endif
@@ -975,7 +977,7 @@ void Play_Update(PlayState* this) {
             PLAY_LOG(3716);
 
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-            if ((this->pauseCtx.state != 0) || (this->pauseCtx.debugState != 0)) {
+            if ((this->pauseCtx.state != 0) || (this->pauseCtx.debugState != 0) || INV_EDITOR_ENABLED) {
 #else
         if (this->pauseCtx.state != 0) {
 #endif
@@ -1048,7 +1050,7 @@ skip:
 
 void Play_DrawOverlayElements(PlayState* this) {
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-    if ((this->pauseCtx.state != 0) || (this->pauseCtx.debugState != 0)) {
+    if ((this->pauseCtx.state != 0) || (this->pauseCtx.debugState != 0) || INV_EDITOR_ENABLED) {
 #else
     if (this->pauseCtx.state != 0) {
 #endif

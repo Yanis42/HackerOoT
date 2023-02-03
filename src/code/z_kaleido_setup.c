@@ -20,7 +20,7 @@ void KaleidoSetup_Update(PlayState* play) {
          (play->sceneId != SCENE_BOMBCHU_BOWLING_ALLEY || !Flags_GetSwitch(play, 0x38)));
 
 #ifdef ENABLE_INV_EDITOR
-    canUpdate = (pauseCtx->state == 0 && pauseCtx->debugState == 0) && canUpdate;
+    canUpdate = (pauseCtx->state == 0 && pauseCtx->debugState == 0 && !INV_EDITOR_ENABLED) && canUpdate;
 #else
     canUpdate = (pauseCtx->state == 0) && canUpdate;
 #endif

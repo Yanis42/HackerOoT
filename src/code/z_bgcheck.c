@@ -3215,7 +3215,7 @@ f32 BgCheck_RaycastDownDyna(DynaRaycastDown* dynaRaycastDown) {
         pauseState = dynaRaycastDown->play->pauseCtx.state != 0;
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
         if (pauseState == 0) {
-            pauseState = dynaRaycastDown->play->pauseCtx.debugState != 0;
+            pauseState = dynaRaycastDown->play->pauseCtx.debugState != 0 && INV_EDITOR_ENABLED;
         }
 #endif
         if (!pauseState && (dynaRaycastDown->colCtx->dyna.bgActorFlags[*dynaRaycastDown->bgId] & BGACTOR_1)) {

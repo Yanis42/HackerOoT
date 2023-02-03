@@ -13,7 +13,34 @@ static u8 sSlotToItems[] = {
     ITEM_BOOMERANG,  ITEM_LENS_OF_TRUTH, ITEM_MAGIC_BEAN, ITEM_HAMMER,   ITEM_ARROW_LIGHT, ITEM_NAYRUS_LOVE,
 };
 
-extern u8 gAmmoItems[];
+void InventoryDebug_SetHUDAlpha(s16 alpha) {
+    InterfaceContext* interfaceCtx = &gDebug.play->interfaceCtx;
+
+    interfaceCtx->bAlpha = alpha;
+    interfaceCtx->aAlpha = alpha;
+    interfaceCtx->cLeftAlpha = alpha;
+    interfaceCtx->cDownAlpha = alpha;
+    interfaceCtx->cRightAlpha = alpha;
+    interfaceCtx->healthAlpha = alpha;
+    interfaceCtx->magicAlpha = alpha;
+    interfaceCtx->minimapAlpha = alpha;
+    interfaceCtx->startAlpha = alpha;
+}
+
+void InventoryDebug_UpdateInfosPanel(InventoryDebug* this) {
+    // Background lifting/lowering animation
+    if (this->showInfos) {
+        this->backgroundPosY = TIMER_DECR(this->backgroundPosY, BG_YPOS_TARGET, BG_ANIM_SPEED);
+        this->bottomTextPosY = TIMER_DECR(this->bottomTextPosY, TXT_YPOS_TARGET, TXT_ANIM_SPEED);
+        this->invIconAlpha = TIMER_DECR(this->invIconAlpha, 0, INV_ALPHA_TRANS_SPEED);
+    } else {
+        this->backgroundPosY = TIMER_INCR(this->backgroundPosY, BG_YPOS_TITLE, BG_ANIM_SPEED);
+        this->bottomTextPosY = TIMER_INCR(this->bottomTextPosY, TXT_YPOS_TITLE, TXT_ANIM_SPEED);
+        this->invIconAlpha = TIMER_INCR(this->invIconAlpha, 255, INV_ALPHA_TRANS_SPEED);
+    }
+
+    InventoryDebug_SetHUDAlpha(this->invIconAlpha);
+}
 
 void InventoryDebug_UpdateItemScreen(InventoryDebug* this) {
     this->itemDebug.selectedItem = this->pauseCtx->cursorItem[PAUSE_ITEM];
@@ -67,14 +94,14 @@ void InventoryDebug_UpdateItemScreen(InventoryDebug* this) {
             case SLOT_SLINGSHOT:
             case SLOT_BOMBCHU:
             case SLOT_MAGIC_BEAN:
-                AMMO(gAmmoItems[this->itemDebug.selectedSlot]) += this->itemDebug.changeBy;
+                AMMO(this->itemDebug.selectedItem) += this->itemDebug.changeBy;
 
-                if (AMMO(gAmmoItems[this->itemDebug.selectedSlot]) > 99) {
-                    AMMO(gAmmoItems[this->itemDebug.selectedSlot]) = 0;
+                if (AMMO(this->itemDebug.selectedItem) > 99) {
+                    AMMO(this->itemDebug.selectedItem) = 0;
                 }
 
-                if (AMMO(gAmmoItems[this->itemDebug.selectedSlot]) < 0) {
-                    AMMO(gAmmoItems[this->itemDebug.selectedSlot]) = 99;
+                if (AMMO(this->itemDebug.selectedItem) < 0) {
+                    AMMO(this->itemDebug.selectedItem) = 99;
                 }
                 break;
             case SLOT_BOTTLE_1:
@@ -151,9 +178,9 @@ void InventoryDebug_DrawTitle(InventoryDebug* this) {
 void InventoryDebug_DrawInformations(InventoryDebug* this) {
     Color_RGBA8 rgba = { 255, 255, 255, 255 };
     s16 posY = this->bottomTextPosY + 2;
-    const char* itemCtrls[] = {
-        "[C-Left]: Decrement" PRINT_NEWLINE "[C-Right]: Increment" PRINT_NEWLINE,
-        "[C-Up]: Hold to change by 10" PRINT_NEWLINE "[A]: Delete/Give item" PRINT_NEWLINE,
+    const char* itemCtrls = {
+        "[C-Left]: Decrement" PRINT_NEWLINE "[C-Right]: Increment" PRINT_NEWLINE
+        "[C-Up]: Hold to change by 10" PRINT_NEWLINE "[A]: Delete/Give item" PRINT_NEWLINE
     };
 
     // draw build date and git commit
@@ -164,30 +191,44 @@ void InventoryDebug_DrawInformations(InventoryDebug* this) {
     // draw controls for the current inventory screen
     switch (this->pauseCtx->pageIndex) {
         case PAUSE_ITEM:
-            {
-                // @bug: unknown freeze when drawing this
-                Print_SetInfos(&gDebug.printer, this->gfxCtx, 2, posY, rgba);
-                Print_Screen(&gDebug.printer, itemCtrls[0]);
-                posY += 2;
-
-                Print_SetInfos(&gDebug.printer, this->gfxCtx, 2, posY, rgba);
-                Print_Screen(&gDebug.printer, itemCtrls[1]);
-                posY += 2;
-            }
+            Print_SetInfos(&gDebug.printer, this->gfxCtx, 2, posY, rgba);
+            Print_Screen(&gDebug.printer, itemCtrls);
+            posY += 2;
             break;
         default:
             break;
     }
 }
 
-void InventoryDebug_Init(InventoryDebug* this) {
-    osSyncPrintf("[INVENTORY DEBUG]: Init Start!\n");
+void InventoryDebug_Main(InventoryDebug* this) {
+    switch (this->state) {
+        case INV_DEBUG_STATE_INIT:
+            osSyncPrintf("[INVENTORY DEBUG]: Init Start!\n");
+            this->state = INV_DEBUG_STATE_UPDATE;
+            InventoryDebug_Init(this);
+            osSyncPrintf("[INVENTORY DEBUG]: Init Complete!\n");
+            break;
+        case INV_DEBUG_STATE_UPDATE:
+            if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_L)) {
+                this->state = INV_DEBUG_STATE_DESTROY;
+            }
 
-    // Execute this for one frame
-    if (this->pauseCtx->debugState == 4) {
-        this->pauseCtx->debugState = 5;
+            InventoryDebug_Update(this);
+            InventoryDebug_Draw(this);
+            break;
+        case INV_DEBUG_STATE_DESTROY:
+            if (InventoryDebug_Destroy(this)) {
+                this->state = INV_DEBUG_STATE_OFF;
+                osSyncPrintf("[INVENTORY DEBUG]: Quitting!\n");
+            }
+            break;
+        default:
+            osSyncPrintf("[INVENTORY DEBUG]: This state is not implemented yet.\n");
+            break;
     }
+}
 
+void InventoryDebug_Init(InventoryDebug* this) {
     // Init general variables
     this->printTimer = PRINT_TIMER_START;
     this->printState = PRINT_STATE_TITLE;
@@ -215,18 +256,9 @@ void InventoryDebug_Init(InventoryDebug* this) {
 
         this->itemDebug.state = ITEMDEBUG_STATE_READY;
     }
-
-    osSyncPrintf("[INVENTORY DEBUG]: Init Complete!\n");
 }
 
 void InventoryDebug_Update(InventoryDebug* this) {
-    // Handles exiting the inventory editor with the L button
-    if ((this->pauseCtx->debugState == 5) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_L)) {
-        this->pauseCtx->debugState = 0;
-        this->pauseCtx->cursorSpecialPos = PAUSE_CURSOR_PAGE_LEFT; // avoids having the cursor on a blank slot
-        osSyncPrintf("[INVENTORY DEBUG]: Quitting!\n");
-    }
-
     // Update the current screen if the cursor isn't on the L or R icons
     if ((this->pauseCtx->cursorSpecialPos != PAUSE_CURSOR_PAGE_LEFT) && (this->pauseCtx->cursorSpecialPos != PAUSE_CURSOR_PAGE_RIGHT)
         && !this->showInfos) {
@@ -241,38 +273,16 @@ void InventoryDebug_Update(InventoryDebug* this) {
         }
     }
 
-
     // Toggle informations screen
     if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CDOWN)) {
         this->showInfos ^= 1;
     }
 
-    // Background lifting/lowering animation
-    if (this->showInfos) {
-        if (this->backgroundPosY > BG_YPOS_TARGET) {
-            this->backgroundPosY -= BG_ANIM_SPEED;
-        }
-
-        if (this->bottomTextPosY > TXT_YPOS_TARGET) {
-            this->bottomTextPosY -= TXT_ANIM_SPEED;
-        }
-    } else {
-        if (this->backgroundPosY < BG_YPOS_TITLE) {
-            this->backgroundPosY += BG_ANIM_SPEED;
-        }
-
-        if (this->bottomTextPosY < TXT_YPOS_TITLE) {
-            this->bottomTextPosY += TXT_ANIM_SPEED;
-        }
-    }
-
-    this->backgroundPosY = (this->backgroundPosY < 0) ? 0 : (this->backgroundPosY > BG_YPOS_TITLE) ? BG_YPOS_TITLE : this->backgroundPosY;
-    this->bottomTextPosY = (this->bottomTextPosY < 0) ? 0 : (this->bottomTextPosY > TXT_YPOS_TITLE) ? TXT_YPOS_TITLE : this->bottomTextPosY;
+    InventoryDebug_UpdateInfosPanel(this);
 
     // Update the printing state, used to switch between several texts on-screen
-    if (this->printTimer > 0) {
-        this->printTimer--;
-    } else {
+    this->printTimer = TIMER_DECR(this->printTimer, 0, 1);
+    if (this->printTimer == 0) {
         switch (this->printState) {
             case PRINT_STATE_TITLE:
                 this->printState = PRINT_STATE_COMMANDS;
@@ -308,8 +318,8 @@ void InventoryDebug_Draw(InventoryDebug* this) {
             u8 i;
             s32 positions[][4] = {
                 // { leftX, leftY, rightX, rightY },
-                { 0, ((SCREEN_HEIGHT / 10 ) + 3), SCREEN_WIDTH, ((SCREEN_HEIGHT / 10 ) + 3) },
-                { 0, ((SCREEN_HEIGHT / 5 ) + 4), SCREEN_WIDTH, ((SCREEN_HEIGHT / 5 ) + 5) },
+                { 0, ((SCREEN_HEIGHT / 10) + 3), SCREEN_WIDTH, ((SCREEN_HEIGHT / 10) + 3) },
+                { 0, ((SCREEN_HEIGHT / 5) + 4), SCREEN_WIDTH, ((SCREEN_HEIGHT / 5) + 5) },
             };
 
             for (i = 0; i < ARRAY_COUNT(positions); i++) {
@@ -317,6 +327,27 @@ void InventoryDebug_Draw(InventoryDebug* this) {
             }
         }
     }
+}
+
+bool InventoryDebug_Destroy(InventoryDebug* this) {
+    // Restore alpha values for the HUD/Inventory
+    if (this->showInfos) {
+        this->showInfos = false;
+    } else {
+        // When the alpha hits 255 exit the inventory editor
+        if (this->backgroundPosY == BG_YPOS_TITLE)
+        if (this->invIconAlpha == 255) {
+            this->pauseCtx->cursorSpecialPos = PAUSE_CURSOR_PAGE_LEFT; // avoids having the cursor on a blank slot
+            return true;
+        }
+    }
+
+    // In order to make the transition properly we need to keep updating the info panel
+    // and draw stuff until everything's back to normal
+    InventoryDebug_UpdateInfosPanel(this);
+    InventoryDebug_Draw(this);
+
+    return false;
 }
 
 #endif

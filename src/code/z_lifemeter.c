@@ -514,7 +514,7 @@ void Health_UpdateBeatingHeart(PlayState* play) {
 
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
             canPlayLowHealthSFX =
-                canPlayLowHealthSFX && (play->pauseCtx.debugState == 0) && Health_IsCritical() && !Play_InCsMode(play);
+                canPlayLowHealthSFX && (!INV_EDITOR_ENABLED && play->pauseCtx.debugState == 0) && Health_IsCritical() && !Play_InCsMode(play);
 #else
             canPlayLowHealthSFX = (canPlayLowHealthSFX && Health_IsCritical() && !Play_InCsMode(play));
 #endif

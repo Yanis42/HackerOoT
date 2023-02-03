@@ -450,7 +450,7 @@ void KaleidoScope_DrawCursor(PlayState* play, u16 pageIndex) {
             s16 i;
             s16 j;
 #ifdef ENABLE_INV_EDITOR
-            s16 cursorColorIndex = pauseCtx->debugState == 5 ? 3 : pauseCtx->cursorColorSet >> 2;
+            s16 cursorColorIndex = INV_EDITOR_ENABLED ? 3 : pauseCtx->cursorColorSet >> 2;
 #else
             s16 cursorColorIndex = pauseCtx->cursorColorSet >> 2;
 #endif
@@ -537,7 +537,7 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
     if ((pauseCtx->state < 8) || (pauseCtx->state > 0x11)) {
         if (pauseCtx->state != 7) {
 #ifdef ENABLE_INV_EDITOR
-            s16 cursorColorIndex = pauseCtx->debugState == 5 ? (3 << 2) : pauseCtx->cursorColorSet;
+            s16 cursorColorIndex = INV_EDITOR_ENABLED ? (3 << 2) : pauseCtx->cursorColorSet;
 #else
             s16 cursorColorIndex = pauseCtx->cursorColorSet;
 #endif
@@ -2319,7 +2319,7 @@ void KaleidoScope_Draw(PlayState* play) {
     gSPSegment(POLY_OPA_DISP++, 0x0D, pauseCtx->iconItemLangSegment);
 
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-    if ((pauseCtx->debugState == 0) || (pauseCtx->debugState == 5)) {
+    if ((pauseCtx->debugState == 0) || INV_EDITOR_ENABLED) {
 #endif
         KaleidoScope_SetView(pauseCtx, pauseCtx->eye.x, pauseCtx->eye.y, pauseCtx->eye.z);
 
@@ -2345,16 +2345,8 @@ void KaleidoScope_Draw(PlayState* play) {
     }
 
 #ifdef ENABLE_INV_EDITOR
-    switch (pauseCtx->debugState) {
-        case 1:
-        case 2:
-            KaleidoScope_DrawDebugEditor(play);
-            break;
-        case 5:
-            InventoryDebug_Draw(&gDebug.invDebug);
-            break;
-        default:
-            break;
+    if ((pauseCtx->debugState == 1) || (pauseCtx->debugState == 2)) {
+        KaleidoScope_DrawDebugEditor(play);
     }
 #endif
 
@@ -3573,19 +3565,13 @@ void KaleidoScope_Update(PlayState* play) {
     }
 
 #ifdef ENABLE_INV_EDITOR
-    if ((pauseCtx->debugState == 0) && CHECK_BTN_ALL(play->state.input[0].press.button, BTN_L)) {
-        pauseCtx->debugState = 4;
+    if (!INV_EDITOR_ENABLED && CHECK_BTN_ALL(play->state.input[0].press.button, BTN_L)
+        && (pauseCtx->debugState == 0)) {
+        gDebug.invDebug.state = INV_DEBUG_STATE_INIT;
     }
 
-    switch (pauseCtx->debugState) {
-        case 4:
-            InventoryDebug_Init(&gDebug.invDebug);
-            break;
-        case 5:
-            InventoryDebug_Update(&gDebug.invDebug);
-            break;
-        default:
-            break;
+    if (INV_EDITOR_ENABLED) {
+        InventoryDebug_Main(&gDebug.invDebug);
     }
 #endif
 }

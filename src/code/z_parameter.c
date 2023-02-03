@@ -2549,7 +2549,7 @@ void Magic_Update(PlayState* play) {
             // Slowly consume magic while lens is on
             if ((play->pauseCtx.state == 0) &&
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-                (play->pauseCtx.debugState == 0) &&
+                (play->pauseCtx.debugState == 0) && !INV_EDITOR_ENABLED &&
 #endif
                 (msgCtx->msgMode == MSGMODE_NONE) && (play->gameOverCtx.state == GAMEOVER_INACTIVE) &&
                 (play->transitionTrigger == TRANS_TRIGGER_OFF) && (play->transitionMode == TRANS_MODE_OFF) &&
@@ -2808,7 +2808,7 @@ void Interface_DrawItemButtons(PlayState* play) {
 
     if ((pauseCtx->state < 8) || (pauseCtx->state >= 18)) {
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-        if ((play->pauseCtx.state != 0) || (play->pauseCtx.debugState != 0)) {
+        if ((play->pauseCtx.state != 0) || (INV_EDITOR_ENABLED && play->pauseCtx.debugState != 0)) {
 #else
         if (play->pauseCtx.state != 0) {
 #endif
@@ -2841,7 +2841,7 @@ void Interface_DrawItemButtons(PlayState* play) {
 
     if (interfaceCtx->naviCalling && (play->pauseCtx.state == 0) &&
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-        (play->pauseCtx.debugState == 0) &&
+        (play->pauseCtx.debugState == 0) && !INV_EDITOR_ENABLED &&
 #endif
         (play->csCtx.state == CS_STATE_IDLE)) {
         if (!sCUpInvisible) {
@@ -3139,6 +3139,12 @@ void Interface_Draw(PlayState* play) {
     s16 svar5;
     s16 timerId;
 
+#ifdef ENABLE_INV_EDITOR
+    if (gDebug.invDebug.showInfos && gDebug.invDebug.invIconAlpha == 0) {
+        return;
+    }
+#endif
+
     OPEN_DISPS(play->state.gfxCtx, "../z_parameter.c", 3405);
 
     gSPSegment(OVERLAY_DISP++, 0x02, interfaceCtx->parameterSegment);
@@ -3147,9 +3153,9 @@ void Interface_Draw(PlayState* play) {
     gSPSegment(OVERLAY_DISP++, 0x0B, interfaceCtx->mapSegment);
 
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-    if ((pauseCtx->debugState == 0)
+    if ((!INV_EDITOR_ENABLED && pauseCtx->debugState == 0)
     #ifdef ENABLE_INV_EDITOR
-    || (pauseCtx->debugState == 5 && gDebug.invDebug.showInfos == false)
+    || (INV_EDITOR_ENABLED /*&& gDebug.invDebug.showInfos == false*/)
     #endif
     ) {
 #endif
@@ -3442,7 +3448,7 @@ void Interface_Draw(PlayState* play) {
         Gfx_SetupDL_39Overlay(play->state.gfxCtx);
 
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-        if ((play->pauseCtx.state == 0) && (play->pauseCtx.debugState == 0)) {
+        if ((play->pauseCtx.state == 0) && (!INV_EDITOR_ENABLED && play->pauseCtx.debugState == 0)) {
 #else
     if (play->pauseCtx.state == 0) {
 #endif
@@ -3544,7 +3550,7 @@ void Interface_Draw(PlayState* play) {
 
         if ((play->pauseCtx.state == 0) &&
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-            (play->pauseCtx.debugState == 0) &&
+            (!INV_EDITOR_ENABLED && play->pauseCtx.debugState == 0) &&
 #endif
             (play->gameOverCtx.state == GAMEOVER_INACTIVE) && (msgCtx->msgMode == MSGMODE_NONE) &&
             !(player->stateFlags2 & PLAYER_STATE2_24) && (play->transitionTrigger == TRANS_TRIGGER_OFF) &&
@@ -3996,7 +4002,7 @@ void Interface_Update(PlayState* play) {
     Input* debugInput = &play->state.input[2];
 
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-    if ((play->pauseCtx.state == 0) && (play->pauseCtx.debugState == 0)) {
+    if ((play->pauseCtx.state == 0) && (!INV_EDITOR_ENABLED && play->pauseCtx.debugState == 0)) {
 #else
     if (play->pauseCtx.state == 0) {
 #endif
@@ -4153,7 +4159,7 @@ void Interface_Update(PlayState* play) {
 
     if ((gSaveContext.timerState >= TIMER_STATE_ENV_HAZARD_MOVE) && (play->pauseCtx.state == 0) &&
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-        (play->pauseCtx.debugState == 0) &&
+        (!INV_EDITOR_ENABLED && play->pauseCtx.debugState == 0) &&
 #endif
         (msgCtx->msgMode == MSGMODE_NONE) && !(player->stateFlags2 & PLAYER_STATE2_24) &&
         (play->transitionTrigger == TRANS_TRIGGER_OFF) && (play->transitionMode == TRANS_MODE_OFF) &&
@@ -4243,7 +4249,7 @@ void Interface_Update(PlayState* play) {
     // Update Magic
     if ((play->pauseCtx.state == 0) &&
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-        (play->pauseCtx.debugState == 0) &&
+        (!INV_EDITOR_ENABLED && play->pauseCtx.debugState == 0) &&
 #endif
         (msgCtx->msgMode == MSGMODE_NONE) && (play->transitionTrigger == TRANS_TRIGGER_OFF) &&
         (play->gameOverCtx.state == GAMEOVER_INACTIVE) && (play->transitionMode == TRANS_MODE_OFF) &&

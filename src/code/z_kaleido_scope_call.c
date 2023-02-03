@@ -57,7 +57,7 @@ void KaleidoScopeCall_Update(PlayState* play) {
     PauseContext* pauseCtx = &play->pauseCtx;
 
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-    if ((pauseCtx->state != 0) || (pauseCtx->debugState != 0)) {
+    if ((pauseCtx->state != 0) || (INV_EDITOR_ENABLED && pauseCtx->debugState != 0)) {
 #else
     if (pauseCtx->state != 0) {
 #endif
@@ -106,7 +106,7 @@ void KaleidoScopeCall_Update(PlayState* play) {
                 sKaleidoScopeUpdateFunc(play);
 
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-                if ((play->pauseCtx.state == 0) && (play->pauseCtx.debugState == 0)) {
+                if ((play->pauseCtx.state == 0) && (!INV_EDITOR_ENABLED && play->pauseCtx.debugState == 0)) {
 #else
                 if ((play->pauseCtx.state == 0)) {
 #endif
