@@ -10,8 +10,6 @@
 #include "padmgr.h"
 #include "debug/print.h"
 
-#define RANGE(val, min, max) ((val >= min) && (val <= max))
-
 #ifdef ENABLE_INV_EDITOR
     #include "debug/inventory_debug.h"
 #endif
