@@ -45,29 +45,29 @@ void Debug_DrawColorRectangle(GraphicsContext* gfxCtx, Vec2s rectLeft, Vec2s rec
 
         OPEN_DISPS(gfxCtx, __BASE_FILE__, __LINE__);
 
-        gDPSetCombineMode(POLY_OPA_DISP++, BLANK, BLANK);
-        gDPPipeSync(POLY_OPA_DISP++);
+        gDPSetCombineMode(OVERLAY_DISP++, BLANK, BLANK);
+        gDPPipeSync(OVERLAY_DISP++);
 
         if (((ABS(x1 - x2) % 4) == 0) && (a == 255)) {
-            gDPSetCycleType(POLY_OPA_DISP++, G_CYC_FILL);
-            gDPSetRenderMode(POLY_OPA_DISP++, G_RM_NOOP, G_RM_NOOP);
+            gDPSetCycleType(OVERLAY_DISP++, G_CYC_FILL);
+            gDPSetRenderMode(OVERLAY_DISP++, G_RM_NOOP, G_RM_NOOP);
             cycleadd = 1;
         } else {
-            gDPSetCycleType(POLY_OPA_DISP++, G_CYC_1CYCLE);
+            gDPSetCycleType(OVERLAY_DISP++, G_CYC_1CYCLE);
 
             if (a == 255) {
-                gDPSetRenderMode(POLY_OPA_DISP++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
+                gDPSetRenderMode(OVERLAY_DISP++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
             } else {
-                gDPSetRenderMode(POLY_OPA_DISP++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
+                gDPSetRenderMode(OVERLAY_DISP++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
             }
 
             cycleadd = 0;
         }
 
-        gDPSetFillColor(POLY_OPA_DISP++, (GPACK_RGBA5551(r, g, b, 1) << 16) | GPACK_RGBA5551(r, g, b, 1));
-        gDPSetEnvColor(POLY_OPA_DISP++, r, g, b, a);
-        gDPFillRectangle(POLY_OPA_DISP++, x1, y1, x2 - cycleadd, y2 - cycleadd);
-        gDPPipeSync(POLY_OPA_DISP++);
+        gDPSetFillColor(OVERLAY_DISP++, (GPACK_RGBA5551(r, g, b, 1) << 16) | GPACK_RGBA5551(r, g, b, 1));
+        gDPSetEnvColor(OVERLAY_DISP++, r, g, b, a);
+        gDPFillRectangle(OVERLAY_DISP++, x1, y1, x2 - cycleadd, y2 - cycleadd);
+        gDPPipeSync(OVERLAY_DISP++);
 
         CLOSE_DISPS(gfxCtx, __BASE_FILE__, __LINE__);
     }

@@ -40,11 +40,11 @@ void Print_SetInfos(PrintUtils* this, GraphicsContext* gfxCtx, s16 x, s16 y, Col
 
 void Print_Screen(PrintUtils* this, const char* fmt, ...) {
     GfxPrint gfxP;
-    Gfx *dl, *polyOpaP;
+    Gfx *dl, *gfxRef;
 
-    OPEN_DISPS(this->gfxCtx, __FILE__, __LINE__);
+    OPEN_DISPS(this->gfxCtx, __BASE_FILE__, __LINE__);
 
-    dl = Graph_GfxPlusOne(polyOpaP = POLY_OPA_DISP);
+    dl = Graph_GfxPlusOne(gfxRef = POLY_OPA_DISP);
     gSPDisplayList(OVERLAY_DISP++, dl);
 
     GfxPrint_Init(&gfxP);
@@ -64,10 +64,10 @@ void Print_Screen(PrintUtils* this, const char* fmt, ...) {
     GfxPrint_Destroy(&gfxP);
 
     gSPEndDisplayList(dl++);
-    Graph_BranchDlist(polyOpaP, dl);
+    Graph_BranchDlist(gfxRef, dl);
     POLY_OPA_DISP = dl;
 
-    CLOSE_DISPS(this->gfxCtx, __FILE__, __LINE__);
+    CLOSE_DISPS(this->gfxCtx, __BASE_FILE__, __LINE__);
 }
 
 #endif
