@@ -4,6 +4,20 @@
 
 #include "global.h"
 
+static u8 sSlotToEquipType[] = {
+    EQUIP_TYPE_SWORD,  EQUIP_TYPE_SWORD,  EQUIP_TYPE_SWORD,
+    EQUIP_TYPE_SHIELD, EQUIP_TYPE_SHIELD, EQUIP_TYPE_SHIELD,
+    EQUIP_TYPE_TUNIC,  EQUIP_TYPE_TUNIC,  EQUIP_TYPE_TUNIC,
+    EQUIP_TYPE_BOOTS,  EQUIP_TYPE_BOOTS,  EQUIP_TYPE_BOOTS,
+};
+
+static u8 sSlotToEquip[] = {
+    UPG_QUIVER, ITEM_SWORD_KOKIRI, ITEM_SWORD_MASTER,  ITEM_SWORD_BIGGORON,
+    UPG_BOMB_BAG, ITEM_SHIELD_DEKU,  ITEM_SHIELD_HYLIAN, ITEM_SHIELD_MIRROR,
+    UPG_STRENGTH, ITEM_TUNIC_KOKIRI, ITEM_TUNIC_GORON,   ITEM_TUNIC_ZORA,
+    UPG_SCALE, ITEM_BOOTS_KOKIRI, ITEM_BOOTS_IRON,    ITEM_BOOTS_HOVER,
+};
+
 static u8 sBottleContents[] = { ITEM_BOTTLE_EMPTY, ITEM_BOTTLE_EMPTY, ITEM_BOTTLE_EMPTY, ITEM_BOTTLE_EMPTY };
 
 // Item ID corresponding to each slot, aside from bottles and trade items
@@ -40,6 +54,66 @@ void InventoryDebug_UpdateInfosPanel(InventoryDebug* this) {
     }
 
     InventoryDebug_SetHUDAlpha(this->invIconAlpha);
+}
+
+void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
+    this->equipDebug.selectedItem = this->pauseCtx->cursorItem[PAUSE_EQUIP];
+    this->equipDebug.changeBy = 0;
+
+    if (this->pauseCtx->cursorX[PAUSE_EQUIP] > 0) {
+        this->equipDebug.selectedSlot = this->pauseCtx->cursorSlot[PAUSE_EQUIP];
+    } else {
+        this->equipDebug.selectedSlot = this->pauseCtx->cursorY[PAUSE_EQUIP] * 4;
+    }
+
+    if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_A)) {
+        // equipment and upgrades are handled differently
+        if (!IS_UPGRADE(this->equipDebug)) {
+            u8 value = sSlotToEquip[this->equipDebug.selectedSlot] - ITEM_SWORD_KOKIRI;
+            u8 equip = sSlotToEquipType[value];
+
+            if (!CHECK_OWNED_EQUIP(equip, (value % 3))) {
+                // give equipment for selected slot
+                gSaveContext.inventory.equipment |= OWNED_EQUIP_FLAG(equip, (value % 3));
+            } else {
+                // delete equipment for selected slot
+                gSaveContext.inventory.equipment &= ~OWNED_EQUIP_FLAG(equip, (value % 3));
+            }
+        } else {
+            Inventory_ChangeUpgrade(CUR_UPG_VALUE(sSlotToEquip[this->equipDebug.selectedSlot]), 0);
+        }
+    }
+
+    // increment for cycling through trade items/bottles and changing ammo
+    if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CLEFT)) {
+        this->equipDebug.changeBy = -1;
+    } else if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CRIGHT)) {
+        this->equipDebug.changeBy = 1;
+    }
+
+    if (this->equipDebug.changeBy != 0) {
+        u8 upgradeType = sSlotToEquip[this->equipDebug.selectedSlot];
+        u8 maxValue = 2; // there's only two diving scale upgrades
+        s8 value;
+
+        switch (this->equipDebug.selectedSlot) {
+            case SLOT_UPG_QUIVER:
+                if (CHECK_BTN_ALL(gDebug.input->cur.button, BTN_CUP)) {
+                    upgradeType = UPG_BULLET_BAG;
+                }
+                FALLTHROUGH;
+            case SLOT_UPG_BOMB_BAG:
+            case SLOT_UPG_STRENGTH:
+                maxValue = 3;
+                FALLTHROUGH;
+            case SLOT_UPG_SCALE:
+                value = CUR_UPG_VALUE(upgradeType) + this->equipDebug.changeBy;
+                Inventory_ChangeUpgrade(upgradeType, ((value < 1) ? maxValue : (value > maxValue) ? 1 : value));
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 void InventoryDebug_UpdateItemScreen(InventoryDebug* this) {
@@ -237,7 +311,7 @@ void InventoryDebug_Init(InventoryDebug* this) {
     this->bottomTextPosY = TXT_YPOS_TITLE;
 
     // Init item debug values
-    if (this->itemDebug.state == ITEMDEBUG_STATE_UNREADY) {
+    if (this->itemDebug.state == INVDBG_STRUCT_STATE_UNREADY) {
         u8 i = 0;
 
         this->itemDebug.selectedItem = ITEM_DEKU_STICK;
@@ -254,7 +328,20 @@ void InventoryDebug_Init(InventoryDebug* this) {
             this->itemDebug.slotToItems[i] = sSlotToItems[i];
         }
 
-        this->itemDebug.state = ITEMDEBUG_STATE_READY;
+        this->itemDebug.state = INVDBG_STRUCT_STATE_READY;
+    }
+
+    if (this->equipDebug.state == INVDBG_STRUCT_STATE_UNREADY) {
+        u8 i = 0;
+
+        this->equipDebug.selectedItem = ITEM_SWORD_KOKIRI;
+        this->equipDebug.selectedSlot = 0;
+        this->equipDebug.changeBy = 0;
+        this->equipDebug.state = INVDBG_STRUCT_STATE_READY;
+
+        for (i = 0; i < ARRAY_COUNTU(sSlotToEquip); i++) {
+            this->equipDebug.slotToEquip[i] = sSlotToEquip[i];
+        }
     }
 }
 
@@ -264,8 +351,13 @@ void InventoryDebug_Update(InventoryDebug* this) {
         && !this->showInfos) {
         switch (this->pauseCtx->pageIndex) {
             case PAUSE_ITEM:
-                if (this->itemDebug.state == ITEMDEBUG_STATE_READY) {
+                if (this->itemDebug.state == INVDBG_STRUCT_STATE_READY) {
                     InventoryDebug_UpdateItemScreen(this);
+                }
+                break;
+            case PAUSE_EQUIP:
+                if (this->equipDebug.state == INVDBG_STRUCT_STATE_READY) {
+                    InventoryDebug_UpdateEquipmentScreen(this);
                 }
                 break;
             default:

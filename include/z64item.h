@@ -2,7 +2,7 @@
 #define Z64ITEM_H
 
 // Note that z_kaleido_scope_PAL.c assumes that the dimensions and texture format here also matches the dimensions and
-// texture format for MAP_NAME_TEX1_* 
+// texture format for MAP_NAME_TEX1_*
 #define ITEM_NAME_TEX_WIDTH 128
 #define ITEM_NAME_TEX_HEIGHT 16
 #define ITEM_NAME_TEX_SIZE ((ITEM_NAME_TEX_WIDTH * ITEM_NAME_TEX_HEIGHT) / 2) // 128x16 IA4 texture
@@ -149,6 +149,25 @@ typedef enum {
     /* 0x17 */ SLOT_TRADE_CHILD,
     /* 0xFF */ SLOT_NONE = 0xFF
 } InventorySlot;
+
+typedef enum {
+    SLOT_UPG_QUIVER,
+    SLOT_SWORD_KOKIRI,
+    SLOT_SWORD_MASTER,
+    SLOT_SWORD_BIGGORON,
+    SLOT_UPG_BOMB_BAG,
+    SLOT_SHIELD_DEKU,
+    SLOT_SHIELD_HYLIAN,
+    SLOT_SHIELD_MIRROR,
+    SLOT_UPG_STRENGTH,
+    SLOT_TUNIC_KOKIRI,
+    SLOT_TUNIC_GORON,
+    SLOT_TUNIC_ZORA,
+    SLOT_UPG_SCALE,
+    SLOT_BOOTS_KOKIRI,
+    SLOT_BOOTS_IRON,
+    SLOT_BOOTS_HOVER
+} EquipmentSlot;
 
 typedef enum {
     /* 0x00 */ ITEM_DEKU_STICK,
