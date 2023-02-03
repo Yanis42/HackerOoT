@@ -185,7 +185,7 @@ void InventoryDebug_DrawInformations(InventoryDebug* this) {
 
     // draw build date and git commit
     Print_SetInfos(&gDebug.printer, this->gfxCtx, 2, posY, rgba);
-    Print_Screen(&gDebug.printer, ("Date: %s" PRINT_NEWLINE "Version: %s"), gBuildDate, gBuildGitVersion);
+    Print_Screen(&gDebug.printer, ("Build Date: %s" PRINT_NEWLINE "Build Version: %s"), gBuildDate, gBuildGitVersion);
     posY += 3;
 
     // draw controls for the current inventory screen

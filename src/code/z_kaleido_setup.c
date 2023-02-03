@@ -32,9 +32,9 @@ void KaleidoSetup_Update(PlayState* play) {
             if (BREG(0)) {
                 pauseCtx->debugState = 3;
             }
-        } else if (CHECK_BTN_ALL(input->press.button, BTN_START)) {
+        } else if (CHECK_BTN_ALL(input->press.button, BTN_START) && !INV_EDITOR_ENABLED) {
 #else
-        if (CHECK_BTN_ALL(input->press.button, BTN_START)) {
+        if (CHECK_BTN_ALL(input->press.button, BTN_START) && !INV_EDITOR_ENABLED) {
 #endif
             gSaveContext.prevHudVisibilityMode = gSaveContext.hudVisibilityMode;
 

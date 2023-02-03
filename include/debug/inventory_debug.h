@@ -84,7 +84,6 @@ Gfx* Gfx_TextureIA8(Gfx* displayListHead, void* texture, s16 textureWidth, s16 t
 #define INV_ALPHA_TRANS_SPEED 32
 
 #define PRINT_NEWLINE "\n  "
-#define PRINT_NEWLINE2 "\n\n   "
 
 #define DEBUG_PRINT_VAR(var) osSyncPrintf("%s: %d\n", #var, var)
 

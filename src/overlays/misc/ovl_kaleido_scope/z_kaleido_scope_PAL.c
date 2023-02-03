@@ -398,7 +398,7 @@ void KaleidoScope_SwitchPage(PauseContext* pauseCtx, u8 pt) {
 
 void KaleidoScope_HandlePageToggles(PauseContext* pauseCtx, Input* input) {
 #ifdef ENABLE_INV_EDITOR
-    if ((pauseCtx->debugState == 0) && CHECK_BTN_ALL(input->press.button, BTN_CUP)) {
+    if ((pauseCtx->debugState == 0) && !INV_EDITOR_ENABLED && CHECK_BTN_ALL(input->press.button, BTN_CUP)) {
         pauseCtx->debugState = 1;
         return;
     }
@@ -1144,7 +1144,7 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
 
     if ((pauseCtx->state == 6) && (pauseCtx->namedItem != PAUSE_ITEM_NONE)
 #ifdef ENABLE_INV_EDITOR
-    && (pauseCtx->namedItem != ITEM_NONE)
+    && (pauseCtx->namedItem != ITEM_NONE) && (gDebug.invDebug.invIconAlpha == 255)
 #endif
     && (pauseCtx->nameDisplayTimer < WREG(89)) &&
         (!pauseCtx->unk_1E4 || (pauseCtx->unk_1E4 == 2) || ((pauseCtx->unk_1E4 >= 4) && (pauseCtx->unk_1E4 <= 7)) ||
@@ -1161,10 +1161,16 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
 
             gSPVertex(POLY_OPA_DISP++, &pauseCtx->infoPanelVtx[16], 4, 0);
 
-            if (pauseCtx->nameColorSet == 1) {
-                gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 70, 70, 70, 255);
-            } else {
-                gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, 255);
+            {
+                u8 alpha = 255;
+#ifdef ENABLE_INV_EDITOR
+                alpha = INV_EDITOR_ENABLED ? gDebug.invDebug.invIconAlpha : 255;
+#endif
+                if (pauseCtx->nameColorSet == 1) {
+                    gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 70, 70, 70, alpha);
+                } else {
+                    gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, alpha);
+                }
             }
 
             // Note that this is used to draw both item name and map name textures, it expects that the dimensions and
@@ -1272,7 +1278,7 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
         } else {
             if (!pauseCtx->pageIndex // pageIndex == PAUSE_ITEM
 #ifdef ENABLE_INV_EDITOR
-            && (pauseCtx->cursorItem[PAUSE_ITEM] != ITEM_NONE)
+            && (pauseCtx->cursorItem[PAUSE_ITEM] != ITEM_NONE) && (gDebug.invDebug.invIconAlpha == 255)
 #endif
             ) {
                 pauseCtx->infoPanelVtx[16].v.ob[0] = pauseCtx->infoPanelVtx[18].v.ob[0] =
@@ -1294,8 +1300,14 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
 
                 gSPDisplayList(POLY_OPA_DISP++, gCButtonIconsDL);
 
-                gDPPipeSync(POLY_OPA_DISP++);
-                gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, 255);
+                {
+                    u8 alpha = 255;
+#ifdef ENABLE_INV_EDITOR
+                    alpha = INV_EDITOR_ENABLED ? gDebug.invDebug.invIconAlpha : 255;
+#endif
+                    gDPPipeSync(POLY_OPA_DISP++);
+                    gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, alpha);
+                }
 
                 POLY_OPA_DISP = KaleidoScope_QuadTextureIA8(POLY_OPA_DISP, D_8082AD54[gSaveContext.language],
                                                             D_8082ADD8[gSaveContext.language], 16, 4);
@@ -1380,7 +1392,7 @@ void KaleidoScope_UpdateNamePanel(PlayState* play) {
 
         if ((pauseCtx->namedItem != PAUSE_ITEM_NONE)
 #ifdef ENABLE_INV_EDITOR
-        && (pauseCtx->namedItem != ITEM_NONE)
+        && (pauseCtx->namedItem != ITEM_NONE) && (gDebug.invDebug.invIconAlpha == 255)
 #endif
         ) {
             if ((pauseCtx->pageIndex == PAUSE_MAP) && !sInDungeonScene) {
@@ -2966,7 +2978,7 @@ void KaleidoScope_Update(PlayState* play) {
         case 6:
             switch (pauseCtx->unk_1E4) {
                 case 0:
-                    if (CHECK_BTN_ALL(input->press.button, BTN_START)) {
+                    if (CHECK_BTN_ALL(input->press.button, BTN_START) && !INV_EDITOR_ENABLED) {
                         Interface_SetDoAction(play, DO_ACTION_NONE);
                         pauseCtx->state = 0x12;
                         WREG(2) = -6240;
@@ -3008,7 +3020,7 @@ void KaleidoScope_Update(PlayState* play) {
                 case 5:
                     pauseCtx->ocarinaStaff = AudioOcarina_GetPlayingStaff();
 
-                    if (CHECK_BTN_ALL(input->press.button, BTN_START)) {
+                    if (CHECK_BTN_ALL(input->press.button, BTN_START) && !INV_EDITOR_ENABLED) {
                         AudioOcarina_SetInstrument(OCARINA_INSTRUMENT_OFF);
                         Interface_SetDoAction(play, DO_ACTION_NONE);
                         pauseCtx->state = 0x12;
@@ -3059,7 +3071,7 @@ void KaleidoScope_Update(PlayState* play) {
                     break;
 
                 case 8:
-                    if (CHECK_BTN_ALL(input->press.button, BTN_START)) {
+                    if (CHECK_BTN_ALL(input->press.button, BTN_START) && !INV_EDITOR_ENABLED) {
                         AudioOcarina_SetInstrument(OCARINA_INSTRUMENT_OFF);
                         Interface_SetDoAction(play, DO_ACTION_NONE);
                         pauseCtx->state = 0x12;
@@ -3126,7 +3138,7 @@ void KaleidoScope_Update(PlayState* play) {
                             pauseCtx->unk_1EC = 4;
                             D_8082B25C = 3;
                         }
-                    } else if (CHECK_BTN_ALL(input->press.button, BTN_START) ||
+                    } else if ((CHECK_BTN_ALL(input->press.button, BTN_START) && !INV_EDITOR_ENABLED) ||
                                CHECK_BTN_ALL(input->press.button, BTN_B)) {
                         Interface_SetDoAction(play, DO_ACTION_NONE);
                         pauseCtx->unk_1EC = 2;
@@ -3142,7 +3154,7 @@ void KaleidoScope_Update(PlayState* play) {
 
                 case 4:
                     if (CHECK_BTN_ALL(input->press.button, BTN_B) || CHECK_BTN_ALL(input->press.button, BTN_A) ||
-                        CHECK_BTN_ALL(input->press.button, BTN_START) || (--D_8082B25C == 0)) {
+                        (CHECK_BTN_ALL(input->press.button, BTN_START) && !INV_EDITOR_ENABLED) || (--D_8082B25C == 0)) {
                         Interface_SetDoAction(play, DO_ACTION_NONE);
                         gSaveContext.buttonStatus[0] = gSaveContext.buttonStatus[1] = gSaveContext.buttonStatus[2] =
                             gSaveContext.buttonStatus[3] = BTN_ENABLED;
@@ -3376,7 +3388,7 @@ void KaleidoScope_Update(PlayState* play) {
                 pauseCtx->state = 0x10;
                 gameOverCtx->state++;
             } else if ((D_8082B25C <= 80) &&
-                       (CHECK_BTN_ALL(input->press.button, BTN_A) || CHECK_BTN_ALL(input->press.button, BTN_START))) {
+                       (CHECK_BTN_ALL(input->press.button, BTN_A) || (CHECK_BTN_ALL(input->press.button, BTN_START) && !INV_EDITOR_ENABLED))) {
                 pauseCtx->state = 0x10;
                 gameOverCtx->state++;
                 func_800F64E0(0);
@@ -3384,7 +3396,7 @@ void KaleidoScope_Update(PlayState* play) {
             break;
 
         case 0x10:
-            if (CHECK_BTN_ALL(input->press.button, BTN_A) || CHECK_BTN_ALL(input->press.button, BTN_START)) {
+            if (CHECK_BTN_ALL(input->press.button, BTN_A) || (CHECK_BTN_ALL(input->press.button, BTN_START) && !INV_EDITOR_ENABLED)) {
                 if (pauseCtx->promptChoice == 0) {
                     Audio_PlaySfxGeneral(NA_SE_SY_PIECE_OF_HEART, &gSfxDefaultPos, 4, &gSfxDefaultFreqAndVolScale,
                                          &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
