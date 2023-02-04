@@ -254,6 +254,10 @@ extern GfxPool gGfxPools[2]; // 0x24820 bytes
 extern u8 gAudioHeap[0x38000]; // 0x38000 bytes
 extern u8 gSystemHeap[];
 
+#ifdef ENABLE_WIDESCREEN
+extern u8 gIsUsingWidescreen;
+#endif
+
 #ifndef DISABLE_DEBUG_FEATURES
 extern Debug gDebug;
 #endif
