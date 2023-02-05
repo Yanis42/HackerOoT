@@ -34,8 +34,8 @@ typedef struct ItemDebug {
     s8 changeBy;
     u8 childTradeItem;
     u8 adultTradeItem;
+    u8 hookshotType;
     u8 bottleContents[4];
-    u8 slotToItems[18];
 } ItemDebug;
 
 typedef struct EquipmentDebug {
@@ -43,8 +43,8 @@ typedef struct EquipmentDebug {
     u8 selectedItem;
     u8 selectedSlot;
     s8 changeBy;
-    u8 equipUpgrades[4][3];
-    u8 slotToEquip[16];
+    u8 showOtherUpgrades;
+    u8 upgradeSlots[8];
 } EquipmentDebug;
 
 typedef struct InventoryDebug {
@@ -61,9 +61,12 @@ typedef struct InventoryDebug {
     s16 invIconAlpha;
 } InventoryDebug;
 
+u8 InventoryDebug_GetItemFromSlot(InventoryDebug* this);
+void InventoryDebug_SetItemFromSlot(InventoryDebug* this);
 void InventoryDebug_SetHUDAlpha(s16 alpha);
 void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this);
 void InventoryDebug_UpdateItemScreen(InventoryDebug* this);
+void InventoryDebug_DrawUpgrades(InventoryDebug* this, u16 i);
 void InventoryDebug_DrawRectangle(InventoryDebug* this, s32 leftX, s32 leftY, s32 rightX, s32 rightY, Color_RGBA8 rgba);
 void InventoryDebug_DrawTitle(InventoryDebug* this);
 void InventoryDebug_DrawInformations(InventoryDebug* this);
@@ -79,7 +82,20 @@ Gfx* Gfx_TextureIA8(Gfx* displayListHead, void* texture, s16 textureWidth, s16 t
 #define BOTTLE_CONTENT(itemDebug) (RANGE((itemDebug).selectedSlot, SLOT_BOTTLE_1, SLOT_BOTTLE_4) ? (itemDebug).bottleContents[(itemDebug).selectedSlot - SLOT_BOTTLE_1] : ITEM_NONE)
 #define CHILD_TRADE_ITEM(itemDebug) (((itemDebug).selectedSlot == SLOT_TRADE_CHILD) ? (itemDebug).childTradeItem : ITEM_NONE)
 #define ADULT_TRADE_ITEM(itemDebug) (((itemDebug).selectedSlot == SLOT_TRADE_ADULT) ? (itemDebug).adultTradeItem : ITEM_NONE)
-#define GET_SPECIAL_ITEM(itemDebug) ((BOTTLE_CONTENT(itemDebug) != ITEM_NONE) ? BOTTLE_CONTENT(itemDebug) : (CHILD_TRADE_ITEM(itemDebug) != ITEM_NONE) ? CHILD_TRADE_ITEM(itemDebug) : (ADULT_TRADE_ITEM(itemDebug) != ITEM_NONE) ? ADULT_TRADE_ITEM(itemDebug) : ITEM_NONE)
+#define HOOKSHOT_TYPE(itemDebug) (((itemDebug).selectedSlot == SLOT_HOOKSHOT) ? (itemDebug).hookshotType : ITEM_NONE)
+#define GET_SPECIAL_ITEM(itemDebug) ((BOTTLE_CONTENT(itemDebug) != ITEM_NONE) ? BOTTLE_CONTENT(itemDebug) : (CHILD_TRADE_ITEM(itemDebug) != ITEM_NONE) ? CHILD_TRADE_ITEM(itemDebug) : (ADULT_TRADE_ITEM(itemDebug) != ITEM_NONE) ? ADULT_TRADE_ITEM(itemDebug) : (HOOKSHOT_TYPE(itemDebug) != ITEM_NONE) ? HOOKSHOT_TYPE(itemDebug) : ITEM_NONE)
+#define UPDATE_ITEM(invDebug, min, max) {                                                                   \
+    if (RANGE((invDebug)->itemDebug.selectedItem, min, max)) {                                              \
+        gSaveContext.inventory.items[(invDebug)->itemDebug.selectedSlot] += (invDebug)->itemDebug.changeBy; \
+        if (gSaveContext.inventory.items[(invDebug)->itemDebug.selectedSlot] > max) {                       \
+            gSaveContext.inventory.items[(invDebug)->itemDebug.selectedSlot] = min;                         \
+        }                                                                                                   \
+                                                                                                            \
+        if (gSaveContext.inventory.items[(invDebug)->itemDebug.selectedSlot] < min) {                       \
+            gSaveContext.inventory.items[(invDebug)->itemDebug.selectedSlot] = max;                         \
+        }                                                                                                   \
+    }                                                                                                       \
+}
 
 // Equipment
 #define IS_UPGRADE(equipDebug) (((equipDebug).selectedSlot == SLOT_UPG_QUIVER) || ((equipDebug).selectedSlot == SLOT_UPG_BOMB_BAG) || ((equipDebug).selectedSlot == SLOT_UPG_STRENGTH) || ((equipDebug).selectedSlot == SLOT_UPG_SCALE))

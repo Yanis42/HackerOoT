@@ -45,7 +45,7 @@
  * Widescreen mode
  * Note: pre-rendered scenes with the fixed camera mode won't re-scale properly
 */
-#define ENABLE_WIDESCREEN
+// #define ENABLE_WIDESCREEN
 
 // Force widescreen mode regardless of SaveContext
 // #define FORCE_WIDESCREEN

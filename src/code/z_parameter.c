@@ -1983,12 +1983,18 @@ void Inventory_DeleteItem(u16 item, u16 invSlot) {
 
     osSyncPrintf("\nItem_Register(%d)\n", invSlot, gSaveContext.inventory.items[invSlot]);
 
-    for (i = 1; i < 4; i++) {
-        if (gSaveContext.equips.buttonItems[i] == item) {
-            gSaveContext.equips.buttonItems[i] = ITEM_NONE;
-            gSaveContext.equips.cButtonSlots[i - 1] = SLOT_NONE;
+#ifdef ENABLE_INV_EDITOR
+    if (!INV_EDITOR_ENABLED) {
+#endif
+        for (i = 1; i < 4; i++) {
+            if (gSaveContext.equips.buttonItems[i] == item) {
+                gSaveContext.equips.buttonItems[i] = ITEM_NONE;
+                gSaveContext.equips.cButtonSlots[i - 1] = SLOT_NONE;
+            }
         }
+#ifdef ENABLE_INV_EDITOR
     }
+#endif
 }
 
 s32 Inventory_ReplaceItem(PlayState* play, u16 oldItem, u16 newItem) {

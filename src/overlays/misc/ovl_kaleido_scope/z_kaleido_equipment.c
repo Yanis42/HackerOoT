@@ -199,11 +199,19 @@ void KaleidoScope_DrawEquipment(PlayState* play) {
 
                         if (pauseCtx->cursorX[PAUSE_EQUIP] == 0) {
                             if (pauseCtx->cursorY[PAUSE_EQUIP] == 0) {
-                                if (CUR_UPG_VALUE(UPG_BULLET_BAG) != 0) {
+                                if (
+#ifdef ENABLE_INV_EDITOR
+                                    INV_EDITOR_ENABLED ||
+#endif
+                                    CUR_UPG_VALUE(UPG_BULLET_BAG) != 0) {
                                     cursorMoveResult = 1;
                                 }
                             } else {
-                                if (CUR_UPG_VALUE(pauseCtx->cursorY[PAUSE_EQUIP]) != 0) {
+                                if (
+#ifdef ENABLE_INV_EDITOR
+                                    INV_EDITOR_ENABLED ||
+#endif
+                                    CUR_UPG_VALUE(pauseCtx->cursorY[PAUSE_EQUIP]) != 0) {
                                     cursorMoveResult = 1;
                                 }
                             }
@@ -244,7 +252,11 @@ void KaleidoScope_DrawEquipment(PlayState* play) {
                         pauseCtx->cursorPoint[PAUSE_EQUIP] += 1;
 
                         if (pauseCtx->cursorX[PAUSE_EQUIP] == 0) {
-                            if (CUR_UPG_VALUE(pauseCtx->cursorY[PAUSE_EQUIP]) != 0) {
+                            if (
+#ifdef ENABLE_INV_EDITOR
+                                INV_EDITOR_ENABLED ||
+#endif
+                                CUR_UPG_VALUE(pauseCtx->cursorY[PAUSE_EQUIP]) != 0) {
                                 cursorMoveResult = 1;
                             }
                         } else {
@@ -297,10 +309,18 @@ void KaleidoScope_DrawEquipment(PlayState* play) {
 
                         if (pauseCtx->cursorX[PAUSE_EQUIP] == 0) {
                             if (pauseCtx->cursorY[PAUSE_EQUIP] == 0) {
-                                if (CUR_UPG_VALUE(UPG_BULLET_BAG) != 0) {
+                                if (
+#ifdef ENABLE_INV_EDITOR
+                                    INV_EDITOR_ENABLED ||
+#endif
+                                    CUR_UPG_VALUE(UPG_BULLET_BAG) != 0) {
                                     cursorMoveResult = 1;
                                 }
-                            } else if (CUR_UPG_VALUE(pauseCtx->cursorY[PAUSE_EQUIP]) != 0) {
+                            } else if (
+#ifdef ENABLE_INV_EDITOR
+                                INV_EDITOR_ENABLED ||
+#endif
+                                CUR_UPG_VALUE(pauseCtx->cursorY[PAUSE_EQUIP]) != 0) {
                                 cursorMoveResult = 1;
                             }
                         } else if (
@@ -322,7 +342,11 @@ void KaleidoScope_DrawEquipment(PlayState* play) {
                         pauseCtx->cursorPoint[PAUSE_EQUIP] += 4;
 
                         if (pauseCtx->cursorX[PAUSE_EQUIP] == 0) {
-                            if (CUR_UPG_VALUE(pauseCtx->cursorY[PAUSE_EQUIP]) != 0) {
+                            if (
+#ifdef ENABLE_INV_EDITOR
+                                INV_EDITOR_ENABLED ||
+#endif
+                                CUR_UPG_VALUE(pauseCtx->cursorY[PAUSE_EQUIP]) != 0) {
                                 cursorMoveResult = 1;
                             }
                         } else if (
@@ -591,25 +615,34 @@ void KaleidoScope_DrawEquipment(PlayState* play) {
     for (rowStart = 0, j = 0, temp = 0, i = 0; i < 4; i++, rowStart += 4, j += 16) {
         gSPVertex(POLY_OPA_DISP++, &pauseCtx->equipVtx[j], 16, 0);
 
-        if (LINK_AGE_IN_YEARS == YEARS_CHILD) {
-            point = CUR_UPG_VALUE(sChildUpgrades[i]);
-            if (1) {}
-            if ((point != 0) && (CUR_UPG_VALUE(sChildUpgrades[i]) != 0)) {
-                KaleidoScope_DrawQuadTextureRGBA32(play->state.gfxCtx,
-                                                   gItemIcons[sChildUpgradeItemBases[i] + point - 1], ITEM_ICON_WIDTH,
-                                                   ITEM_ICON_HEIGHT, 0);
+#ifdef ENABLE_INV_EDITOR
+        if (!INV_EDITOR_ENABLED) {
+#endif
+            if (LINK_AGE_IN_YEARS == YEARS_CHILD) {
+                point = CUR_UPG_VALUE(sChildUpgrades[i]);
+                if (1) {}
+                if ((point != 0) && (CUR_UPG_VALUE(sChildUpgrades[i]) != 0)) {
+                    KaleidoScope_DrawQuadTextureRGBA32(play->state.gfxCtx,
+                                                    gItemIcons[sChildUpgradeItemBases[i] + point - 1], ITEM_ICON_WIDTH,
+                                                    ITEM_ICON_HEIGHT, 0);
+                }
+
+            } else {
+                if ((i == 0) && (CUR_UPG_VALUE(sAdultUpgrades[i]) == 0)) {
+                    KaleidoScope_DrawQuadTextureRGBA32(
+                        play->state.gfxCtx, gItemIcons[sChildUpgradeItemBases[i] + CUR_UPG_VALUE(sChildUpgrades[i]) - 1],
+                        ITEM_ICON_WIDTH, ITEM_ICON_HEIGHT, 0);
+                } else if (CUR_UPG_VALUE(sAdultUpgrades[i]) != 0) {
+                    KaleidoScope_DrawQuadTextureRGBA32(
+                        play->state.gfxCtx, gItemIcons[sAdultUpgradeItemBases[i] + CUR_UPG_VALUE(sAdultUpgrades[i]) - 1],
+                        ITEM_ICON_WIDTH, ITEM_ICON_HEIGHT, 0);
+                }
             }
-        } else {
-            if ((i == 0) && (CUR_UPG_VALUE(sAdultUpgrades[i]) == 0)) {
-                KaleidoScope_DrawQuadTextureRGBA32(
-                    play->state.gfxCtx, gItemIcons[sChildUpgradeItemBases[i] + CUR_UPG_VALUE(sChildUpgrades[i]) - 1],
-                    ITEM_ICON_WIDTH, ITEM_ICON_HEIGHT, 0);
-            } else if (CUR_UPG_VALUE(sAdultUpgrades[i]) != 0) {
-                KaleidoScope_DrawQuadTextureRGBA32(
-                    play->state.gfxCtx, gItemIcons[sAdultUpgradeItemBases[i] + CUR_UPG_VALUE(sAdultUpgrades[i]) - 1],
-                    ITEM_ICON_WIDTH, ITEM_ICON_HEIGHT, 0);
-            }
+#ifdef ENABLE_INV_EDITOR
+        } else if (pauseCtx->pageIndex == PAUSE_EQUIP) {
+            InventoryDebug_DrawUpgrades(&gDebug.invDebug, i);
         }
+#endif
 
         for (k = 0, bit = rowStart, point = 4; k < 3; k++, point += 4, temp++, bit++) {
 

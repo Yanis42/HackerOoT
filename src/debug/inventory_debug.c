@@ -2,7 +2,14 @@
 
 #ifdef ENABLE_INV_EDITOR
 
+/**
+ * TODO:
+ * - prevent unpausing with B while editing
+ * - fix bug where changing the ammo of an empty slot change the amount of sticks
+*/
+
 #include "global.h"
+#include "assets/textures/parameter_static/parameter_static.h"
 
 static u8 sSlotToEquipType[] = {
     EQUIP_TYPE_SWORD,  EQUIP_TYPE_SWORD,  EQUIP_TYPE_SWORD,
@@ -18,6 +25,13 @@ static u8 sSlotToEquip[] = {
     UPG_SCALE, ITEM_BOOTS_KOKIRI, ITEM_BOOTS_IRON,    ITEM_BOOTS_HOVER,
 };
 
+static u8 sUpgradeSlots[] = {
+    ITEM_QUIVER_30, ITEM_BOMB_BAG_20, ITEM_STRENGTH_GORONS_BRACELET, ITEM_SCALE_SILVER,
+    ITEM_BULLET_BAG_30, ITEM_DEKU_STICK, ITEM_DEKU_NUT, ITEM_ADULTS_WALLET,
+};
+
+static u8 sOtherUpgradeTypes[] = { UPG_BULLET_BAG, UPG_DEKU_STICKS, UPG_DEKU_NUTS, UPG_WALLET };
+
 static u8 sBottleContents[] = { ITEM_BOTTLE_EMPTY, ITEM_BOTTLE_EMPTY, ITEM_BOTTLE_EMPTY, ITEM_BOTTLE_EMPTY };
 
 // Item ID corresponding to each slot, aside from bottles and trade items
@@ -26,6 +40,52 @@ static u8 sSlotToItems[] = {
     ITEM_SLINGSHOT,  ITEM_OCARINA_FAIRY, ITEM_BOMBCHU,    ITEM_HOOKSHOT, ITEM_ARROW_ICE,   ITEM_FARORES_WIND,
     ITEM_BOOMERANG,  ITEM_LENS_OF_TRUTH, ITEM_MAGIC_BEAN, ITEM_HAMMER,   ITEM_ARROW_LIGHT, ITEM_NAYRUS_LOVE,
 };
+
+u8 InventoryDebug_GetItemFromSlot(InventoryDebug* this) {
+    if (INV_EDITOR_ENABLED && this->pauseCtx->pageIndex == PAUSE_ITEM) {
+        if (RANGE(this->itemDebug.selectedSlot, SLOT_BOTTLE_1, SLOT_BOTTLE_4)) {
+            return this->itemDebug.bottleContents[this->itemDebug.selectedSlot - SLOT_BOTTLE_1];
+        }
+
+        if (this->itemDebug.selectedSlot == SLOT_TRADE_CHILD) {
+            return this->itemDebug.childTradeItem;
+        }
+
+        if (this->itemDebug.selectedSlot == SLOT_TRADE_ADULT) {
+            return this->itemDebug.adultTradeItem;
+        }
+
+        if (this->itemDebug.selectedSlot == SLOT_HOOKSHOT) {
+            return this->itemDebug.hookshotType;
+        }
+
+        if (this->itemDebug.selectedSlot < ARRAY_COUNT(sSlotToItems)) {
+            return sSlotToItems[this->itemDebug.selectedSlot];
+        }
+    }
+
+    return ITEM_NONE;
+}
+
+void InventoryDebug_SetItemFromSlot(InventoryDebug* this) {
+    if ((this->itemDebug.selectedSlot != SLOT_NONE) && (this->itemDebug.selectedItem != ITEM_NONE)) {
+        if (RANGE(this->itemDebug.selectedSlot, SLOT_BOTTLE_1, SLOT_BOTTLE_4)) {
+            this->itemDebug.bottleContents[this->itemDebug.selectedSlot - SLOT_BOTTLE_1] = this->itemDebug.selectedItem;
+        }
+
+        if (RANGE(this->itemDebug.selectedItem, ITEM_WEIRD_EGG, ITEM_SOLD_OUT)) {
+            this->itemDebug.childTradeItem = this->itemDebug.selectedItem;
+        }
+
+        if (RANGE(this->itemDebug.selectedItem, ITEM_POCKET_EGG, ITEM_CLAIM_CHECK)) {
+            this->itemDebug.adultTradeItem = this->itemDebug.selectedItem;
+        }
+
+        if (RANGE(this->itemDebug.selectedItem, ITEM_HOOKSHOT, ITEM_LONGSHOT)) {
+            this->itemDebug.hookshotType = this->itemDebug.selectedItem;
+        }
+    }
+}
 
 void InventoryDebug_SetHUDAlpha(s16 alpha) {
     InterfaceContext* interfaceCtx = &gDebug.play->interfaceCtx;
@@ -66,6 +126,10 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
         this->equipDebug.selectedSlot = this->pauseCtx->cursorY[PAUSE_EQUIP] * 4;
     }
 
+    if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CUP)) {
+        this->equipDebug.showOtherUpgrades ^= 1;
+    }
+
     if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_A)) {
         // equipment and upgrades are handled differently
         if (!IS_UPGRADE(this->equipDebug)) {
@@ -80,11 +144,26 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
                 gSaveContext.inventory.equipment &= ~OWNED_EQUIP_FLAG(equip, (value % 3));
             }
         } else {
-            Inventory_ChangeUpgrade(CUR_UPG_VALUE(sSlotToEquip[this->equipDebug.selectedSlot]), 0);
+            u8 upgradeType = sSlotToEquip[this->equipDebug.selectedSlot];
+            u8 slotIndex = this->equipDebug.selectedSlot / 4;
+            s32 upgradeValue = CUR_UPG_VALUE(upgradeType);
+
+            if (this->equipDebug.showOtherUpgrades) {
+                upgradeType = sOtherUpgradeTypes[slotIndex];
+                slotIndex *= 2;
+                upgradeValue = CUR_UPG_VALUE(upgradeType);
+            }
+
+            if (upgradeValue == 0) {
+                Inventory_ChangeUpgrade(upgradeType, this->equipDebug.upgradeSlots[slotIndex]);
+            } else {
+                this->equipDebug.upgradeSlots[slotIndex] = upgradeValue;
+                Inventory_ChangeUpgrade(upgradeType, 0);
+            }
         }
     }
 
-    // increment for cycling through trade items/bottles and changing ammo
+    // increment for cycling through upgrades
     if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CLEFT)) {
         this->equipDebug.changeBy = -1;
     } else if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CRIGHT)) {
@@ -93,22 +172,25 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
 
     if (this->equipDebug.changeBy != 0) {
         u8 upgradeType = sSlotToEquip[this->equipDebug.selectedSlot];
-        u8 maxValue = 2; // there's only two diving scale upgrades
+        u8 maxValue = 2; // there's only two diving scale/wallet upgrades
         s8 value;
 
         switch (this->equipDebug.selectedSlot) {
-            case SLOT_UPG_QUIVER:
-                if (CHECK_BTN_ALL(gDebug.input->cur.button, BTN_CUP)) {
-                    upgradeType = UPG_BULLET_BAG;
-                }
-                FALLTHROUGH;
             case SLOT_UPG_BOMB_BAG:
             case SLOT_UPG_STRENGTH:
+            case SLOT_UPG_QUIVER:
                 maxValue = 3;
                 FALLTHROUGH;
             case SLOT_UPG_SCALE:
+                if (this->equipDebug.showOtherUpgrades) {
+                    upgradeType = sOtherUpgradeTypes[this->equipDebug.selectedSlot / 4];
+                }
+
                 value = CUR_UPG_VALUE(upgradeType) + this->equipDebug.changeBy;
-                Inventory_ChangeUpgrade(upgradeType, ((value < 1) ? maxValue : (value > maxValue) ? 1 : value));
+
+                if ((value - this->equipDebug.changeBy) != 0) {
+                    Inventory_ChangeUpgrade(upgradeType, ((value < 1) ? maxValue : (value > maxValue) ? 1 : value));
+                }
                 break;
             default:
                 break;
@@ -121,6 +203,8 @@ void InventoryDebug_UpdateItemScreen(InventoryDebug* this) {
     this->itemDebug.selectedSlot = this->pauseCtx->cursorSlot[PAUSE_ITEM];
     this->itemDebug.changeBy = 0;
 
+    InventoryDebug_SetItemFromSlot(this);
+
     // Delete and restore items
     if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_A)) {
         if (gSaveContext.inventory.items[this->itemDebug.selectedSlot] == ITEM_NONE) {
@@ -128,17 +212,7 @@ void InventoryDebug_UpdateItemScreen(InventoryDebug* this) {
             gSaveContext.inventory.items[this->itemDebug.selectedSlot] = (item == ITEM_NONE) ? sSlotToItems[this->itemDebug.selectedSlot] : item;
         } else {
             // Backup the special item
-            if (RANGE(this->itemDebug.selectedSlot, SLOT_BOTTLE_1, SLOT_BOTTLE_4)) {
-                this->itemDebug.bottleContents[this->itemDebug.selectedSlot - SLOT_BOTTLE_1] = this->itemDebug.selectedItem;
-            }
-
-            if (RANGE(this->itemDebug.selectedItem, ITEM_WEIRD_EGG, ITEM_SOLD_OUT)) {
-                this->itemDebug.childTradeItem = this->itemDebug.selectedItem;
-            }
-
-            if (RANGE(this->itemDebug.selectedItem, ITEM_POCKET_EGG, ITEM_CLAIM_CHECK)) {
-                this->itemDebug.adultTradeItem = this->itemDebug.selectedItem;
-            }
+            // InventoryDebug_SetItemFromSlot(this);
 
             // Delete the selected item
             Inventory_DeleteItem(this->itemDebug.selectedItem, this->itemDebug.selectedSlot);
@@ -160,6 +234,10 @@ void InventoryDebug_UpdateItemScreen(InventoryDebug* this) {
 
     // logic for the inventory screen
     if (this->itemDebug.changeBy != 0) {
+        u8 item = this->itemDebug.selectedItem;
+        u8 slot = this->itemDebug.selectedSlot;
+        u8 min = ITEM_NONE, max = ITEM_NONE;
+
         switch (this->itemDebug.selectedSlot) {
             case SLOT_DEKU_STICK:
             case SLOT_DEKU_NUT:
@@ -182,47 +260,122 @@ void InventoryDebug_UpdateItemScreen(InventoryDebug* this) {
             case SLOT_BOTTLE_2:
             case SLOT_BOTTLE_3:
             case SLOT_BOTTLE_4:
-                if (this->itemDebug.selectedItem >= ITEM_BOTTLE_EMPTY && this->itemDebug.selectedItem <= ITEM_BOTTLE_POE) {
-                    gSaveContext.inventory.items[this->itemDebug.selectedSlot] += this->itemDebug.changeBy;
-
-                    if (gSaveContext.inventory.items[this->itemDebug.selectedSlot] > ITEM_BOTTLE_POE) {
-                        gSaveContext.inventory.items[this->itemDebug.selectedSlot] = ITEM_BOTTLE_EMPTY;
-                    }
-
-                    if (gSaveContext.inventory.items[this->itemDebug.selectedSlot] < ITEM_BOTTLE_EMPTY) {
-                        gSaveContext.inventory.items[this->itemDebug.selectedSlot] = ITEM_BOTTLE_POE;
-                    }
-                }
+                min = ITEM_BOTTLE_EMPTY;
+                max = ITEM_BOTTLE_POE;
                 break;
             case SLOT_TRADE_ADULT:
-                if (this->itemDebug.selectedItem >= ITEM_POCKET_EGG && this->itemDebug.selectedItem <= ITEM_CLAIM_CHECK) {
-                    gSaveContext.inventory.items[this->itemDebug.selectedSlot] += this->itemDebug.changeBy;
-
-                    if (gSaveContext.inventory.items[this->itemDebug.selectedSlot] > ITEM_CLAIM_CHECK) {
-                        gSaveContext.inventory.items[this->itemDebug.selectedSlot] = ITEM_POCKET_EGG;
-                    }
-
-                    if (gSaveContext.inventory.items[this->itemDebug.selectedSlot] < ITEM_POCKET_EGG) {
-                        gSaveContext.inventory.items[this->itemDebug.selectedSlot] = ITEM_CLAIM_CHECK;
-                    }
-                }
+                min = ITEM_POCKET_EGG;
+                max = ITEM_CLAIM_CHECK;
                 break;
             case SLOT_TRADE_CHILD:
-                if (this->itemDebug.selectedItem >= ITEM_WEIRD_EGG && this->itemDebug.selectedItem <= ITEM_SOLD_OUT) {
-                    gSaveContext.inventory.items[this->itemDebug.selectedSlot] += this->itemDebug.changeBy;
-
-                    if (gSaveContext.inventory.items[this->itemDebug.selectedSlot] > ITEM_SOLD_OUT) {
-                        gSaveContext.inventory.items[this->itemDebug.selectedSlot] = ITEM_WEIRD_EGG;
-                    }
-
-                    if (gSaveContext.inventory.items[this->itemDebug.selectedSlot] < ITEM_WEIRD_EGG) {
-                        gSaveContext.inventory.items[this->itemDebug.selectedSlot] = ITEM_SOLD_OUT;
-                    }
-                }
+                min = ITEM_WEIRD_EGG;
+                max = ITEM_SOLD_OUT;
                 break;
+            case SLOT_HOOKSHOT:
+                min = ITEM_HOOKSHOT;
+                max = ITEM_LONGSHOT;
             default:
                 break;
         }
+
+        if ((min != ITEM_NONE) && (max != ITEM_NONE)) {
+            UPDATE_ITEM(this, min, max)
+        }
+    }
+}
+
+void InventoryDebug_DrawUpgrades(InventoryDebug* this, u16 i) {
+    u8 sChildUpgradeTypes[] = { UPG_BULLET_BAG, UPG_BOMB_BAG, UPG_STRENGTH, UPG_SCALE };
+    u8 sAdultUpgradeTypes[] = { UPG_QUIVER, UPG_BOMB_BAG, UPG_STRENGTH, UPG_SCALE };
+    u8 sUpgradeItem[] = { ITEM_QUIVER_30, ITEM_BOMB_BAG_20, ITEM_STRENGTH_GORONS_BRACELET,
+                                ITEM_SCALE_SILVER };
+    u8 sOtherUpgradeItem[] = { ITEM_BULLET_BAG_30, ITEM_DEKU_STICK, ITEM_DEKU_NUT, ITEM_ADULTS_WALLET };
+    u8 upgradeType;
+    u8 upgradeValue;
+    u8 isStickOrNut = false;
+    void* texture = NULL;
+    void* ammoTexture = NULL;
+    u8 posY = 0;
+
+    if (!this->equipDebug.showOtherUpgrades) {
+        upgradeType = sChildUpgradeTypes[i];
+        upgradeValue = CUR_UPG_VALUE(upgradeType);
+
+        if (LINK_IS_ADULT) {
+            upgradeType = sAdultUpgradeTypes[i];
+            upgradeValue = CUR_UPG_VALUE(upgradeType);
+        }
+
+        if (upgradeValue != 0) {
+            texture = gItemIcons[sUpgradeItem[i] + upgradeValue - 1];
+        }
+    } else {
+        upgradeType = sOtherUpgradeTypes[i];
+        upgradeValue = CUR_UPG_VALUE(upgradeType);
+
+        if (upgradeValue != 0) {
+            u8 item = sOtherUpgradeItem[i];
+            u8 iconIndex = item + upgradeValue - 1;
+
+            if (item != ITEM_NONE) {
+                if (item == ITEM_DEKU_STICK || item == ITEM_DEKU_NUT) {
+                    iconIndex = item;
+
+                    if (item == ITEM_DEKU_STICK) {
+                        posY = 115;
+                    } else {
+                        posY = 148;
+                    }
+
+                    switch (upgradeValue) {
+                        case 1:
+                            if (item == ITEM_DEKU_STICK) {
+                                ammoTexture = gAmmoDigit1Tex;
+                            } else {
+                                ammoTexture = gAmmoDigit2Tex;
+                            }
+                            break;
+                        case 2:
+                            if (item == ITEM_DEKU_STICK) {
+                                ammoTexture = gAmmoDigit2Tex;
+                            } else {
+                                ammoTexture = gAmmoDigit3Tex;
+                            }
+                            break;
+                        case 3:
+                            if (item == ITEM_DEKU_STICK) {
+                                ammoTexture = gAmmoDigit3Tex;
+                            } else {
+                                ammoTexture = gAmmoDigit4Tex;
+                            }
+                            break;
+                        default:
+                            ammoTexture = NULL;
+                            break;
+                    }
+                }
+                texture = gItemIcons[iconIndex];
+            }
+        }
+    }
+
+    if (texture != NULL) {
+        OPEN_DISPS(this->gfxCtx, __BASE_FILE__, __LINE__);
+
+        gDPLoadTextureBlock(POLY_OPA_DISP++, texture, G_IM_FMT_RGBA, G_IM_SIZ_32b, ITEM_ICON_WIDTH, ITEM_ICON_HEIGHT, 0,
+                            G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD,
+                            G_TX_NOLOD);
+        gSP1Quadrangle(POLY_OPA_DISP++, 0, 2, 3, 1, 0);
+
+        if ((ammoTexture != NULL) && (posY != 0)) {
+            // @bug: the digits aren't moving with the rest of the equipment screen
+            gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 120, 255, 0, 255);
+            POLY_OPA_DISP = Gfx_TextureIA8(POLY_OPA_DISP, ammoTexture, 8, 8, 58, posY, 8, 8, 1 << 10, 1 << 10);
+            POLY_OPA_DISP = Gfx_TextureIA8(POLY_OPA_DISP, gAmmoDigit0Tex, 8, 8, 64, posY, 8, 8, 1 << 10, 1 << 10);
+            gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, 255);
+        }
+
+        CLOSE_DISPS(this->gfxCtx, __BASE_FILE__, __LINE__);
     }
 }
 
@@ -252,26 +405,34 @@ void InventoryDebug_DrawTitle(InventoryDebug* this) {
 void InventoryDebug_DrawInformations(InventoryDebug* this) {
     Color_RGBA8 rgba = { 255, 255, 255, 255 };
     s16 posY = this->bottomTextPosY + 2;
-    const char* itemCtrls = {
-        "[C-Left]: Decrement" PRINT_NEWLINE "[C-Right]: Increment" PRINT_NEWLINE
-        "[C-Up]: Hold to change by 10" PRINT_NEWLINE "[A]: Delete/Give item" PRINT_NEWLINE
-    };
-
-    // draw build date and git commit
-    Print_SetInfos(&gDebug.printer, this->gfxCtx, 2, posY, rgba);
-    Print_Screen(&gDebug.printer, ("Build Date: %s" PRINT_NEWLINE "Build Version: %s"), gBuildDate, gBuildGitVersion);
-    posY += 3;
+    const char* ctrlsToPrint;
 
     // draw controls for the current inventory screen
     switch (this->pauseCtx->pageIndex) {
         case PAUSE_ITEM:
-            Print_SetInfos(&gDebug.printer, this->gfxCtx, 2, posY, rgba);
-            Print_Screen(&gDebug.printer, itemCtrls);
-            posY += 2;
+            ctrlsToPrint = (
+                "[C-Left]: Decrement" PRINT_NEWLINE "[C-Right]: Increment" PRINT_NEWLINE
+                "[C-Up]: Hold to change by 10" PRINT_NEWLINE "[A]: Delete/Give item" PRINT_NEWLINE
+            );
+            break;
+        case PAUSE_EQUIP:
+            ctrlsToPrint = (
+                "[C-Left/C-Right]: Change Upgrade Type" PRINT_NEWLINE "[C-Up]: Show Other Upgrades" PRINT_NEWLINE
+                "[A]: Delete/Give item\n" PRINT_NEWLINE "Other Upgrades:" PRINT_NEWLINE
+                "- Bullet Bag" PRINT_NEWLINE "- Deku Stick Capacity" PRINT_NEWLINE
+                "- Nut Capacity" PRINT_NEWLINE "- Wallet" PRINT_NEWLINE
+            );
             break;
         default:
+            ctrlsToPrint = "";
             break;
     }
+
+    // draw build infos and controls for current inventory screen
+    Print_SetInfos(&gDebug.printer, this->gfxCtx, 2, posY, rgba);
+    Print_Screen(&gDebug.printer, ("Build Date: %s" PRINT_NEWLINE "Build Version: %s"), gBuildDate, gBuildGitVersion);
+    Print_SetInfos(&gDebug.printer, this->gfxCtx, 2, (posY += 3), rgba);
+    Print_Screen(&gDebug.printer, ctrlsToPrint);
 }
 
 void InventoryDebug_Main(InventoryDebug* this) {
@@ -319,13 +480,10 @@ void InventoryDebug_Init(InventoryDebug* this) {
         this->itemDebug.changeBy = 0;
         this->itemDebug.childTradeItem = ITEM_WEIRD_EGG;
         this->itemDebug.adultTradeItem = ITEM_POCKET_EGG;
+        this->itemDebug.hookshotType = ITEM_HOOKSHOT;
 
         for (i = 0; i < ARRAY_COUNTU(sBottleContents); i++) {
             this->itemDebug.bottleContents[i] = sBottleContents[i];
-        }
-
-        for (i = 0; i < ARRAY_COUNTU(sSlotToItems); i++) {
-            this->itemDebug.slotToItems[i] = sSlotToItems[i];
         }
 
         this->itemDebug.state = INVDBG_STRUCT_STATE_READY;
@@ -337,11 +495,13 @@ void InventoryDebug_Init(InventoryDebug* this) {
         this->equipDebug.selectedItem = ITEM_SWORD_KOKIRI;
         this->equipDebug.selectedSlot = 0;
         this->equipDebug.changeBy = 0;
-        this->equipDebug.state = INVDBG_STRUCT_STATE_READY;
+        this->equipDebug.showOtherUpgrades = false;
 
-        for (i = 0; i < ARRAY_COUNTU(sSlotToEquip); i++) {
-            this->equipDebug.slotToEquip[i] = sSlotToEquip[i];
+        for (i = 0; i < ARRAY_COUNTU(sUpgradeSlots); i++) {
+            this->equipDebug.upgradeSlots[i] = sUpgradeSlots[i];
         }
+
+        this->equipDebug.state = INVDBG_STRUCT_STATE_READY;
     }
 }
 

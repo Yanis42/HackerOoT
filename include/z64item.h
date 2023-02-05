@@ -151,19 +151,19 @@ typedef enum {
 } InventorySlot;
 
 typedef enum {
-    SLOT_UPG_QUIVER,
+    SLOT_UPG_QUIVER, // also bullet bag slot
     SLOT_SWORD_KOKIRI,
     SLOT_SWORD_MASTER,
     SLOT_SWORD_BIGGORON,
-    SLOT_UPG_BOMB_BAG,
+    SLOT_UPG_BOMB_BAG, // also deku stick capacity slot (inventory editor only)
     SLOT_SHIELD_DEKU,
     SLOT_SHIELD_HYLIAN,
     SLOT_SHIELD_MIRROR,
-    SLOT_UPG_STRENGTH,
+    SLOT_UPG_STRENGTH, // also deku nut capacity slot (inventory editor only)
     SLOT_TUNIC_KOKIRI,
     SLOT_TUNIC_GORON,
     SLOT_TUNIC_ZORA,
-    SLOT_UPG_SCALE,
+    SLOT_UPG_SCALE, // also wallet capacity slot (inventory editor only)
     SLOT_BOOTS_KOKIRI,
     SLOT_BOOTS_IRON,
     SLOT_BOOTS_HOVER

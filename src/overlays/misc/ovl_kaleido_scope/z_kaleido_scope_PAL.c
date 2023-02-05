@@ -1144,7 +1144,7 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
 
     if ((pauseCtx->state == 6) && (pauseCtx->namedItem != PAUSE_ITEM_NONE)
 #ifdef ENABLE_INV_EDITOR
-    && (pauseCtx->namedItem != ITEM_NONE) && (gDebug.invDebug.invIconAlpha == 255)
+    && (gDebug.invDebug.invIconAlpha == 255)
 #endif
     && (pauseCtx->nameDisplayTimer < WREG(89)) &&
         (!pauseCtx->unk_1E4 || (pauseCtx->unk_1E4 == 2) || ((pauseCtx->unk_1E4 >= 4) && (pauseCtx->unk_1E4 <= 7)) ||
@@ -1386,13 +1386,20 @@ void KaleidoScope_UpdateNamePanel(PlayState* play) {
         ((pauseCtx->pageIndex == PAUSE_MAP) && (pauseCtx->cursorSpecialPos != 0))) {
 
         pauseCtx->namedItem = pauseCtx->cursorItem[pauseCtx->pageIndex];
+#ifdef ENABLE_INV_EDITOR
+        {
+            u8 item = InventoryDebug_GetItemFromSlot(&gDebug.invDebug);
+            pauseCtx->namedItem = item != ITEM_NONE ? item : pauseCtx->namedItem;
+        }
+#endif
+
         sp2A = pauseCtx->namedItem;
 
         osCreateMesgQueue(&pauseCtx->loadQueue, &pauseCtx->loadMsg, 1);
 
         if ((pauseCtx->namedItem != PAUSE_ITEM_NONE)
 #ifdef ENABLE_INV_EDITOR
-        && (pauseCtx->namedItem != ITEM_NONE) && (gDebug.invDebug.invIconAlpha == 255)
+       && (gDebug.invDebug.invIconAlpha == 255)
 #endif
         ) {
             if ((pauseCtx->pageIndex == PAUSE_MAP) && !sInDungeonScene) {
