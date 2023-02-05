@@ -66,7 +66,7 @@ void InventoryDebug_SetItemFromSlot(InventoryDebug* this);
 void InventoryDebug_SetHUDAlpha(s16 alpha);
 void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this);
 void InventoryDebug_UpdateItemScreen(InventoryDebug* this);
-void InventoryDebug_DrawUpgrades(InventoryDebug* this, u16 i);
+void InventoryDebug_DrawUpgrades(InventoryDebug* this, u16 i, s16 alpha);
 void InventoryDebug_DrawRectangle(InventoryDebug* this, s32 leftX, s32 leftY, s32 rightX, s32 rightY, Color_RGBA8 rgba);
 void InventoryDebug_DrawTitle(InventoryDebug* this);
 void InventoryDebug_DrawInformations(InventoryDebug* this);

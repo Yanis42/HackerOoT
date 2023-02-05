@@ -4,7 +4,6 @@
 
 /**
  * TODO:
- * - prevent unpausing with B while editing
  * - fix bug where changing the ammo of an empty slot change the amount of sticks
 */
 
@@ -192,6 +191,50 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
                     Inventory_ChangeUpgrade(upgradeType, ((value < 1) ? maxValue : (value > maxValue) ? 1 : value));
                 }
                 break;
+            case SLOT_SWORD_BIGGORON:
+                {
+                    u8 equipValue = EQUIP_INV_SWORD_KOKIRI;
+                    u16 swordHealth = 1;
+
+                    if (gSaveContext.bgsFlag) {
+                        gSaveContext.bgsFlag = false;
+
+                        if (this->equipDebug.changeBy > 0) {
+                            swordHealth = 0;
+                            equipValue = EQUIP_INV_SWORD_BROKENGIANTKNIFE;
+                        } else {
+                            swordHealth = 8;
+                            equipValue = EQUIP_INV_SWORD_BIGGORON;
+                        }
+                    } else {
+                        if (gSaveContext.swordHealth > 0) {
+                            if (this->equipDebug.changeBy > 0) {
+                                if (gSaveContext.swordHealth > 0) {
+                                    gSaveContext.bgsFlag = true;
+                                }
+                            } else {
+                                swordHealth = 0;
+                                equipValue = EQUIP_INV_SWORD_BROKENGIANTKNIFE;
+                            }
+                        } else {
+                            if (this->equipDebug.changeBy < 0) {
+                                    gSaveContext.bgsFlag = true;
+                            } else {
+                                swordHealth = 8;
+                                equipValue = EQUIP_INV_SWORD_BIGGORON;
+                            }
+                        }
+                    }
+
+                    gSaveContext.swordHealth = (swordHealth != 1) ? swordHealth : gSaveContext.swordHealth;
+                    if (equipValue != EQUIP_INV_SWORD_KOKIRI) {
+                        gSaveContext.inventory.equipment |= OWNED_EQUIP_FLAG(EQUIP_TYPE_SWORD, equipValue);
+                        if (equipValue == EQUIP_INV_SWORD_BIGGORON) {
+                            gSaveContext.inventory.equipment &= ~OWNED_EQUIP_FLAG(EQUIP_TYPE_SWORD, EQUIP_INV_SWORD_BROKENGIANTKNIFE);
+                        }
+                    }
+                }
+                break;
             default:
                 break;
         }
@@ -211,9 +254,6 @@ void InventoryDebug_UpdateItemScreen(InventoryDebug* this) {
             u8 item = GET_SPECIAL_ITEM(this->itemDebug); // restore the special item
             gSaveContext.inventory.items[this->itemDebug.selectedSlot] = (item == ITEM_NONE) ? sSlotToItems[this->itemDebug.selectedSlot] : item;
         } else {
-            // Backup the special item
-            // InventoryDebug_SetItemFromSlot(this);
-
             // Delete the selected item
             Inventory_DeleteItem(this->itemDebug.selectedItem, this->itemDebug.selectedSlot);
         }
@@ -284,34 +324,23 @@ void InventoryDebug_UpdateItemScreen(InventoryDebug* this) {
     }
 }
 
-void InventoryDebug_DrawUpgrades(InventoryDebug* this, u16 i) {
-    u8 sChildUpgradeTypes[] = { UPG_BULLET_BAG, UPG_BOMB_BAG, UPG_STRENGTH, UPG_SCALE };
-    u8 sAdultUpgradeTypes[] = { UPG_QUIVER, UPG_BOMB_BAG, UPG_STRENGTH, UPG_SCALE };
-    u8 sUpgradeItem[] = { ITEM_QUIVER_30, ITEM_BOMB_BAG_20, ITEM_STRENGTH_GORONS_BRACELET,
-                                ITEM_SCALE_SILVER };
+void InventoryDebug_DrawUpgrades(InventoryDebug* this, u16 i, s16 alpha) {
+    u8 sUpgradeTypes[] = { UPG_QUIVER, UPG_BOMB_BAG, UPG_STRENGTH, UPG_SCALE };
+    u8 sUpgradeItems[] = { ITEM_QUIVER_30, ITEM_BOMB_BAG_20, ITEM_STRENGTH_GORONS_BRACELET, ITEM_SCALE_SILVER };
     u8 sOtherUpgradeItem[] = { ITEM_BULLET_BAG_30, ITEM_DEKU_STICK, ITEM_DEKU_NUT, ITEM_ADULTS_WALLET };
-    u8 upgradeType;
     u8 upgradeValue;
-    u8 isStickOrNut = false;
     void* texture = NULL;
     void* ammoTexture = NULL;
     u8 posY = 0;
 
     if (!this->equipDebug.showOtherUpgrades) {
-        upgradeType = sChildUpgradeTypes[i];
-        upgradeValue = CUR_UPG_VALUE(upgradeType);
-
-        if (LINK_IS_ADULT) {
-            upgradeType = sAdultUpgradeTypes[i];
-            upgradeValue = CUR_UPG_VALUE(upgradeType);
-        }
+        upgradeValue = CUR_UPG_VALUE(sUpgradeTypes[i]);
 
         if (upgradeValue != 0) {
-            texture = gItemIcons[sUpgradeItem[i] + upgradeValue - 1];
+            texture = gItemIcons[sUpgradeItems[i] + upgradeValue - 1];
         }
     } else {
-        upgradeType = sOtherUpgradeTypes[i];
-        upgradeValue = CUR_UPG_VALUE(upgradeType);
+        upgradeValue = CUR_UPG_VALUE(sOtherUpgradeTypes[i]);
 
         if (upgradeValue != 0) {
             u8 item = sOtherUpgradeItem[i];
@@ -368,11 +397,11 @@ void InventoryDebug_DrawUpgrades(InventoryDebug* this, u16 i) {
         gSP1Quadrangle(POLY_OPA_DISP++, 0, 2, 3, 1, 0);
 
         if ((ammoTexture != NULL) && (posY != 0)) {
-            // @bug: the digits aren't moving with the rest of the equipment screen
-            gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 120, 255, 0, 255);
+            //! @bug: the digits aren't moving with the rest of the equipment screen
+            gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 120, 255, 0, alpha);
             POLY_OPA_DISP = Gfx_TextureIA8(POLY_OPA_DISP, ammoTexture, 8, 8, 58, posY, 8, 8, 1 << 10, 1 << 10);
             POLY_OPA_DISP = Gfx_TextureIA8(POLY_OPA_DISP, gAmmoDigit0Tex, 8, 8, 64, posY, 8, 8, 1 << 10, 1 << 10);
-            gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, 255);
+            gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, alpha);
         }
 
         CLOSE_DISPS(this->gfxCtx, __BASE_FILE__, __LINE__);

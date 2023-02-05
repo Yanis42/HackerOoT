@@ -640,7 +640,7 @@ void KaleidoScope_DrawEquipment(PlayState* play) {
             }
 #ifdef ENABLE_INV_EDITOR
         } else if (pauseCtx->pageIndex == PAUSE_EQUIP) {
-            InventoryDebug_DrawUpgrades(&gDebug.invDebug, i);
+            InventoryDebug_DrawUpgrades(&gDebug.invDebug, i, alpha);
         }
 #endif
 

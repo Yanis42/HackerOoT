@@ -1163,10 +1163,12 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
 
             {
                 u8 alpha = 255;
+                u8 colorIsGrey = pauseCtx->nameColorSet == 1;
 #ifdef ENABLE_INV_EDITOR
                 alpha = INV_EDITOR_ENABLED ? gDebug.invDebug.invIconAlpha : 255;
+                colorIsGrey = colorIsGrey && !INV_EDITOR_ENABLED;
 #endif
-                if (pauseCtx->nameColorSet == 1) {
+                if (colorIsGrey) {
                     gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 70, 70, 70, alpha);
                 } else {
                     gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, alpha);
@@ -2990,7 +2992,11 @@ void KaleidoScope_Update(PlayState* play) {
                         pauseCtx->state = 0x12;
                         WREG(2) = -6240;
                         func_800F64E0(0);
-                    } else if (CHECK_BTN_ALL(input->press.button, BTN_B)) {
+                    } else if (CHECK_BTN_ALL(input->press.button, BTN_B)
+#ifdef ENABLE_INV_EDITOR
+                    && !INV_EDITOR_ENABLED
+#endif
+                    ) {
                         pauseCtx->mode = 0;
                         pauseCtx->promptChoice = 0;
                         Audio_PlaySfxGeneral(NA_SE_SY_DECIDE, &gSfxDefaultPos, 4, &gSfxDefaultFreqAndVolScale,
@@ -3035,7 +3041,11 @@ void KaleidoScope_Update(PlayState* play) {
                         func_800F64E0(0);
                         pauseCtx->unk_1E4 = 0;
                         break;
-                    } else if (CHECK_BTN_ALL(input->press.button, BTN_B)) {
+                    } else if (CHECK_BTN_ALL(input->press.button, BTN_B)
+#ifdef ENABLE_INV_EDITOR
+                    && !INV_EDITOR_ENABLED
+#endif
+                    ) {
                         AudioOcarina_SetInstrument(OCARINA_INSTRUMENT_OFF);
                         pauseCtx->unk_1E4 = 0;
                         pauseCtx->mode = 0;
@@ -3078,14 +3088,22 @@ void KaleidoScope_Update(PlayState* play) {
                     break;
 
                 case 8:
-                    if (CHECK_BTN_ALL(input->press.button, BTN_START) && !INV_EDITOR_ENABLED) {
+                    if (CHECK_BTN_ALL(input->press.button, BTN_START)
+#ifdef ENABLE_INV_EDITOR
+                    && !INV_EDITOR_ENABLED
+#endif
+                    ) {
                         AudioOcarina_SetInstrument(OCARINA_INSTRUMENT_OFF);
                         Interface_SetDoAction(play, DO_ACTION_NONE);
                         pauseCtx->state = 0x12;
                         WREG(2) = -6240;
                         func_800F64E0(0);
                         pauseCtx->unk_1E4 = 0;
-                    } else if (CHECK_BTN_ALL(input->press.button, BTN_B)) {
+                    } else if (CHECK_BTN_ALL(input->press.button, BTN_B)
+#ifdef ENABLE_INV_EDITOR
+                    && !INV_EDITOR_ENABLED
+#endif
+                    ) {
                         AudioOcarina_SetInstrument(OCARINA_INSTRUMENT_OFF);
                         pauseCtx->unk_1E4 = 0;
                         pauseCtx->mode = 0;
@@ -3145,8 +3163,12 @@ void KaleidoScope_Update(PlayState* play) {
                             pauseCtx->unk_1EC = 4;
                             D_8082B25C = 3;
                         }
-                    } else if ((CHECK_BTN_ALL(input->press.button, BTN_START) && !INV_EDITOR_ENABLED) ||
-                               CHECK_BTN_ALL(input->press.button, BTN_B)) {
+                    } else if ((CHECK_BTN_ALL(input->press.button, BTN_START) ||
+                               CHECK_BTN_ALL(input->press.button, BTN_B))
+#ifdef ENABLE_INV_EDITOR
+                                && !INV_EDITOR_ENABLED
+#endif
+                    ) {
                         Interface_SetDoAction(play, DO_ACTION_NONE);
                         pauseCtx->unk_1EC = 2;
                         WREG(2) = -6240;
@@ -3160,8 +3182,12 @@ void KaleidoScope_Update(PlayState* play) {
                     break;
 
                 case 4:
-                    if (CHECK_BTN_ALL(input->press.button, BTN_B) || CHECK_BTN_ALL(input->press.button, BTN_A) ||
-                        (CHECK_BTN_ALL(input->press.button, BTN_START) && !INV_EDITOR_ENABLED) || (--D_8082B25C == 0)) {
+                    if ((CHECK_BTN_ALL(input->press.button, BTN_B) || CHECK_BTN_ALL(input->press.button, BTN_A) ||
+                        (CHECK_BTN_ALL(input->press.button, BTN_START)) || (--D_8082B25C == 0))
+#ifdef ENABLE_INV_EDITOR
+                        && !INV_EDITOR_ENABLED
+#endif
+                        ) {
                         Interface_SetDoAction(play, DO_ACTION_NONE);
                         gSaveContext.buttonStatus[0] = gSaveContext.buttonStatus[1] = gSaveContext.buttonStatus[2] =
                             gSaveContext.buttonStatus[3] = BTN_ENABLED;
