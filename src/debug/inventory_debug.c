@@ -9,10 +9,22 @@
  * - dungeon objects (key, map, compass, boss key)
  * - rupees
  * - bean bought flag
+ * - @bug where pressing A when having broken knife or BGS does nothing
 */
 
 #include "global.h"
 #include "assets/textures/parameter_static/parameter_static.h"
+
+static u8 sSlotToQuestItems[] = {
+    ITEM_MEDALLION_FOREST, ITEM_MEDALLION_FIRE,   ITEM_MEDALLION_WATER,
+    ITEM_MEDALLION_SPIRIT, ITEM_MEDALLION_SHADOW, ITEM_MEDALLION_LIGHT,
+    ITEM_SONG_MINUET,      ITEM_SONG_BOLERO,      ITEM_SONG_SERENADE,
+    ITEM_SONG_REQUIEM,     ITEM_SONG_NOCTURNE,    ITEM_SONG_PRELUDE,
+    ITEM_SONG_LULLABY,     ITEM_SONG_EPONA,       ITEM_SONG_SARIA,
+    ITEM_SONG_SUN,         ITEM_SONG_TIME,        ITEM_SONG_STORMS,
+    ITEM_KOKIRI_EMERALD,   ITEM_GORON_RUBY,       ITEM_ZORA_SAPPHIRE,
+    ITEM_STONE_OF_AGONY,   ITEM_GERUDOS_CARD,     ITEM_SKULL_TOKEN, ITEM_HEART_PIECE
+};
 
 static u8 sSlotToEquipType[] = {
     EQUIP_TYPE_SWORD,  EQUIP_TYPE_SWORD,  EQUIP_TYPE_SWORD,
@@ -120,7 +132,73 @@ void InventoryDebug_UpdateInfosPanel(InventoryDebug* this) {
 }
 
 void InventoryDebug_UpdateQuestScreen(InventoryDebug* this) {
+    this->common.selectedItem = this->pauseCtx->cursorItem[PAUSE_QUEST];
+    this->common.selectedSlot = this->pauseCtx->cursorSlot[PAUSE_QUEST];
+    this->common.selectedSlot = (this->common.selectedSlot == 231) ? 24 : this->common.selectedSlot;
+    this->common.changeBy = 0;
 
+    if (this->common.selectedSlot < ARRAY_COUNTU(sSlotToQuestItems)) {
+        u8 item = sSlotToQuestItems[this->common.selectedSlot];
+
+        if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_A)) {
+            u8 index = 0;
+
+            if (RANGE(item, ITEM_MEDALLION_FOREST, ITEM_MEDALLION_LIGHT)) {
+                index = item - ITEM_MEDALLION_FOREST + QUEST_MEDALLION_FOREST;
+            } else if (RANGE(item, ITEM_SONG_MINUET, ITEM_SONG_STORMS)) {
+                index = item - ITEM_SONG_MINUET + QUEST_SONG_MINUET;
+            } else if (RANGE(item, ITEM_KOKIRI_EMERALD, ITEM_ZORA_SAPPHIRE)) {
+                index = item - ITEM_KOKIRI_EMERALD + QUEST_KOKIRI_EMERALD;
+            } else if ((item == ITEM_STONE_OF_AGONY) || (item == ITEM_GERUDOS_CARD)) {
+                index = item - ITEM_STONE_OF_AGONY + QUEST_STONE_OF_AGONY;
+            } else if (item == ITEM_SKULL_TOKEN) {
+                index = item - ITEM_SKULL_TOKEN + QUEST_SKULL_TOKEN;
+            }
+
+            gSaveContext.inventory.questItems ^= gBitFlags[index];
+        }
+
+        // increment for updating heart pieces and gold skulltula token total
+        if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CLEFT)) {
+            this->common.changeBy = -1;
+        } else if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CRIGHT)) {
+            this->common.changeBy = 1;
+        }
+
+        if (CHECK_BTN_ALL(gDebug.input->cur.button, BTN_CUP) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_CLEFT)) {
+            this->common.changeBy = -10;
+        } else if (CHECK_BTN_ALL(gDebug.input->cur.button, BTN_CUP) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_CRIGHT)) {
+            this->common.changeBy = 10;
+        }
+
+        if (this->common.changeBy != 0) {
+            switch (item) {
+                case ITEM_SKULL_TOKEN:
+                    gSaveContext.inventory.gsTokens += this->common.changeBy;
+
+                    if (gSaveContext.inventory.gsTokens < 0) {
+                        gSaveContext.inventory.gsTokens = 999;
+                    }
+
+                    if (gSaveContext.inventory.gsTokens > 999) {
+                        gSaveContext.inventory.gsTokens = 0;
+                    }
+                    break;
+                case ITEM_HEART_PIECE:
+                    if ((this->common.changeBy == 1) || (this->common.changeBy == -1)) {
+                        gSaveContext.inventory.questItems += (this->common.changeBy << QUEST_HEART_PIECE_COUNT);
+                    }
+
+                    if (((gSaveContext.inventory.questItems & 0xF0000000) >> QUEST_HEART_PIECE_COUNT) > 3) {
+                        u32 questItems = gSaveContext.inventory.questItems & 0x0FFFFFFF;
+                        gSaveContext.inventory.questItems = (3 << QUEST_HEART_PIECE_COUNT) | questItems;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
 }
 
 void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {

@@ -211,11 +211,17 @@ void KaleidoScope_DrawQuestStatus(PlayState* play, GraphicsContext* gfxCtx) {
                     AudioOcarina_SetInstrument(OCARINA_INSTRUMENT_OFF);
                 }
             } else if (pauseCtx->unk_1E4 == 8) {
-                if (CHECK_BTN_ALL(input->press.button, BTN_A) && (sp216 >= QUEST_SONG_MINUET) &&
-                    (sp216 < QUEST_KOKIRI_EMERALD)) {
-                    pauseCtx->unk_1E4 = 9;
-                    D_8082A120 = 10;
+#ifdef ENABLE_INV_EDITOR
+                if (!INV_EDITOR_ENABLED) {
+#endif
+                    if (CHECK_BTN_ALL(input->press.button, BTN_A) && (sp216 >= QUEST_SONG_MINUET) &&
+                        (sp216 < QUEST_KOKIRI_EMERALD)) {
+                        pauseCtx->unk_1E4 = 9;
+                        D_8082A120 = 10;
+                    }
+#ifdef ENABLE_INV_EDITOR
                 }
+#endif
             }
         } else if (pauseCtx->cursorSpecialPos == PAUSE_CURSOR_PAGE_LEFT) {
             if (pauseCtx->stickAdjX > 30) {
