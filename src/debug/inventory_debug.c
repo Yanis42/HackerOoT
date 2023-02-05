@@ -2,11 +2,6 @@
 
 #ifdef ENABLE_INV_EDITOR
 
-/**
- * TODO:
- * - fix bug where changing the ammo of an empty slot change the amount of sticks
-*/
-
 #include "global.h"
 #include "assets/textures/parameter_static/parameter_static.h"
 
@@ -273,7 +268,7 @@ void InventoryDebug_UpdateItemScreen(InventoryDebug* this) {
     }
 
     // logic for the inventory screen
-    if (this->itemDebug.changeBy != 0) {
+    if ((this->itemDebug.changeBy != 0) && (this->itemDebug.selectedItem != ITEM_NONE)) {
         u8 item = this->itemDebug.selectedItem;
         u8 slot = this->itemDebug.selectedSlot;
         u8 min = ITEM_NONE, max = ITEM_NONE;
