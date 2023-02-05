@@ -2,6 +2,15 @@
 
 #ifdef ENABLE_INV_EDITOR
 
+/**
+ * TODO:
+ * - health
+ * - magic meters
+ * - dungeon objects (key, map, compass, boss key)
+ * - rupees
+ * - bean bought flag
+*/
+
 #include "global.h"
 #include "assets/textures/parameter_static/parameter_static.h"
 
@@ -37,24 +46,24 @@ static u8 sSlotToItems[] = {
 
 u8 InventoryDebug_GetItemFromSlot(InventoryDebug* this) {
     if (INV_EDITOR_ENABLED && this->pauseCtx->pageIndex == PAUSE_ITEM) {
-        if (RANGE(this->itemDebug.selectedSlot, SLOT_BOTTLE_1, SLOT_BOTTLE_4)) {
-            return this->itemDebug.bottleContents[this->itemDebug.selectedSlot - SLOT_BOTTLE_1];
+        if (RANGE(this->common.selectedSlot, SLOT_BOTTLE_1, SLOT_BOTTLE_4)) {
+            return this->itemDebug.bottleContents[this->common.selectedSlot - SLOT_BOTTLE_1];
         }
 
-        if (this->itemDebug.selectedSlot == SLOT_TRADE_CHILD) {
+        if (this->common.selectedSlot == SLOT_TRADE_CHILD) {
             return this->itemDebug.childTradeItem;
         }
 
-        if (this->itemDebug.selectedSlot == SLOT_TRADE_ADULT) {
+        if (this->common.selectedSlot == SLOT_TRADE_ADULT) {
             return this->itemDebug.adultTradeItem;
         }
 
-        if (this->itemDebug.selectedSlot == SLOT_HOOKSHOT) {
+        if (this->common.selectedSlot == SLOT_HOOKSHOT) {
             return this->itemDebug.hookshotType;
         }
 
-        if (this->itemDebug.selectedSlot < ARRAY_COUNT(sSlotToItems)) {
-            return sSlotToItems[this->itemDebug.selectedSlot];
+        if (this->common.selectedSlot < ARRAY_COUNT(sSlotToItems)) {
+            return sSlotToItems[this->common.selectedSlot];
         }
     }
 
@@ -62,21 +71,21 @@ u8 InventoryDebug_GetItemFromSlot(InventoryDebug* this) {
 }
 
 void InventoryDebug_SetItemFromSlot(InventoryDebug* this) {
-    if ((this->itemDebug.selectedSlot != SLOT_NONE) && (this->itemDebug.selectedItem != ITEM_NONE)) {
-        if (RANGE(this->itemDebug.selectedSlot, SLOT_BOTTLE_1, SLOT_BOTTLE_4)) {
-            this->itemDebug.bottleContents[this->itemDebug.selectedSlot - SLOT_BOTTLE_1] = this->itemDebug.selectedItem;
+    if ((this->common.selectedSlot != SLOT_NONE) && (this->common.selectedItem != ITEM_NONE)) {
+        if (RANGE(this->common.selectedSlot, SLOT_BOTTLE_1, SLOT_BOTTLE_4)) {
+            this->itemDebug.bottleContents[this->common.selectedSlot - SLOT_BOTTLE_1] = this->common.selectedItem;
         }
 
-        if (RANGE(this->itemDebug.selectedItem, ITEM_WEIRD_EGG, ITEM_SOLD_OUT)) {
-            this->itemDebug.childTradeItem = this->itemDebug.selectedItem;
+        if (RANGE(this->common.selectedItem, ITEM_WEIRD_EGG, ITEM_SOLD_OUT)) {
+            this->itemDebug.childTradeItem = this->common.selectedItem;
         }
 
-        if (RANGE(this->itemDebug.selectedItem, ITEM_POCKET_EGG, ITEM_CLAIM_CHECK)) {
-            this->itemDebug.adultTradeItem = this->itemDebug.selectedItem;
+        if (RANGE(this->common.selectedItem, ITEM_POCKET_EGG, ITEM_CLAIM_CHECK)) {
+            this->itemDebug.adultTradeItem = this->common.selectedItem;
         }
 
-        if (RANGE(this->itemDebug.selectedItem, ITEM_HOOKSHOT, ITEM_LONGSHOT)) {
-            this->itemDebug.hookshotType = this->itemDebug.selectedItem;
+        if (RANGE(this->common.selectedItem, ITEM_HOOKSHOT, ITEM_LONGSHOT)) {
+            this->itemDebug.hookshotType = this->common.selectedItem;
         }
     }
 }
@@ -110,14 +119,18 @@ void InventoryDebug_UpdateInfosPanel(InventoryDebug* this) {
     InventoryDebug_SetHUDAlpha(this->invIconAlpha);
 }
 
+void InventoryDebug_UpdateQuestScreen(InventoryDebug* this) {
+
+}
+
 void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
-    this->equipDebug.selectedItem = this->pauseCtx->cursorItem[PAUSE_EQUIP];
-    this->equipDebug.changeBy = 0;
+    this->common.selectedItem = this->pauseCtx->cursorItem[PAUSE_EQUIP];
+    this->common.changeBy = 0;
 
     if (this->pauseCtx->cursorX[PAUSE_EQUIP] > 0) {
-        this->equipDebug.selectedSlot = this->pauseCtx->cursorSlot[PAUSE_EQUIP];
+        this->common.selectedSlot = this->pauseCtx->cursorSlot[PAUSE_EQUIP];
     } else {
-        this->equipDebug.selectedSlot = this->pauseCtx->cursorY[PAUSE_EQUIP] * 4;
+        this->common.selectedSlot = this->pauseCtx->cursorY[PAUSE_EQUIP] * 4;
     }
 
     if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CUP)) {
@@ -126,8 +139,8 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
 
     if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_A)) {
         // equipment and upgrades are handled differently
-        if (!IS_UPGRADE(this->equipDebug)) {
-            u8 value = sSlotToEquip[this->equipDebug.selectedSlot] - ITEM_SWORD_KOKIRI;
+        if (!IS_UPGRADE(this->common)) {
+            u8 value = sSlotToEquip[this->common.selectedSlot] - ITEM_SWORD_KOKIRI;
             u8 equip = sSlotToEquipType[value];
 
             if (!CHECK_OWNED_EQUIP(equip, (value % 3))) {
@@ -138,8 +151,8 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
                 gSaveContext.inventory.equipment &= ~OWNED_EQUIP_FLAG(equip, (value % 3));
             }
         } else {
-            u8 upgradeType = sSlotToEquip[this->equipDebug.selectedSlot];
-            u8 slotIndex = this->equipDebug.selectedSlot / 4;
+            u8 upgradeType = sSlotToEquip[this->common.selectedSlot];
+            u8 slotIndex = this->common.selectedSlot / 4;
             s32 upgradeValue = CUR_UPG_VALUE(upgradeType);
 
             if (this->equipDebug.showOtherUpgrades) {
@@ -159,17 +172,17 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
 
     // increment for cycling through upgrades
     if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CLEFT)) {
-        this->equipDebug.changeBy = -1;
+        this->common.changeBy = -1;
     } else if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CRIGHT)) {
-        this->equipDebug.changeBy = 1;
+        this->common.changeBy = 1;
     }
 
-    if (this->equipDebug.changeBy != 0) {
-        u8 upgradeType = sSlotToEquip[this->equipDebug.selectedSlot];
+    if (this->common.changeBy != 0) {
+        u8 upgradeType = sSlotToEquip[this->common.selectedSlot];
         u8 maxValue = 2; // there's only two diving scale/wallet upgrades
         s8 value;
 
-        switch (this->equipDebug.selectedSlot) {
+        switch (this->common.selectedSlot) {
             case SLOT_UPG_BOMB_BAG:
             case SLOT_UPG_STRENGTH:
             case SLOT_UPG_QUIVER:
@@ -177,12 +190,12 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
                 FALLTHROUGH;
             case SLOT_UPG_SCALE:
                 if (this->equipDebug.showOtherUpgrades) {
-                    upgradeType = sOtherUpgradeTypes[this->equipDebug.selectedSlot / 4];
+                    upgradeType = sOtherUpgradeTypes[this->common.selectedSlot / 4];
                 }
 
-                value = CUR_UPG_VALUE(upgradeType) + this->equipDebug.changeBy;
+                value = CUR_UPG_VALUE(upgradeType) + this->common.changeBy;
 
-                if ((value - this->equipDebug.changeBy) != 0) {
+                if ((value - this->common.changeBy) != 0) {
                     Inventory_ChangeUpgrade(upgradeType, ((value < 1) ? maxValue : (value > maxValue) ? 1 : value));
                 }
                 break;
@@ -194,7 +207,7 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
                     if (gSaveContext.bgsFlag) {
                         gSaveContext.bgsFlag = false;
 
-                        if (this->equipDebug.changeBy > 0) {
+                        if (this->common.changeBy > 0) {
                             swordHealth = 0;
                             equipValue = EQUIP_INV_SWORD_BROKENGIANTKNIFE;
                         } else {
@@ -203,7 +216,7 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
                         }
                     } else {
                         if (gSaveContext.swordHealth > 0) {
-                            if (this->equipDebug.changeBy > 0) {
+                            if (this->common.changeBy > 0) {
                                 if (gSaveContext.swordHealth > 0) {
                                     gSaveContext.bgsFlag = true;
                                 }
@@ -212,7 +225,7 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
                                 equipValue = EQUIP_INV_SWORD_BROKENGIANTKNIFE;
                             }
                         } else {
-                            if (this->equipDebug.changeBy < 0) {
+                            if (this->common.changeBy < 0) {
                                     gSaveContext.bgsFlag = true;
                             } else {
                                 swordHealth = 8;
@@ -237,43 +250,43 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
 }
 
 void InventoryDebug_UpdateItemScreen(InventoryDebug* this) {
-    this->itemDebug.selectedItem = this->pauseCtx->cursorItem[PAUSE_ITEM];
-    this->itemDebug.selectedSlot = this->pauseCtx->cursorSlot[PAUSE_ITEM];
-    this->itemDebug.changeBy = 0;
+    this->common.selectedItem = this->pauseCtx->cursorItem[PAUSE_ITEM];
+    this->common.selectedSlot = this->pauseCtx->cursorSlot[PAUSE_ITEM];
+    this->common.changeBy = 0;
 
     InventoryDebug_SetItemFromSlot(this);
 
     // Delete and restore items
     if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_A)) {
-        if (gSaveContext.inventory.items[this->itemDebug.selectedSlot] == ITEM_NONE) {
-            u8 item = GET_SPECIAL_ITEM(this->itemDebug); // restore the special item
-            gSaveContext.inventory.items[this->itemDebug.selectedSlot] = (item == ITEM_NONE) ? sSlotToItems[this->itemDebug.selectedSlot] : item;
+        if (gSaveContext.inventory.items[this->common.selectedSlot] == ITEM_NONE) {
+            u8 item = GET_SPECIAL_ITEM(this); // restore the special item
+            gSaveContext.inventory.items[this->common.selectedSlot] = (item == ITEM_NONE) ? sSlotToItems[this->common.selectedSlot] : item;
         } else {
             // Delete the selected item
-            Inventory_DeleteItem(this->itemDebug.selectedItem, this->itemDebug.selectedSlot);
+            Inventory_DeleteItem(this->common.selectedItem, this->common.selectedSlot);
         }
     }
 
     // increment for cycling through trade items/bottles and changing ammo
     if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CLEFT)) {
-        this->itemDebug.changeBy = -1;
+        this->common.changeBy = -1;
     } else if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CRIGHT)) {
-        this->itemDebug.changeBy = 1;
+        this->common.changeBy = 1;
     }
 
     if (CHECK_BTN_ALL(gDebug.input->cur.button, BTN_CUP) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_CLEFT)) {
-        this->itemDebug.changeBy = -10;
+        this->common.changeBy = -10;
     } else if (CHECK_BTN_ALL(gDebug.input->cur.button, BTN_CUP) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_CRIGHT)) {
-        this->itemDebug.changeBy = 10;
+        this->common.changeBy = 10;
     }
 
     // logic for the inventory screen
-    if ((this->itemDebug.changeBy != 0) && (this->itemDebug.selectedItem != ITEM_NONE)) {
-        u8 item = this->itemDebug.selectedItem;
-        u8 slot = this->itemDebug.selectedSlot;
+    if ((this->common.changeBy != 0) && (this->common.selectedItem != ITEM_NONE)) {
+        u8 item = this->common.selectedItem;
+        u8 slot = this->common.selectedSlot;
         u8 min = ITEM_NONE, max = ITEM_NONE;
 
-        switch (this->itemDebug.selectedSlot) {
+        switch (this->common.selectedSlot) {
             case SLOT_DEKU_STICK:
             case SLOT_DEKU_NUT:
             case SLOT_BOMB:
@@ -281,14 +294,14 @@ void InventoryDebug_UpdateItemScreen(InventoryDebug* this) {
             case SLOT_SLINGSHOT:
             case SLOT_BOMBCHU:
             case SLOT_MAGIC_BEAN:
-                AMMO(this->itemDebug.selectedItem) += this->itemDebug.changeBy;
+                AMMO(this->common.selectedItem) += this->common.changeBy;
 
-                if (AMMO(this->itemDebug.selectedItem) > 99) {
-                    AMMO(this->itemDebug.selectedItem) = 0;
+                if (AMMO(this->common.selectedItem) > 99) {
+                    AMMO(this->common.selectedItem) = 0;
                 }
 
-                if (AMMO(this->itemDebug.selectedItem) < 0) {
-                    AMMO(this->itemDebug.selectedItem) = 99;
+                if (AMMO(this->common.selectedItem) < 0) {
+                    AMMO(this->common.selectedItem) = 99;
                 }
                 break;
             case SLOT_BOTTLE_1:
@@ -314,7 +327,7 @@ void InventoryDebug_UpdateItemScreen(InventoryDebug* this) {
         }
 
         if ((min != ITEM_NONE) && (max != ITEM_NONE)) {
-            UPDATE_ITEM(this, min, max)
+            UPDATE_ITEM(this->common, min, max)
         }
     }
 }
@@ -494,14 +507,14 @@ void InventoryDebug_Init(InventoryDebug* this) {
     this->showInfos = false;
     this->backgroundPosY = BG_YPOS_TITLE;
     this->bottomTextPosY = TXT_YPOS_TITLE;
+    this->common.changeBy = 0;
 
-    // Init item debug values
-    if (this->itemDebug.state == INVDBG_STRUCT_STATE_UNREADY) {
+    if (this->common.state == INVDBG_COMMON_STATE_UNREADY) {
         u8 i = 0;
 
-        this->itemDebug.selectedItem = ITEM_DEKU_STICK;
-        this->itemDebug.selectedSlot = SLOT_DEKU_STICK;
-        this->itemDebug.changeBy = 0;
+        // Init item debug values
+        this->common.selectedItem = 0;
+        this->common.selectedSlot = 0;
         this->itemDebug.childTradeItem = ITEM_WEIRD_EGG;
         this->itemDebug.adultTradeItem = ITEM_POCKET_EGG;
         this->itemDebug.hookshotType = ITEM_HOOKSHOT;
@@ -510,22 +523,15 @@ void InventoryDebug_Init(InventoryDebug* this) {
             this->itemDebug.bottleContents[i] = sBottleContents[i];
         }
 
-        this->itemDebug.state = INVDBG_STRUCT_STATE_READY;
-    }
-
-    if (this->equipDebug.state == INVDBG_STRUCT_STATE_UNREADY) {
-        u8 i = 0;
-
-        this->equipDebug.selectedItem = ITEM_SWORD_KOKIRI;
-        this->equipDebug.selectedSlot = 0;
-        this->equipDebug.changeBy = 0;
+        // Init equipment debug values
         this->equipDebug.showOtherUpgrades = false;
 
         for (i = 0; i < ARRAY_COUNTU(sUpgradeSlots); i++) {
             this->equipDebug.upgradeSlots[i] = sUpgradeSlots[i];
         }
 
-        this->equipDebug.state = INVDBG_STRUCT_STATE_READY;
+        // Update state to ready
+        this->common.state = INVDBG_COMMON_STATE_READY;
     }
 }
 
@@ -535,13 +541,18 @@ void InventoryDebug_Update(InventoryDebug* this) {
         && !this->showInfos) {
         switch (this->pauseCtx->pageIndex) {
             case PAUSE_ITEM:
-                if (this->itemDebug.state == INVDBG_STRUCT_STATE_READY) {
+                if (this->common.state == INVDBG_COMMON_STATE_READY) {
                     InventoryDebug_UpdateItemScreen(this);
                 }
                 break;
             case PAUSE_EQUIP:
-                if (this->equipDebug.state == INVDBG_STRUCT_STATE_READY) {
+                if (this->common.state == INVDBG_COMMON_STATE_READY) {
                     InventoryDebug_UpdateEquipmentScreen(this);
+                }
+                break;
+            case PAUSE_QUEST:
+                if (this->common.state == INVDBG_COMMON_STATE_READY) {
+                    InventoryDebug_UpdateQuestScreen(this);
                 }
                 break;
             default:

@@ -15,9 +15,9 @@ typedef enum {
 } InventoryDebugPrintState;
 
 typedef enum {
-    INVDBG_STRUCT_STATE_UNREADY,
-    INVDBG_STRUCT_STATE_READY,
-} InvDebugStructState;
+    INVDBG_COMMON_STATE_UNREADY,
+    INVDBG_COMMON_STATE_READY,
+} InvDebugCommonState;
 
 typedef enum {
     INV_DEBUG_STATE_OFF,
@@ -27,11 +27,14 @@ typedef enum {
     INV_DEBUG_STATE_MAX
 } InventoryDebugState;
 
-typedef struct ItemDebug {
+typedef struct InventoryDebugCommon {
     u8 state;
     u8 selectedItem;
     u8 selectedSlot;
     s8 changeBy;
+} InventoryDebugCommon;
+
+typedef struct ItemDebug {
     u8 childTradeItem;
     u8 adultTradeItem;
     u8 hookshotType;
@@ -39,10 +42,6 @@ typedef struct ItemDebug {
 } ItemDebug;
 
 typedef struct EquipmentDebug {
-    u8 state;
-    u8 selectedItem;
-    u8 selectedSlot;
-    s8 changeBy;
     u8 showOtherUpgrades;
     u8 upgradeSlots[8];
 } EquipmentDebug;
@@ -51,6 +50,7 @@ typedef struct InventoryDebug {
     u8 state;
     GraphicsContext* gfxCtx;
     PauseContext* pauseCtx;
+    InventoryDebugCommon common;
     ItemDebug itemDebug;
     EquipmentDebug equipDebug;
     u8 printTimer;
@@ -64,6 +64,7 @@ typedef struct InventoryDebug {
 u8 InventoryDebug_GetItemFromSlot(InventoryDebug* this);
 void InventoryDebug_SetItemFromSlot(InventoryDebug* this);
 void InventoryDebug_SetHUDAlpha(s16 alpha);
+void InventoryDebug_UpdateQuestScreen(InventoryDebug* this);
 void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this);
 void InventoryDebug_UpdateItemScreen(InventoryDebug* this);
 void InventoryDebug_DrawUpgrades(InventoryDebug* this, u16 i, s16 alpha);
@@ -79,26 +80,26 @@ bool InventoryDebug_Destroy(InventoryDebug* this);
 Gfx* Gfx_TextureIA8(Gfx* displayListHead, void* texture, s16 textureWidth, s16 textureHeight, s16 rectLeft, s16 rectTop, s16 rectWidth, s16 rectHeight, u16 dsdx, u16 dtdy);
 
 // Items
-#define BOTTLE_CONTENT(itemDebug) (RANGE((itemDebug).selectedSlot, SLOT_BOTTLE_1, SLOT_BOTTLE_4) ? (itemDebug).bottleContents[(itemDebug).selectedSlot - SLOT_BOTTLE_1] : ITEM_NONE)
-#define CHILD_TRADE_ITEM(itemDebug) (((itemDebug).selectedSlot == SLOT_TRADE_CHILD) ? (itemDebug).childTradeItem : ITEM_NONE)
-#define ADULT_TRADE_ITEM(itemDebug) (((itemDebug).selectedSlot == SLOT_TRADE_ADULT) ? (itemDebug).adultTradeItem : ITEM_NONE)
-#define HOOKSHOT_TYPE(itemDebug) (((itemDebug).selectedSlot == SLOT_HOOKSHOT) ? (itemDebug).hookshotType : ITEM_NONE)
-#define GET_SPECIAL_ITEM(itemDebug) ((BOTTLE_CONTENT(itemDebug) != ITEM_NONE) ? BOTTLE_CONTENT(itemDebug) : (CHILD_TRADE_ITEM(itemDebug) != ITEM_NONE) ? CHILD_TRADE_ITEM(itemDebug) : (ADULT_TRADE_ITEM(itemDebug) != ITEM_NONE) ? ADULT_TRADE_ITEM(itemDebug) : (HOOKSHOT_TYPE(itemDebug) != ITEM_NONE) ? HOOKSHOT_TYPE(itemDebug) : ITEM_NONE)
-#define UPDATE_ITEM(invDebug, min, max) {                                                                   \
-    if (RANGE((invDebug)->itemDebug.selectedItem, min, max)) {                                              \
-        gSaveContext.inventory.items[(invDebug)->itemDebug.selectedSlot] += (invDebug)->itemDebug.changeBy; \
-        if (gSaveContext.inventory.items[(invDebug)->itemDebug.selectedSlot] > max) {                       \
-            gSaveContext.inventory.items[(invDebug)->itemDebug.selectedSlot] = min;                         \
-        }                                                                                                   \
-                                                                                                            \
-        if (gSaveContext.inventory.items[(invDebug)->itemDebug.selectedSlot] < min) {                       \
-            gSaveContext.inventory.items[(invDebug)->itemDebug.selectedSlot] = max;                         \
-        }                                                                                                   \
-    }                                                                                                       \
+#define BOTTLE_CONTENT(invDebug) (RANGE((invDebug)->common.selectedSlot, SLOT_BOTTLE_1, SLOT_BOTTLE_4) ? (invDebug)->itemDebug.bottleContents[(invDebug)->common.selectedSlot - SLOT_BOTTLE_1] : ITEM_NONE)
+#define CHILD_TRADE_ITEM(invDebug) (((invDebug)->common.selectedSlot == SLOT_TRADE_CHILD) ? (invDebug)->itemDebug.childTradeItem : ITEM_NONE)
+#define ADULT_TRADE_ITEM(invDebug) (((invDebug)->common.selectedSlot == SLOT_TRADE_ADULT) ? (invDebug)->itemDebug.adultTradeItem : ITEM_NONE)
+#define HOOKSHOT_TYPE(invDebug) (((invDebug)->common.selectedSlot == SLOT_HOOKSHOT) ? (invDebug)->itemDebug.hookshotType : ITEM_NONE)
+#define GET_SPECIAL_ITEM(invDebug) ((BOTTLE_CONTENT(invDebug) != ITEM_NONE) ? BOTTLE_CONTENT(invDebug) : (CHILD_TRADE_ITEM(invDebug) != ITEM_NONE) ? CHILD_TRADE_ITEM(invDebug) : (ADULT_TRADE_ITEM(invDebug) != ITEM_NONE) ? ADULT_TRADE_ITEM(invDebug) : (HOOKSHOT_TYPE(invDebug) != ITEM_NONE) ? HOOKSHOT_TYPE(invDebug) : ITEM_NONE)
+#define UPDATE_ITEM(invDbgCommon, min, max) {                                             \
+    if (RANGE(invDbgCommon.selectedItem, min, max)) {                                     \
+        gSaveContext.inventory.items[invDbgCommon.selectedSlot] += invDbgCommon.changeBy; \
+        if (gSaveContext.inventory.items[invDbgCommon.selectedSlot] > max) {              \
+            gSaveContext.inventory.items[invDbgCommon.selectedSlot] = min;                \
+        }                                                                                 \
+                                                                                          \
+        if (gSaveContext.inventory.items[invDbgCommon.selectedSlot] < min) {              \
+            gSaveContext.inventory.items[invDbgCommon.selectedSlot] = max;                \
+        }                                                                                 \
+    }                                                                                     \
 }
 
 // Equipment
-#define IS_UPGRADE(equipDebug) (((equipDebug).selectedSlot == SLOT_UPG_QUIVER) || ((equipDebug).selectedSlot == SLOT_UPG_BOMB_BAG) || ((equipDebug).selectedSlot == SLOT_UPG_STRENGTH) || ((equipDebug).selectedSlot == SLOT_UPG_SCALE))
+#define IS_UPGRADE(invDbgCommon) (((invDbgCommon).selectedSlot == SLOT_UPG_QUIVER) || ((invDbgCommon).selectedSlot == SLOT_UPG_BOMB_BAG) || ((invDbgCommon).selectedSlot == SLOT_UPG_STRENGTH) || ((invDbgCommon).selectedSlot == SLOT_UPG_SCALE))
 
 // Other
 #define INV_EDITOR_ENABLED (gDebug.invDebug.state != INV_DEBUG_STATE_OFF)
