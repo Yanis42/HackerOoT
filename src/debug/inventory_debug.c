@@ -132,10 +132,7 @@ void InventoryDebug_UpdateInfosPanel(InventoryDebug* this) {
 }
 
 void InventoryDebug_UpdateQuestScreen(InventoryDebug* this) {
-    this->common.selectedItem = this->pauseCtx->cursorItem[PAUSE_QUEST];
-    this->common.selectedSlot = this->pauseCtx->cursorSlot[PAUSE_QUEST];
     this->common.selectedSlot = (this->common.selectedSlot == 231) ? 24 : this->common.selectedSlot;
-    this->common.changeBy = 0;
 
     if (this->common.selectedSlot < ARRAY_COUNTU(sSlotToQuestItems)) {
         u8 item = sSlotToQuestItems[this->common.selectedSlot];
@@ -202,9 +199,6 @@ void InventoryDebug_UpdateQuestScreen(InventoryDebug* this) {
 }
 
 void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
-    this->common.selectedItem = this->pauseCtx->cursorItem[PAUSE_EQUIP];
-    this->common.changeBy = 0;
-
     if (this->pauseCtx->cursorX[PAUSE_EQUIP] > 0) {
         this->common.selectedSlot = this->pauseCtx->cursorSlot[PAUSE_EQUIP];
     } else {
@@ -328,10 +322,6 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
 }
 
 void InventoryDebug_UpdateItemScreen(InventoryDebug* this) {
-    this->common.selectedItem = this->pauseCtx->cursorItem[PAUSE_ITEM];
-    this->common.selectedSlot = this->pauseCtx->cursorSlot[PAUSE_ITEM];
-    this->common.changeBy = 0;
-
     InventoryDebug_SetItemFromSlot(this);
 
     // Delete and restore items
@@ -525,6 +515,7 @@ void InventoryDebug_DrawInformations(InventoryDebug* this) {
     // draw controls for the current inventory screen
     switch (this->pauseCtx->pageIndex) {
         case PAUSE_ITEM:
+        case PAUSE_QUEST:
             ctrlsToPrint = (
                 "[C-Left]: Decrement" PRINT_NEWLINE "[C-Right]: Increment" PRINT_NEWLINE
                 "[C-Up]: Hold to change by 10" PRINT_NEWLINE "[A]: Delete/Give item" PRINT_NEWLINE
@@ -563,8 +554,10 @@ void InventoryDebug_Main(InventoryDebug* this) {
                 this->state = INV_DEBUG_STATE_DESTROY;
             }
 
-            InventoryDebug_Update(this);
-            InventoryDebug_Draw(this);
+            if (this->common.state == INVDBG_COMMON_STATE_READY) {
+                InventoryDebug_Update(this);
+                InventoryDebug_Draw(this);
+            }
             break;
         case INV_DEBUG_STATE_DESTROY:
             if (InventoryDebug_Destroy(this)) {
@@ -614,24 +607,25 @@ void InventoryDebug_Init(InventoryDebug* this) {
 }
 
 void InventoryDebug_Update(InventoryDebug* this) {
+    this->common.changeBy = 0;
+
+    if ((this->pauseCtx->pageIndex != PAUSE_MAP) && (this->pauseCtx->pageIndex != PAUSE_WORLD_MAP)) {
+        this->common.selectedItem = this->pauseCtx->cursorItem[this->pauseCtx->pageIndex];
+        this->common.selectedSlot = this->pauseCtx->cursorSlot[this->pauseCtx->pageIndex];
+    }
+
     // Update the current screen if the cursor isn't on the L or R icons
     if ((this->pauseCtx->cursorSpecialPos != PAUSE_CURSOR_PAGE_LEFT) && (this->pauseCtx->cursorSpecialPos != PAUSE_CURSOR_PAGE_RIGHT)
         && !this->showInfos) {
         switch (this->pauseCtx->pageIndex) {
             case PAUSE_ITEM:
-                if (this->common.state == INVDBG_COMMON_STATE_READY) {
-                    InventoryDebug_UpdateItemScreen(this);
-                }
+                InventoryDebug_UpdateItemScreen(this);
                 break;
             case PAUSE_EQUIP:
-                if (this->common.state == INVDBG_COMMON_STATE_READY) {
-                    InventoryDebug_UpdateEquipmentScreen(this);
-                }
+                InventoryDebug_UpdateEquipmentScreen(this);
                 break;
             case PAUSE_QUEST:
-                if (this->common.state == INVDBG_COMMON_STATE_READY) {
-                    InventoryDebug_UpdateQuestScreen(this);
-                }
+                InventoryDebug_UpdateQuestScreen(this);
                 break;
             default:
                 break;
