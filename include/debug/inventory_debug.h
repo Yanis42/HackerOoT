@@ -11,7 +11,8 @@ struct GraphicsContext;
 
 typedef enum {
     PRINT_STATE_TITLE,
-    PRINT_STATE_COMMANDS
+    PRINT_STATE_COMMANDS,
+    PRINT_STATE_HUD_EDITOR,
 } InventoryDebugPrintState;
 
 typedef enum {
@@ -56,6 +57,7 @@ typedef struct InventoryDebug {
     u8 printTimer;
     u8 printState;
     u8 showInfos;
+    u8 showHUDEditor;
     s16 backgroundPosY;
     s16 bottomTextPosY;
     s16 invIconAlpha;
@@ -63,7 +65,7 @@ typedef struct InventoryDebug {
 
 u8 InventoryDebug_GetItemFromSlot(InventoryDebug* this);
 void InventoryDebug_SetItemFromSlot(InventoryDebug* this);
-void InventoryDebug_SetHUDAlpha(s16 alpha);
+void InventoryDebug_SetHUDAlpha(InventoryDebug* this);
 void InventoryDebug_UpdateQuestScreen(InventoryDebug* this);
 void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this);
 void InventoryDebug_UpdateItemScreen(InventoryDebug* this);

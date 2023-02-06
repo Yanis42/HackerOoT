@@ -102,23 +102,26 @@ void InventoryDebug_SetItemFromSlot(InventoryDebug* this) {
     }
 }
 
-void InventoryDebug_SetHUDAlpha(s16 alpha) {
+void InventoryDebug_SetHUDAlpha(InventoryDebug* this) {
     InterfaceContext* interfaceCtx = &gDebug.play->interfaceCtx;
 
-    interfaceCtx->bAlpha = alpha;
-    interfaceCtx->aAlpha = alpha;
-    interfaceCtx->cLeftAlpha = alpha;
-    interfaceCtx->cDownAlpha = alpha;
-    interfaceCtx->cRightAlpha = alpha;
-    interfaceCtx->healthAlpha = alpha;
-    interfaceCtx->magicAlpha = alpha;
-    interfaceCtx->minimapAlpha = alpha;
-    interfaceCtx->startAlpha = alpha;
+    interfaceCtx->bAlpha = this->invIconAlpha;
+    interfaceCtx->aAlpha = this->invIconAlpha;
+    interfaceCtx->cLeftAlpha = this->invIconAlpha;
+    interfaceCtx->cDownAlpha = this->invIconAlpha;
+    interfaceCtx->cRightAlpha = this->invIconAlpha;
+    interfaceCtx->minimapAlpha = this->invIconAlpha;
+    interfaceCtx->startAlpha = this->invIconAlpha;
+
+    if (!this->showHUDEditor) {
+        interfaceCtx->healthAlpha = this->invIconAlpha;
+        interfaceCtx->magicAlpha = this->invIconAlpha;
+    }
 }
 
 void InventoryDebug_UpdateInfosPanel(InventoryDebug* this) {
     // Background lifting/lowering animation
-    if (this->showInfos) {
+    if (this->showInfos || this->showHUDEditor) {
         this->backgroundPosY = TIMER_DECR(this->backgroundPosY, BG_YPOS_TARGET, BG_ANIM_SPEED);
         this->bottomTextPosY = TIMER_DECR(this->bottomTextPosY, TXT_YPOS_TARGET, TXT_ANIM_SPEED);
         this->invIconAlpha = TIMER_DECR(this->invIconAlpha, 0, INV_ALPHA_TRANS_SPEED);
@@ -128,7 +131,7 @@ void InventoryDebug_UpdateInfosPanel(InventoryDebug* this) {
         this->invIconAlpha = TIMER_INCR(this->invIconAlpha, 255, INV_ALPHA_TRANS_SPEED);
     }
 
-    InventoryDebug_SetHUDAlpha(this->invIconAlpha);
+    InventoryDebug_SetHUDAlpha(this);
 }
 
 void InventoryDebug_UpdateQuestScreen(InventoryDebug* this) {
@@ -502,6 +505,10 @@ void InventoryDebug_DrawTitle(InventoryDebug* this) {
             Print_SetInfos(&gDebug.printer, this->gfxCtx, 9, this->bottomTextPosY, rgba);
             Print_Screen(&gDebug.printer, "[C-DOWN: INFORMATIONS]");
             break;
+        case PRINT_STATE_HUD_EDITOR:
+            Print_SetInfos(&gDebug.printer, this->gfxCtx, 14, this->bottomTextPosY, rgba);
+            Print_Screen(&gDebug.printer, "[HUD EDITOR]");
+            break;
         default:
             break;
     }
@@ -539,6 +546,8 @@ void InventoryDebug_DrawInformations(InventoryDebug* this) {
     Print_Screen(&gDebug.printer, ("Build Date: %s" PRINT_NEWLINE "Build Version: %s"), gBuildDate, gBuildGitVersion);
     Print_SetInfos(&gDebug.printer, this->gfxCtx, 2, (posY += 3), rgba);
     Print_Screen(&gDebug.printer, ctrlsToPrint);
+    Print_SetInfos(&gDebug.printer, this->gfxCtx, 2, 28, rgba);
+    Print_Screen(&gDebug.printer, "[B]: Show HUD Editor (from anywhere)");
 }
 
 void InventoryDebug_Main(InventoryDebug* this) {
@@ -576,6 +585,7 @@ void InventoryDebug_Init(InventoryDebug* this) {
     this->printTimer = PRINT_TIMER_START;
     this->printState = PRINT_STATE_TITLE;
     this->showInfos = false;
+    this->showHUDEditor = false;
     this->backgroundPosY = BG_YPOS_TITLE;
     this->bottomTextPosY = TXT_YPOS_TITLE;
     this->common.changeBy = 0;
@@ -616,7 +626,7 @@ void InventoryDebug_Update(InventoryDebug* this) {
 
     // Update the current screen if the cursor isn't on the L or R icons
     if ((this->pauseCtx->cursorSpecialPos != PAUSE_CURSOR_PAGE_LEFT) && (this->pauseCtx->cursorSpecialPos != PAUSE_CURSOR_PAGE_RIGHT)
-        && !this->showInfos) {
+        && !this->showInfos && !this->showHUDEditor) {
         switch (this->pauseCtx->pageIndex) {
             case PAUSE_ITEM:
                 InventoryDebug_UpdateItemScreen(this);
@@ -635,6 +645,17 @@ void InventoryDebug_Update(InventoryDebug* this) {
     // Toggle informations screen
     if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CDOWN)) {
         this->showInfos ^= 1;
+    }
+
+    // Toggle HUD editor
+    if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_B)) {
+        this->showHUDEditor ^= 1;
+
+        if (this->showHUDEditor) {
+            this->printState = PRINT_STATE_HUD_EDITOR;
+        } else {
+            this->printState = PRINT_STATE_TITLE;
+        }
     }
 
     InventoryDebug_UpdateInfosPanel(this);
@@ -668,7 +689,7 @@ void InventoryDebug_Draw(InventoryDebug* this) {
     InventoryDebug_DrawTitle(this);
 
     // draw the informations on the panel
-    if (this->showInfos && (this->bottomTextPosY == TXT_YPOS_TARGET)) {
+    if ((this->showInfos || this->showHUDEditor) && (this->bottomTextPosY == TXT_YPOS_TARGET)) {
         InventoryDebug_DrawInformations(this);
 
         // draw separators (from top to bottom)
