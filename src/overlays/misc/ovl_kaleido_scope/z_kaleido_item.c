@@ -21,7 +21,7 @@ void KaleidoScope_DrawAmmoCount(PauseContext* pauseCtx, GraphicsContext* gfxCtx,
     s16 alpha = pauseCtx->alpha;
 
 #ifdef ENABLE_INV_EDITOR
-    if (gDebug.invDebug.showInfos) {
+    if (gDebug.invDebug.showInfos || gDebug.invDebug.hudDebug.showHUDEditor) {
         alpha = gDebug.invDebug.invIconAlpha;
 
         if (alpha == 0) {
@@ -111,7 +111,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
     s16 alpha = pauseCtx->alpha;
 
 #ifdef ENABLE_INV_EDITOR
-    if (gDebug.invDebug.showInfos) {
+    if (gDebug.invDebug.showInfos || gDebug.invDebug.hudDebug.showHUDEditor) {
         alpha = gDebug.invDebug.invIconAlpha;
 
         if (alpha == 0) {

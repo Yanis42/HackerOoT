@@ -2643,14 +2643,25 @@ void Magic_Update(PlayState* play) {
 void Magic_DrawMeter(PlayState* play) {
     InterfaceContext* interfaceCtx = &play->interfaceCtx;
     s16 magicMeterY;
+    s16 posY = 0;
+    u8 updateMeter = gSaveContext.magicLevel != 0;
+#ifdef ENABLE_INV_EDITOR
+    if (INV_EDITOR_ENABLED) {
+        posY += gDebug.invDebug.hudDebug.hudTopPosY;
+
+        if (gDebug.invDebug.hudDebug.showHUDEditor && gSaveContext.isMagicAcquired) {
+            updateMeter = true;
+        }
+    }
+#endif
 
     OPEN_DISPS(play->state.gfxCtx, "../z_parameter.c", 2650);
 
-    if (gSaveContext.magicLevel != 0) {
+    if (updateMeter) {
         if (gSaveContext.healthCapacity > 0xA0) {
-            magicMeterY = R_MAGIC_METER_Y_LOWER; // two rows of hearts
+            magicMeterY = R_MAGIC_METER_Y_LOWER + posY; // two rows of hearts
         } else {
-            magicMeterY = R_MAGIC_METER_Y_HIGHER; // one row of hearts
+            magicMeterY = R_MAGIC_METER_Y_HIGHER + posY; // one row of hearts
         }
 
         Gfx_SetupDL_39Overlay(play->state.gfxCtx);
@@ -3178,10 +3189,28 @@ void Interface_Draw(PlayState* play) {
     s16 svar4;
     s16 svar5;
     s16 timerId;
+    s16 rupeePosY = 0;
+    s16 smallKeyPosY = 0;
+    s16 smallKeyCond;
+    u16 mapIndex = gSaveContext.mapIndex;
 
 #ifdef ENABLE_INV_EDITOR
     if (gDebug.invDebug.showInfos && gDebug.invDebug.invIconAlpha == 0) {
         return;
+    }
+
+    if (INV_EDITOR_ENABLED) {
+        rupeePosY = gDebug.invDebug.hudDebug.hudBottomPosY;
+        smallKeyPosY = gDebug.invDebug.hudDebug.hudBottomPosY;
+
+        if (gDebug.invDebug.hudDebug.hudBottomPosY > 0) {
+            rupeePosY += gDebug.invDebug.hudDebug.hudBottomInvertVal;
+            smallKeyPosY -= gDebug.invDebug.hudDebug.hudBottomInvertVal;
+        }
+
+        if (gDebug.invDebug.hudDebug.showHUDEditor) {
+            mapIndex = gDebug.invDebug.hudDebug.mapIndex;
+        }
     }
 #endif
 
@@ -3225,11 +3254,18 @@ void Interface_Draw(PlayState* play) {
 
         gDPSetEnvColor(OVERLAY_DISP++, 0, 80, 0, 255);
         OVERLAY_DISP = Gfx_TextureIA8(
-            OVERLAY_DISP, gRupeeCounterIconTex, 16, 16, WIDE_MULT(26, WIDE_GET_RATIO), 206, 16, 16,
+            OVERLAY_DISP, gRupeeCounterIconTex, 16, 16, WIDE_MULT(26, WIDE_GET_RATIO), 206 - rupeePosY, 16, 16,
             WIDE_INCR(1, (u16)(WIDE_GET_RATIO)) << 10, 1 << 10
         );
 
-        switch (play->sceneId) {
+        smallKeyCond = play->sceneId;
+#ifdef ENABLE_INV_EDITOR
+        if (INV_EDITOR_ENABLED && gDebug.invDebug.hudDebug.showHUDEditor) {
+            smallKeyCond = 10000;
+        }
+#endif
+
+        switch (smallKeyCond) {
             case SCENE_FOREST_TEMPLE:
             case SCENE_FIRE_TEMPLE:
             case SCENE_WATER_TEMPLE:
@@ -3244,13 +3280,21 @@ void Interface_Draw(PlayState* play) {
             case SCENE_GANONS_TOWER_COLLAPSE_INTERIOR:
             case SCENE_INSIDE_GANONS_CASTLE_COLLAPSE:
             case SCENE_TREASURE_BOX_SHOP:
-                if (gSaveContext.inventory.dungeonKeys[gSaveContext.mapIndex] >= 0) {
+#ifdef ENABLE_INV_EDITOR
+            //! TODO: find something better
+            case 10000:
+#endif
+                if ((gSaveContext.inventory.dungeonKeys[mapIndex] >= 0)
+#ifdef ENABLE_INV_EDITOR
+                    || (INV_EDITOR_ENABLED && gDebug.invDebug.hudDebug.showHUDEditor)
+#endif
+                ) {
                     // Small Key Icon
                     gDPPipeSync(OVERLAY_DISP++);
                     gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 200, 230, 255, interfaceCtx->magicAlpha);
                     gDPSetEnvColor(OVERLAY_DISP++, 0, 0, 20, 255);
                     OVERLAY_DISP = Gfx_TextureIA8(OVERLAY_DISP, gSmallKeyCounterIconTex, 16, 16, WIDE_INCR(26, -7),
-                                                    190, WIDE_INCR(16, -4), 16, 1 << 10, 1 << 10);
+                                                    190 - smallKeyPosY, WIDE_INCR(16, -4), 16, 1 << 10, 1 << 10);
 
                     // Small Key Counter
                     gDPPipeSync(OVERLAY_DISP++);
@@ -3259,7 +3303,7 @@ void Interface_Draw(PlayState* play) {
                                       TEXEL0, 0, PRIMITIVE, 0);
 
                     interfaceCtx->counterDigits[2] = 0;
-                    interfaceCtx->counterDigits[3] = gSaveContext.inventory.dungeonKeys[gSaveContext.mapIndex];
+                    interfaceCtx->counterDigits[3] = gSaveContext.inventory.dungeonKeys[mapIndex];
 
                     while (interfaceCtx->counterDigits[3] >= 10) {
                         interfaceCtx->counterDigits[2]++;
@@ -3271,13 +3315,13 @@ void Interface_Draw(PlayState* play) {
                     if (interfaceCtx->counterDigits[2] != 0) {
                         OVERLAY_DISP = Gfx_TextureI8(
                             OVERLAY_DISP, ((u8*)gCounterDigit0Tex + (8 * 16 * interfaceCtx->counterDigits[2])), 8, 16,
-                            svar3, 190, 8, 16, 1 << 10, 1 << 10);
+                            svar3, 190 - smallKeyPosY, 8, 16, 1 << 10, 1 << 10);
                         svar3 += 8;
                     }
 
                     OVERLAY_DISP = Gfx_TextureI8(OVERLAY_DISP,
                                                  ((u8*)gCounterDigit0Tex + (8 * 16 * interfaceCtx->counterDigits[3])),
-                                                 8, 16, svar3, 190, 8, 16, 1 << 10, 1 << 10);
+                                                 8, 16, svar3, 190 - smallKeyPosY, 8, 16, 1 << 10, 1 << 10);
                 }
                 break;
             default:
@@ -3321,10 +3365,17 @@ void Interface_Draw(PlayState* play) {
         for (svar1 = 0, svar3 = 42; svar1 < svar5; svar1++, svar2++, svar3 += 8) {
             OVERLAY_DISP =
                 Gfx_TextureI8(OVERLAY_DISP, ((u8*)gCounterDigit0Tex + (8 * 16 * interfaceCtx->counterDigits[svar2])), 8,
-                              16, svar3, 206, 8, 16, 1 << 10, 1 << 10);
+                              16, svar3, 206 - rupeePosY, 8, 16, 1 << 10, 1 << 10);
         }
 
         Magic_DrawMeter(play);
+
+#ifdef ENABLE_INV_EDITOR
+    if (gDebug.invDebug.hudDebug.showHUDEditor && gDebug.invDebug.invIconAlpha == 0) {
+        return;
+    }
+#endif
+
         Minimap_Draw(play); // TODO: fix the arrows
 
         if ((R_PAUSE_BG_PRERENDER_STATE != PAUSE_BG_PRERENDER_PROCESS) &&
@@ -4295,13 +4346,17 @@ void Interface_Update(PlayState* play) {
     WREG(7) = interfaceCtx->unk_1F4;
 
     // Update Magic
-    if ((play->pauseCtx.state == 0) &&
+    if (((play->pauseCtx.state == 0) &&
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
         (!INV_EDITOR_ENABLED && play->pauseCtx.debugState == 0) &&
 #endif
         (msgCtx->msgMode == MSGMODE_NONE) && (play->transitionTrigger == TRANS_TRIGGER_OFF) &&
         (play->gameOverCtx.state == GAMEOVER_INACTIVE) && (play->transitionMode == TRANS_MODE_OFF) &&
-        ((play->csCtx.state == CS_STATE_IDLE) || !Player_InCsMode(play))) {
+        ((play->csCtx.state == CS_STATE_IDLE) || !Player_InCsMode(play)))
+#ifdef ENABLE_INV_EDITOR
+        || (INV_EDITOR_ENABLED && gDebug.invDebug.hudDebug.showHUDEditor)
+#endif
+        ) {
 
         if (gSaveContext.isMagicAcquired && (gSaveContext.magicLevel == 0)) {
             gSaveContext.magicLevel = gSaveContext.isDoubleMagicAcquired + 1;

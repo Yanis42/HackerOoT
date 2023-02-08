@@ -10,6 +10,17 @@
 struct GraphicsContext;
 
 typedef enum {
+    CURSOR_POS_HEARTS,
+    CURSOR_POS_MAGIC,
+    CURSOR_POS_RUPEES,
+    CURSOR_POS_SMALL_KEYS,
+    CURSOR_POS_BOSS_KEY,
+    CURSOR_POS_COMPASS,
+    CURSOR_POS_MAP,
+    CURSOR_POS_MAX
+} InventoryDebugCursorPos;
+
+typedef enum {
     PRINT_STATE_TITLE,
     PRINT_STATE_COMMANDS,
     PRINT_STATE_HUD_EDITOR,
@@ -47,6 +58,18 @@ typedef struct EquipmentDebug {
     u8 upgradeSlots[8];
 } EquipmentDebug;
 
+typedef struct HudDebug {
+    u8 showHUDEditor;
+    s16 hudTopPosY;
+    s16 hudBottomPosY;
+    s16 hudBottomInvertVal;
+    s8 hudCursorPos;
+    s8 hudDungeonIconIndex;
+    s16 mapIndex;
+    u8 stickMoved;
+    u8 updateDefenseHearts;
+} HudDebug;
+
 typedef struct InventoryDebug {
     u8 state;
     GraphicsContext* gfxCtx;
@@ -54,10 +77,10 @@ typedef struct InventoryDebug {
     InventoryDebugCommon common;
     ItemDebug itemDebug;
     EquipmentDebug equipDebug;
+    HudDebug hudDebug;
     u8 printTimer;
     u8 printState;
     u8 showInfos;
-    u8 showHUDEditor;
     s16 backgroundPosY;
     s16 bottomTextPosY;
     s16 invIconAlpha;
@@ -66,9 +89,13 @@ typedef struct InventoryDebug {
 u8 InventoryDebug_GetItemFromSlot(InventoryDebug* this);
 void InventoryDebug_SetItemFromSlot(InventoryDebug* this);
 void InventoryDebug_SetHUDAlpha(InventoryDebug* this);
+void InventoryDebug_UpdateHUDEditor(InventoryDebug* this);
 void InventoryDebug_UpdateQuestScreen(InventoryDebug* this);
 void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this);
 void InventoryDebug_UpdateItemScreen(InventoryDebug* this);
+void InventoryDebug_DrawCursor(InventoryDebug* this);
+void InventoryDebug_DrawDungeonItems(InventoryDebug* this);
+void InventoryDebug_DrawDungeonIcon(InventoryDebug* this);
 void InventoryDebug_DrawUpgrades(InventoryDebug* this, u16 i, s16 alpha);
 void InventoryDebug_DrawRectangle(InventoryDebug* this, s32 leftX, s32 leftY, s32 rightX, s32 rightY, Color_RGBA8 rgba);
 void InventoryDebug_DrawTitle(InventoryDebug* this);
@@ -102,6 +129,17 @@ Gfx* Gfx_TextureIA8(Gfx* displayListHead, void* texture, s16 textureWidth, s16 t
 
 // Equipment
 #define IS_UPGRADE(invDbgCommon) (((invDbgCommon).selectedSlot == SLOT_UPG_QUIVER) || ((invDbgCommon).selectedSlot == SLOT_UPG_BOMB_BAG) || ((invDbgCommon).selectedSlot == SLOT_UPG_STRENGTH) || ((invDbgCommon).selectedSlot == SLOT_UPG_SCALE))
+
+// HUD Editor
+#define HUD_TOP_YPOS_START 0
+#define HUD_TOP_YPOS_TARGET 35
+#define HUD_TOP_ANIM_SPEED 16 / 5
+
+#define HUD_BOTTOM_YPOS_START 0
+#define HUD_BOTTOM_YPOS_TARGET 100
+#define HUD_BOTTOM_ANIM_SPEED 16 / 2
+#define HUD_BOTTOM_INVERT_TARGET 16
+#define HUD_BOTTOM_INVERT_SPEED 1
 
 // Other
 #define INV_EDITOR_ENABLED (gDebug.invDebug.state != INV_DEBUG_STATE_OFF)

@@ -402,6 +402,10 @@ void KaleidoScope_HandlePageToggles(PauseContext* pauseCtx, Input* input) {
         pauseCtx->debugState = 1;
         return;
     }
+
+    if (INV_EDITOR_ENABLED && gDebug.invDebug.hudDebug.showHUDEditor) {
+        return;
+    }
 #endif
 
     if (CHECK_BTN_ALL(input->press.button, BTN_R)) {

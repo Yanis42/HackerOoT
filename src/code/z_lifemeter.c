@@ -320,6 +320,13 @@ void Health_DrawMeter(PlayState* play) {
     u8* curBgImgLoaded = NULL;
     s32 ddHeartCountMinusOne = gSaveContext.inventory.defenseHearts - 1;
 
+    u8 posY = 0;
+#ifdef ENABLE_INV_EDITOR
+    if (INV_EDITOR_ENABLED) {
+        posY = gDebug.invDebug.hudDebug.hudTopPosY;
+    }
+#endif
+
     OPEN_DISPS(gfxCtx, "../z_lifemeter.c", 353);
 
     if (!(gSaveContext.health % 0x10)) {
@@ -447,7 +454,7 @@ void Health_DrawMeter(PlayState* play) {
                 }
             }
 
-            heartCenterY = 26.0f + offsetY;
+            heartCenterY = 26.0f + offsetY + posY;
             heartCenterX = 30.0f + offsetX;
             heartTexCoordPerPixel = 1.0f;
             heartTexCoordPerPixel /= 0.68f;
@@ -481,7 +488,7 @@ void Health_DrawMeter(PlayState* play) {
                 f32 wideOffsetX = USE_WIDESCREEN ? (offsetX - (30.f * WIDE_GET_16_9)) : offsetX;
                 Matrix_SetTranslateScaleMtx2(
                     matrix, 1.0f - (0.32f * beatingHeartPulsingSize), 1.0f - (0.32f * beatingHeartPulsingSize),
-                    1.0f - (0.32f * beatingHeartPulsingSize), -129.7f + wideOffsetX, 94.f - offsetY, 0.0f);
+                    1.0f - (0.32f * beatingHeartPulsingSize), -129.7f + wideOffsetX, 94.f - offsetY - posY, 0.0f);
                 gSPMatrix(OVERLAY_DISP++, matrix, G_MTX_MODELVIEW | G_MTX_LOAD);
                 gSPVertex(OVERLAY_DISP++, beatingHeartVtx, 4, 0);
                 gSP1Quadrangle(OVERLAY_DISP++, 0, 2, 3, 1, 0);
