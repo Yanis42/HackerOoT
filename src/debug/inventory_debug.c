@@ -15,56 +15,6 @@
 #include "assets/textures/icon_item_24_static/icon_item_24_static.h"
 #include "assets/textures/icon_item_static/icon_item_static.h"
 
-static void* sDungeonItems[] = { gQuestIconDungeonBossKeyTex, gQuestIconDungeonCompassTex, gQuestIconDungeonMapTex };
-
-static void* sDungeonIndexToTexture[] = {
-    gQuestIconMedallionForestTex, gQuestIconMedallionFireTex, gQuestIconMedallionWaterTex, gQuestIconMedallionSpiritTex,
-    gQuestIconMedallionShadowTex, gQuestIconMedallionLightTex, gQuestIconKokiriEmeraldTex, gQuestIconGoronRubyTex,
-    gQuestIconZoraSapphireTex, gItemIconLensOfTruthTex, gItemIconBottleBlueFireTex, gQuestIconDungeonBossKeyTex,
-    gQuestIconGerudosCardTex, gQuestIconSmallKeyTex, gQuestIconMedallionLightTex, gQuestIconHeartPieceTex,
-};
-
-static s16 sDungeonIndexToMapIndex[] = {
-    SCENE_FOREST_TEMPLE, SCENE_FIRE_TEMPLE, SCENE_WATER_TEMPLE, SCENE_SPIRIT_TEMPLE,
-    SCENE_SHADOW_TEMPLE, -1, SCENE_DEKU_TREE, SCENE_DODONGOS_CAVERN, SCENE_JABU_JABU,
-    SCENE_BOTTOM_OF_THE_WELL, SCENE_ICE_CAVERN, SCENE_GANONS_TOWER, SCENE_GERUDO_TRAINING_GROUND,
-    SCENE_THIEVES_HIDEOUT, SCENE_INSIDE_GANONS_CASTLE, SCENE_TREASURE_BOX_SHOP,
-};
-
-static u8 sSlotToQuestItems[] = {
-    ITEM_MEDALLION_FOREST, ITEM_MEDALLION_FIRE,   ITEM_MEDALLION_WATER,
-    ITEM_MEDALLION_SPIRIT, ITEM_MEDALLION_SHADOW, ITEM_MEDALLION_LIGHT,
-    ITEM_SONG_MINUET,      ITEM_SONG_BOLERO,      ITEM_SONG_SERENADE,
-    ITEM_SONG_REQUIEM,     ITEM_SONG_NOCTURNE,    ITEM_SONG_PRELUDE,
-    ITEM_SONG_LULLABY,     ITEM_SONG_EPONA,       ITEM_SONG_SARIA,
-    ITEM_SONG_SUN,         ITEM_SONG_TIME,        ITEM_SONG_STORMS,
-    ITEM_KOKIRI_EMERALD,   ITEM_GORON_RUBY,       ITEM_ZORA_SAPPHIRE,
-    ITEM_STONE_OF_AGONY,   ITEM_GERUDOS_CARD,     ITEM_SKULL_TOKEN, ITEM_HEART_PIECE
-};
-
-static u8 sSlotToEquipType[] = {
-    EQUIP_TYPE_SWORD,  EQUIP_TYPE_SWORD,  EQUIP_TYPE_SWORD,
-    EQUIP_TYPE_SHIELD, EQUIP_TYPE_SHIELD, EQUIP_TYPE_SHIELD,
-    EQUIP_TYPE_TUNIC,  EQUIP_TYPE_TUNIC,  EQUIP_TYPE_TUNIC,
-    EQUIP_TYPE_BOOTS,  EQUIP_TYPE_BOOTS,  EQUIP_TYPE_BOOTS,
-};
-
-static u8 sSlotToEquip[] = {
-    UPG_QUIVER, ITEM_SWORD_KOKIRI, ITEM_SWORD_MASTER,  ITEM_SWORD_BIGGORON,
-    UPG_BOMB_BAG, ITEM_SHIELD_DEKU,  ITEM_SHIELD_HYLIAN, ITEM_SHIELD_MIRROR,
-    UPG_STRENGTH, ITEM_TUNIC_KOKIRI, ITEM_TUNIC_GORON,   ITEM_TUNIC_ZORA,
-    UPG_SCALE, ITEM_BOOTS_KOKIRI, ITEM_BOOTS_IRON,    ITEM_BOOTS_HOVER,
-};
-
-static u8 sUpgradeSlots[] = {
-    ITEM_QUIVER_30, ITEM_BOMB_BAG_20, ITEM_STRENGTH_GORONS_BRACELET, ITEM_SCALE_SILVER,
-    ITEM_BULLET_BAG_30, ITEM_DEKU_STICK, ITEM_DEKU_NUT, ITEM_ADULTS_WALLET,
-};
-
-static u8 sOtherUpgradeTypes[] = { UPG_BULLET_BAG, UPG_DEKU_STICKS, UPG_DEKU_NUTS, UPG_WALLET };
-
-static u8 sBottleContents[] = { ITEM_BOTTLE_EMPTY, ITEM_BOTTLE_EMPTY, ITEM_BOTTLE_EMPTY, ITEM_BOTTLE_EMPTY };
-
 // Item ID corresponding to each slot, aside from bottles and trade items
 static u8 sSlotToItems[] = {
     ITEM_DEKU_STICK, ITEM_DEKU_NUT,      ITEM_BOMB,       ITEM_BOW,      ITEM_ARROW_FIRE,  ITEM_DINS_FIRE,
@@ -129,30 +79,19 @@ void InventoryDebug_SetHUDAlpha(InventoryDebug* this) {
     interfaceCtx->minimapAlpha = this->elementsAlpha;
     interfaceCtx->startAlpha = this->elementsAlpha;
 
-    if (!this->miscDebug.showHUDEditor) {
+    if (!this->miscDebug.showMiscScreen) {
         interfaceCtx->healthAlpha = this->elementsAlpha;
         interfaceCtx->magicAlpha = this->elementsAlpha;
     }
 }
 
 void InventoryDebug_UpdateMiscScreen(InventoryDebug* this) {
-    if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CLEFT)) {
-        this->common.changeBy = -1;
-    } else if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CRIGHT)) {
-        this->common.changeBy = 1;
-    }
-
-    if (CHECK_BTN_ALL(gDebug.input->cur.button, BTN_CUP) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_CLEFT)) {
-        this->common.changeBy = -10;
-    } else if (CHECK_BTN_ALL(gDebug.input->cur.button, BTN_CUP) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_CRIGHT)) {
-        this->common.changeBy = 10;
-    }
-
-    if (CHECK_BTN_ALL(gDebug.input->cur.button, BTN_R) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_CLEFT)) {
-        this->common.changeBy = -100;
-    } else if (CHECK_BTN_ALL(gDebug.input->cur.button, BTN_R) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_CRIGHT)) {
-        this->common.changeBy = 100;
-    }
+    s16 dgnIndexToMapIndex[] = {
+        SCENE_FOREST_TEMPLE, SCENE_FIRE_TEMPLE, SCENE_WATER_TEMPLE, SCENE_SPIRIT_TEMPLE,
+        SCENE_SHADOW_TEMPLE, -1, SCENE_DEKU_TREE, SCENE_DODONGOS_CAVERN, SCENE_JABU_JABU,
+        SCENE_BOTTOM_OF_THE_WELL, SCENE_ICE_CAVERN, SCENE_GANONS_TOWER, SCENE_GERUDO_TRAINING_GROUND,
+        SCENE_THIEVES_HIDEOUT, SCENE_INSIDE_GANONS_CASTLE, SCENE_TREASURE_BOX_SHOP,
+    };
 
     if (!this->miscDebug.stickMoved && ((gDebug.input->rel.stick_y > 30) || (gDebug.input->rel.stick_x < -30))) {
         this->miscDebug.hudCursorPos--;
@@ -201,7 +140,7 @@ void InventoryDebug_UpdateMiscScreen(InventoryDebug* this) {
             this->miscDebug.hudDungeonIconIndex = 0;
         }
 
-        this->miscDebug.mapIndex = sDungeonIndexToMapIndex[this->miscDebug.hudDungeonIconIndex];
+        this->miscDebug.mapIndex = dgnIndexToMapIndex[this->miscDebug.hudDungeonIconIndex];
 
         if (this->miscDebug.mapIndex == -1) {
             osSyncPrintf("Something's wrong with the map index: %d\n", this->miscDebug.mapIndex);
@@ -301,10 +240,21 @@ void InventoryDebug_UpdateMiscScreen(InventoryDebug* this) {
 }
 
 void InventoryDebug_UpdateQuestScreen(InventoryDebug* this) {
+    u8 slotToItem[] = {
+        ITEM_MEDALLION_FOREST, ITEM_MEDALLION_FIRE,   ITEM_MEDALLION_WATER,
+        ITEM_MEDALLION_SPIRIT, ITEM_MEDALLION_SHADOW, ITEM_MEDALLION_LIGHT,
+        ITEM_SONG_MINUET,      ITEM_SONG_BOLERO,      ITEM_SONG_SERENADE,
+        ITEM_SONG_REQUIEM,     ITEM_SONG_NOCTURNE,    ITEM_SONG_PRELUDE,
+        ITEM_SONG_LULLABY,     ITEM_SONG_EPONA,       ITEM_SONG_SARIA,
+        ITEM_SONG_SUN,         ITEM_SONG_TIME,        ITEM_SONG_STORMS,
+        ITEM_KOKIRI_EMERALD,   ITEM_GORON_RUBY,       ITEM_ZORA_SAPPHIRE,
+        ITEM_STONE_OF_AGONY,   ITEM_GERUDOS_CARD,     ITEM_SKULL_TOKEN, ITEM_HEART_PIECE
+    };
+
     this->common.selectedSlot = (this->common.selectedSlot == 231) ? 24 : this->common.selectedSlot;
 
-    if (this->common.selectedSlot < ARRAY_COUNTU(sSlotToQuestItems)) {
-        u8 item = sSlotToQuestItems[this->common.selectedSlot];
+    if (this->common.selectedSlot < ARRAY_COUNTU(slotToItem)) {
+        u8 item = slotToItem[this->common.selectedSlot];
 
         if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_A)) {
             u8 index = 0;
@@ -322,19 +272,6 @@ void InventoryDebug_UpdateQuestScreen(InventoryDebug* this) {
             }
 
             gSaveContext.inventory.questItems ^= gBitFlags[index];
-        }
-
-        // increment for updating heart pieces and gold skulltula token total
-        if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CLEFT)) {
-            this->common.changeBy = -1;
-        } else if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CRIGHT)) {
-            this->common.changeBy = 1;
-        }
-
-        if (CHECK_BTN_ALL(gDebug.input->cur.button, BTN_CUP) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_CLEFT)) {
-            this->common.changeBy = -10;
-        } else if (CHECK_BTN_ALL(gDebug.input->cur.button, BTN_CUP) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_CRIGHT)) {
-            this->common.changeBy = 10;
         }
 
         if (this->common.changeBy != 0) {
@@ -368,6 +305,18 @@ void InventoryDebug_UpdateQuestScreen(InventoryDebug* this) {
 }
 
 void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
+    u8 upgradeTypes[] = {
+        UPG_QUIVER, UPG_BOMB_BAG, UPG_STRENGTH, UPG_SCALE,
+        UPG_BULLET_BAG, UPG_DEKU_STICKS, UPG_DEKU_NUTS, UPG_WALLET
+    };
+
+    u8 slotTo[] = {
+        ITEM_NONE, ITEM_SWORD_KOKIRI, ITEM_SWORD_MASTER,  ITEM_SWORD_BIGGORON,
+        ITEM_NONE, ITEM_SHIELD_DEKU,  ITEM_SHIELD_HYLIAN, ITEM_SHIELD_MIRROR,
+        ITEM_NONE, ITEM_TUNIC_KOKIRI, ITEM_TUNIC_GORON,   ITEM_TUNIC_ZORA,
+        ITEM_NONE, ITEM_BOOTS_KOKIRI, ITEM_BOOTS_IRON,    ITEM_BOOTS_HOVER,
+    };
+
     if (this->pauseCtx->cursorX[PAUSE_EQUIP] > 0) {
         this->common.selectedSlot = this->pauseCtx->cursorSlot[PAUSE_EQUIP];
     } else {
@@ -380,9 +329,9 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
 
     if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_A)) {
         // equipment and upgrades are handled differently
-        if (!INVDBG_IS_UPGRADE(this->common)) {
-            u8 value = sSlotToEquip[this->common.selectedSlot] - ITEM_SWORD_KOKIRI;
-            u8 equip = sSlotToEquipType[value];
+        if (!INVDBG_IS_UPGRADE(this->common) && (slotTo[this->common.selectedSlot] != ITEM_NONE)) {
+            u8 value = slotTo[this->common.selectedSlot] - ITEM_SWORD_KOKIRI;
+            u8 equip = value / 3;
 
             if (!CHECK_OWNED_EQUIP(equip, (value % 3))) {
                 // give equipment for selected slot
@@ -392,13 +341,13 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
                 gSaveContext.inventory.equipment &= ~OWNED_EQUIP_FLAG(equip, (value % 3));
             }
         } else {
-            u8 upgradeType = sSlotToEquip[this->common.selectedSlot];
+            u8 upgradeType = upgradeTypes[this->common.selectedSlot];
             u8 slotIndex = this->common.selectedSlot / 4;
             s32 upgradeValue = CUR_UPG_VALUE(upgradeType);
 
             if (this->equipDebug.showMiscUpgrades) {
-                upgradeType = sOtherUpgradeTypes[slotIndex];
-                slotIndex *= 2;
+                slotIndex += 4;
+                upgradeType = upgradeTypes[slotIndex];
                 upgradeValue = CUR_UPG_VALUE(upgradeType);
             }
 
@@ -411,15 +360,8 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
         }
     }
 
-    // increment for cycling through upgrades
-    if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CLEFT)) {
-        this->common.changeBy = -1;
-    } else if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CRIGHT)) {
-        this->common.changeBy = 1;
-    }
-
     if (this->common.changeBy != 0) {
-        u8 upgradeType = sSlotToEquip[this->common.selectedSlot];
+        u8 upgradeType = slotTo[this->common.selectedSlot / 4];
         u8 maxValue = 2; // there's only two diving scale/wallet upgrades
         s8 value;
 
@@ -431,7 +373,7 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
                 FALLTHROUGH;
             case SLOT_UPG_SCALE:
                 if (this->equipDebug.showMiscUpgrades) {
-                    upgradeType = sOtherUpgradeTypes[this->common.selectedSlot / 4];
+                    upgradeType = upgradeTypes[(this->common.selectedSlot / 4) + 4];
                 }
 
                 value = CUR_UPG_VALUE(upgradeType) + this->common.changeBy;
@@ -504,19 +446,6 @@ void InventoryDebug_UpdateItemScreen(InventoryDebug* this) {
         }
     }
 
-    // increment for cycling through trade items/bottles and changing ammo
-    if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CLEFT)) {
-        this->common.changeBy = -1;
-    } else if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CRIGHT)) {
-        this->common.changeBy = 1;
-    }
-
-    if (CHECK_BTN_ALL(gDebug.input->cur.button, BTN_CUP) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_CLEFT)) {
-        this->common.changeBy = -10;
-    } else if (CHECK_BTN_ALL(gDebug.input->cur.button, BTN_CUP) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_CRIGHT)) {
-        this->common.changeBy = 10;
-    }
-
     // logic for the inventory screen
     if ((this->common.changeBy != 0) && (this->common.selectedItem != ITEM_NONE)) {
         u8 item = this->common.selectedItem;
@@ -571,7 +500,7 @@ void InventoryDebug_UpdateItemScreen(InventoryDebug* this) {
 
 void InventoryDebug_UpdateInformationScreen(InventoryDebug* this) {
     // Background lifting/lowering animation
-    if (this->showInfoScreen || this->miscDebug.showHUDEditor) {
+    if (this->showInfoScreen || this->miscDebug.showMiscScreen) {
         this->backgroundPosY = TIMER_DECR(this->backgroundPosY, INVDBG_BG_YPOS_TARGET, INVDBG_BG_ANIM_SPEED);
         this->titlePosY = TIMER_DECR(this->titlePosY, INVDBG_TITLE_YPOS_TARGET, INVDBG_TITLE_ANIM_SPEED);
         this->elementsAlpha = TIMER_DECR(this->elementsAlpha, 0, INVDBG_ALPHA_TRANS_SPEED);
@@ -581,7 +510,7 @@ void InventoryDebug_UpdateInformationScreen(InventoryDebug* this) {
         this->elementsAlpha = TIMER_INCR(this->elementsAlpha, 255, INVDBG_ALPHA_TRANS_SPEED);
     }
 
-    if (this->miscDebug.showHUDEditor) {
+    if (this->miscDebug.showMiscScreen) {
         this->miscDebug.hudTopPosY = TIMER_INCR(this->miscDebug.hudTopPosY, INVDBG_HUD_TOP_YPOS_TARGET, INVDBG_HUD_TOP_ANIM_SPEED);
         this->miscDebug.hudBottomPosY = TIMER_INCR(this->miscDebug.hudBottomPosY, INVDBG_HUD_BOTTOM_YPOS_TARGET, INVDBG_HUD_BOTTOM_ANIM_SPEED);
         this->miscDebug.invertVal = TIMER_INCR(this->miscDebug.invertVal, INVDBG_HUD_BOTTOM_INVERT_TARGET, INVDBG_HUD_BOTTOM_INVERT_SPEED);
@@ -619,10 +548,17 @@ void InventoryDebug_DrawMiscScreen(InventoryDebug* this) {
     u8 width = ITEM_ICON_WIDTH;
     u8 height = ITEM_ICON_HEIGHT;
     u16 resizeFactor = 0;
+    void* dgnIconTextures[] = {
+        gQuestIconMedallionForestTex, gQuestIconMedallionFireTex, gQuestIconMedallionWaterTex, gQuestIconMedallionSpiritTex,
+        gQuestIconMedallionShadowTex, gQuestIconMedallionLightTex, gQuestIconKokiriEmeraldTex, gQuestIconGoronRubyTex,
+        gQuestIconZoraSapphireTex, gItemIconLensOfTruthTex, gItemIconBottleBlueFireTex, gQuestIconDungeonBossKeyTex,
+        gQuestIconGerudosCardTex, gQuestIconSmallKeyTex, gQuestIconMedallionLightTex, gQuestIconHeartPieceTex,
+    };
 
     // Dungeon Items
     u8 i;
     u16 posX;
+    void* dgnItemTextures[] = { gQuestIconDungeonBossKeyTex, gQuestIconDungeonCompassTex, gQuestIconDungeonMapTex };
 
     if ((index <= 8) || RANGE(index, 11, 15)) {
         width = QUEST_ICON_WIDTH;
@@ -647,7 +583,7 @@ void InventoryDebug_DrawMiscScreen(InventoryDebug* this) {
     // Dungeon Icons
     gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, 255);
 
-    gDPLoadTextureBlock(OVERLAY_DISP++,  sDungeonIndexToTexture[index], G_IM_FMT_RGBA, G_IM_SIZ_32b,
+    gDPLoadTextureBlock(OVERLAY_DISP++,  dgnIconTextures[index], G_IM_FMT_RGBA, G_IM_SIZ_32b,
                         width, height, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP,
                         G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
 
@@ -655,7 +591,7 @@ void InventoryDebug_DrawMiscScreen(InventoryDebug* this) {
                         G_TX_RENDERTILE, 0, 0, (1 << 10) + 270 + resizeFactor, (1 << 10) + 270 + resizeFactor);
 
     // Dungeon Items
-    for (posX = 258, i = 0; i < ARRAY_COUNTU(sDungeonItems); posX += 110, i++) {
+    for (posX = 258, i = 0; i < ARRAY_COUNTU(dgnItemTextures); posX += 110, i++) {
         Color_RGBA8 rgba;
 
         if (CHECK_DUNGEON_ITEM(i, this->miscDebug.mapIndex)) {
@@ -666,7 +602,7 @@ void InventoryDebug_DrawMiscScreen(InventoryDebug* this) {
 
         gDPSetPrimColor(OVERLAY_DISP++, 0, 0, rgba.r, rgba.g, rgba.b, rgba.a);
 
-        gDPLoadTextureBlock(OVERLAY_DISP++,  sDungeonItems[i], G_IM_FMT_RGBA, G_IM_SIZ_32b,
+        gDPLoadTextureBlock(OVERLAY_DISP++,  dgnItemTextures[i], G_IM_FMT_RGBA, G_IM_SIZ_32b,
                             QUEST_ICON_WIDTH, QUEST_ICON_HEIGHT, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP,
                             G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
 
@@ -678,7 +614,7 @@ void InventoryDebug_DrawMiscScreen(InventoryDebug* this) {
 }
 
 void InventoryDebug_DrawEquipmentUpgrades(InventoryDebug* this, u16 i, s16 alpha) {
-    u8 sUpgradeTypes[] = { UPG_QUIVER, UPG_BOMB_BAG, UPG_STRENGTH, UPG_SCALE };
+    u8 upgradeTypes[] = { UPG_QUIVER, UPG_BOMB_BAG, UPG_STRENGTH, UPG_SCALE };
     u8 sUpgradeItems[] = { ITEM_QUIVER_30, ITEM_BOMB_BAG_20, ITEM_STRENGTH_GORONS_BRACELET, ITEM_SCALE_SILVER };
     u8 sOtherUpgradeItem[] = { ITEM_BULLET_BAG_30, ITEM_DEKU_STICK, ITEM_DEKU_NUT, ITEM_ADULTS_WALLET };
     u8 upgradeValue;
@@ -687,13 +623,13 @@ void InventoryDebug_DrawEquipmentUpgrades(InventoryDebug* this, u16 i, s16 alpha
     u8 posY = 0;
 
     if (!this->equipDebug.showMiscUpgrades) {
-        upgradeValue = CUR_UPG_VALUE(sUpgradeTypes[i]);
+        upgradeValue = CUR_UPG_VALUE(upgradeTypes[i]);
 
         if (upgradeValue != 0) {
             texture = gItemIcons[sUpgradeItems[i] + upgradeValue - 1];
         }
     } else {
-        upgradeValue = CUR_UPG_VALUE(sOtherUpgradeTypes[i]);
+        upgradeValue = CUR_UPG_VALUE(upgradeTypes[i]);
 
         if (upgradeValue != 0) {
             u8 item = sOtherUpgradeItem[i];
@@ -767,7 +703,7 @@ void InventoryDebug_DrawInformationScreen(InventoryDebug* this) {
     const char* ctrlsToPrint = NULL;
 
     // draw controls for the current inventory screen
-    if (!this->miscDebug.showHUDEditor) {
+    if (!this->miscDebug.showMiscScreen) {
         switch (this->pauseCtx->pageIndex) {
             case PAUSE_ITEM:
             case PAUSE_QUEST:
@@ -808,15 +744,20 @@ void InventoryDebug_DrawInformationScreen(InventoryDebug* this) {
     }
 
     Print_SetInfos(&gDebug.printer, this->gfxCtx, 2, 28, rgba);
-    Print_Screen(&gDebug.printer, "[B]: Show HUD Editor (from anywhere)");
+    Print_Screen(&gDebug.printer, "[B]: Misc Debug");
 }
 
 void InventoryDebug_Init(InventoryDebug* this) {
+    u8 upgradeSlots[] = {
+        ITEM_QUIVER_30, ITEM_BOMB_BAG_20, ITEM_STRENGTH_GORONS_BRACELET, ITEM_SCALE_SILVER,
+        ITEM_BULLET_BAG_30, ITEM_DEKU_STICK, ITEM_DEKU_NUT, ITEM_ADULTS_WALLET,
+    };
+
     // Init general variables
     this->titleTimer = INVDBG_TITLE_TIMER;
     this->titleState = INVDBG_TITLE_STATE_NAME;
     this->showInfoScreen = false;
-    this->miscDebug.showHUDEditor = false;
+    this->miscDebug.showMiscScreen = false;
     this->backgroundPosY = INVDBG_BG_YPOS;
     this->titlePosY = INVDBG_TITLE_YPOS;
     this->common.changeBy = 0;
@@ -831,24 +772,24 @@ void InventoryDebug_Init(InventoryDebug* this) {
         this->itemDebug.adultTradeItem = ITEM_POCKET_EGG;
         this->itemDebug.hookshotType = ITEM_HOOKSHOT;
 
-        for (i = 0; i < ARRAY_COUNTU(sBottleContents); i++) {
-            this->itemDebug.bottleItems[i] = sBottleContents[i];
+        for (i = 0; i < ARRAY_COUNTU(this->itemDebug.bottleItems); i++) {
+            this->itemDebug.bottleItems[i] = ITEM_BOTTLE_EMPTY;
         }
 
         // Init equipment debug values
         this->equipDebug.showMiscUpgrades = false;
 
-        for (i = 0; i < ARRAY_COUNTU(sUpgradeSlots); i++) {
-            this->equipDebug.upgradeSlots[i] = sUpgradeSlots[i];
+        for (i = 0; i < ARRAY_COUNTU(upgradeSlots); i++) {
+            this->equipDebug.upgradeSlots[i] = upgradeSlots[i];
         }
 
-        // Init hud element debug
+        // Init misc debug
         this->miscDebug.hudTopPosY = INVDBG_HUD_TOP_YPOS;
         this->miscDebug.hudBottomPosY = INVDBG_HUD_BOTTOM_YPOS;
         this->miscDebug.invertVal = INVDBG_HUD_BOTTOM_YPOS;
         this->miscDebug.hudCursorPos = INVDBG_CURSOR_POS_HEARTS;
         this->miscDebug.hudDungeonIconIndex = 0;
-        this->miscDebug.mapIndex = sDungeonIndexToMapIndex[this->miscDebug.hudDungeonIconIndex];
+        this->miscDebug.mapIndex = SCENE_FOREST_TEMPLE;
         this->miscDebug.stickMoved = false;
         this->miscDebug.updateDefenseHearts = false;
 
@@ -865,9 +806,29 @@ void InventoryDebug_Update(InventoryDebug* this) {
         this->common.selectedSlot = this->pauseCtx->cursorSlot[this->pauseCtx->pageIndex];
     }
 
+    if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CLEFT)) {
+        this->common.changeBy = -1;
+    } else if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CRIGHT)) {
+        this->common.changeBy = 1;
+    }
+
+    if (CHECK_BTN_ALL(gDebug.input->cur.button, BTN_CUP) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_CLEFT)) {
+        this->common.changeBy = -10;
+    } else if (CHECK_BTN_ALL(gDebug.input->cur.button, BTN_CUP) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_CRIGHT)) {
+        this->common.changeBy = 10;
+    }
+
+    if (this->miscDebug.showMiscScreen) {
+        if (CHECK_BTN_ALL(gDebug.input->cur.button, BTN_R) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_CLEFT)) {
+            this->common.changeBy = -100;
+        } else if (CHECK_BTN_ALL(gDebug.input->cur.button, BTN_R) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_CRIGHT)) {
+            this->common.changeBy = 100;
+        }
+    }
+
     // Update the current screen if the cursor isn't on the L or R icons
     if ((this->pauseCtx->cursorSpecialPos != PAUSE_CURSOR_PAGE_LEFT) && (this->pauseCtx->cursorSpecialPos != PAUSE_CURSOR_PAGE_RIGHT)
-        && !this->showInfoScreen && !this->miscDebug.showHUDEditor) {
+        && !this->showInfoScreen && !this->miscDebug.showMiscScreen) {
         switch (this->pauseCtx->pageIndex) {
             case PAUSE_ITEM:
                 InventoryDebug_UpdateItemScreen(this);
@@ -886,26 +847,26 @@ void InventoryDebug_Update(InventoryDebug* this) {
     // Toggle informations screen
     if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CDOWN)) {
         this->showInfoScreen ^= 1;
-        this->miscDebug.showHUDEditor = false;
+        this->miscDebug.showMiscScreen = false;
 
         if (this->titleState == INVDBG_TITLE_STATE_MISCDBG) {
             this->titleState = INVDBG_TITLE_STATE_NAME;
         }
     }
 
-    // Toggle HUD editor
+    // Toggle Misc Debug
     if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_B)) {
-        this->miscDebug.showHUDEditor ^= 1;
+        this->miscDebug.showMiscScreen ^= 1;
         this->showInfoScreen = false;
 
-        if (this->miscDebug.showHUDEditor) {
+        if (this->miscDebug.showMiscScreen) {
             this->titleState = INVDBG_TITLE_STATE_MISCDBG;
         } else {
             this->titleState = INVDBG_TITLE_STATE_NAME;
         }
     }
 
-    if (this->miscDebug.showHUDEditor) {
+    if (this->miscDebug.showMiscScreen) {
         InventoryDebug_UpdateMiscScreen(this);
     }
 
@@ -947,17 +908,17 @@ void InventoryDebug_Draw(InventoryDebug* this) {
             break;
         case INVDBG_TITLE_STATE_MISCDBG:
             Print_SetInfos(&gDebug.printer, this->gfxCtx, 14, this->titlePosY, rgba);
-            Print_Screen(&gDebug.printer, "[HUD EDITOR]");
+            Print_Screen(&gDebug.printer, "[MISC DEBUG]");
             break;
         default:
             break;
     }
 
     // draw the informations on the panel
-    if ((this->showInfoScreen || this->miscDebug.showHUDEditor) && (this->titlePosY == INVDBG_TITLE_YPOS_TARGET)) {
+    if ((this->showInfoScreen || this->miscDebug.showMiscScreen) && (this->titlePosY == INVDBG_TITLE_YPOS_TARGET)) {
         InventoryDebug_DrawInformationScreen(this);
 
-        if (this->miscDebug.showHUDEditor) {
+        if (this->miscDebug.showMiscScreen) {
             u8 mapIndex = this->miscDebug.hudDungeonIconIndex;
             const char* dungeonNames[] = {
                 "Forest Temple", "Fire Temple", "Water Temple", "Spirit Temple", "Shadow Temple", NULL,
@@ -991,9 +952,9 @@ void InventoryDebug_Draw(InventoryDebug* this) {
 
 bool InventoryDebug_Destroy(InventoryDebug* this) {
     // Restore alpha values for the HUD/Inventory
-    if (this->showInfoScreen || this->miscDebug.showHUDEditor) {
+    if (this->showInfoScreen || this->miscDebug.showMiscScreen) {
         this->showInfoScreen = false;
-        this->miscDebug.showHUDEditor = false;
+        this->miscDebug.showMiscScreen = false;
     } else {
         // When the alpha hits 255 exit the inventory editor
         if (this->backgroundPosY == INVDBG_BG_YPOS)

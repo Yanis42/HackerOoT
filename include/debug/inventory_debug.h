@@ -7,8 +7,6 @@
 
 #include "z64pause.h"
 
-struct GraphicsContext;
-
 typedef enum {
     INVDBG_CURSOR_POS_HEARTS,
     INVDBG_CURSOR_POS_MAGIC,
@@ -58,7 +56,7 @@ typedef struct InvDebugEquipment {
 } InvDebugEquipment;
 
 typedef struct InvDebugMisc {
-    u8 showHUDEditor;
+    u8 showMiscScreen;
     u8 stickMoved;
     u8 updateDefenseHearts;
     s8 hudCursorPos;
@@ -68,6 +66,8 @@ typedef struct InvDebugMisc {
     s16 invertVal;
     s16 mapIndex;
 } InvDebugMisc;
+
+struct GraphicsContext;
 
 typedef struct InventoryDebug {
     u8 state;
@@ -106,8 +106,19 @@ bool InventoryDebug_Destroy(InventoryDebug* this);
 void InventoryDebug_Main(InventoryDebug* this);
 
 // General
-#define INVDBG_TITLE_TIMER 70 // frames
 #define INVDBG_PRINT_NEWLINE "\n  "
+#define INVDBG_ANIM_BASE_SPEED 16
+
+#define INVDBG_BG_ANIM_SPEED INVDBG_ANIM_BASE_SPEED
+#define INVDBG_BG_YPOS_TARGET 0
+#define INVDBG_BG_YPOS 220
+
+#define INVDBG_TITLE_TIMER 70 // frames
+#define INVDBG_TITLE_ANIM_SPEED INVDBG_ANIM_BASE_SPEED / 8
+#define INVDBG_TITLE_YPOS_TARGET 2
+#define INVDBG_TITLE_YPOS 28
+
+#define INVDBG_ALPHA_TRANS_SPEED INVDBG_ANIM_BASE_SPEED * 2
 
 // Items
 #define INVDBG_GET_BOTTLE_ITEM(invDebug) (RANGE((invDebug)->common.selectedSlot, SLOT_BOTTLE_1, SLOT_BOTTLE_4) ? (invDebug)->itemDebug.bottleItems[(invDebug)->common.selectedSlot - SLOT_BOTTLE_1] : ITEM_NONE)
@@ -139,10 +150,7 @@ void InventoryDebug_Main(InventoryDebug* this);
 // Equipment
 #define INVDBG_IS_UPGRADE(invDbgCommon) (((invDbgCommon).selectedSlot == SLOT_UPG_QUIVER) || ((invDbgCommon).selectedSlot == SLOT_UPG_BOMB_BAG) || ((invDbgCommon).selectedSlot == SLOT_UPG_STRENGTH) || ((invDbgCommon).selectedSlot == SLOT_UPG_SCALE))
 
-// Animations
-#define INVDBG_ANIM_BASE_SPEED 16
-
-// HUD Editor
+// Misc
 #define INVDBG_HUD_TOP_ANIM_SPEED INVDBG_ANIM_BASE_SPEED / 5
 #define INVDBG_HUD_TOP_YPOS_TARGET 35
 #define INVDBG_HUD_TOP_YPOS 0
@@ -150,19 +158,8 @@ void InventoryDebug_Main(InventoryDebug* this);
 #define INVDBG_HUD_BOTTOM_ANIM_SPEED INVDBG_ANIM_BASE_SPEED / 2
 #define INVDBG_HUD_BOTTOM_YPOS_TARGET 100
 #define INVDBG_HUD_BOTTOM_YPOS 0
-
 #define INVDBG_HUD_BOTTOM_INVERT_SPEED INVDBG_ANIM_BASE_SPEED / 16
 #define INVDBG_HUD_BOTTOM_INVERT_TARGET 16
-
-#define INVDBG_BG_ANIM_SPEED INVDBG_ANIM_BASE_SPEED
-#define INVDBG_BG_YPOS_TARGET 0
-#define INVDBG_BG_YPOS 220
-
-#define INVDBG_TITLE_ANIM_SPEED INVDBG_ANIM_BASE_SPEED / 8
-#define INVDBG_TITLE_YPOS_TARGET 2
-#define INVDBG_TITLE_YPOS 28
-
-#define INVDBG_ALPHA_TRANS_SPEED INVDBG_ANIM_BASE_SPEED * 2
 
 #endif
 

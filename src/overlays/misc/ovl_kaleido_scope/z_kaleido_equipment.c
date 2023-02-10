@@ -31,7 +31,7 @@ void KaleidoScope_DrawEquipmentImage(PlayState* play, void* source, u32 width, u
     s16 alpha = pauseCtx->alpha;
 
 #ifdef ENABLE_INV_EDITOR
-    if (gDebug.invDebug.showInfoScreen || gDebug.invDebug.miscDebug.showHUDEditor) {
+    if (gDebug.invDebug.showInfoScreen || gDebug.invDebug.miscDebug.showMiscScreen) {
         alpha = gDebug.invDebug.elementsAlpha;
     } else {
         alpha = gDebug.invDebug.elementsAlpha < 255 ? gDebug.invDebug.elementsAlpha : pauseCtx->alpha;
@@ -148,7 +148,7 @@ void KaleidoScope_DrawEquipment(PlayState* play) {
     s16 alpha = pauseCtx->alpha;
 
 #ifdef ENABLE_INV_EDITOR
-    if (gDebug.invDebug.showInfoScreen || gDebug.invDebug.miscDebug.showHUDEditor) {
+    if (gDebug.invDebug.showInfoScreen || gDebug.invDebug.miscDebug.showMiscScreen) {
         alpha = gDebug.invDebug.elementsAlpha;
 
         if (alpha == 0) {

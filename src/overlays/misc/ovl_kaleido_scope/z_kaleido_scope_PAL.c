@@ -403,7 +403,7 @@ void KaleidoScope_HandlePageToggles(PauseContext* pauseCtx, Input* input) {
         return;
     }
 
-    if (INVDBG_IS_ENABLED && gDebug.invDebug.miscDebug.showHUDEditor) {
+    if (INVDBG_IS_ENABLED && gDebug.invDebug.miscDebug.showMiscScreen) {
         return;
     }
 #endif

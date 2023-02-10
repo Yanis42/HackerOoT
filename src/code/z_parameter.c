@@ -2649,7 +2649,7 @@ void Magic_DrawMeter(PlayState* play) {
     if (INVDBG_IS_ENABLED) {
         posY += gDebug.invDebug.miscDebug.hudTopPosY;
 
-        if (gDebug.invDebug.miscDebug.showHUDEditor && gSaveContext.isMagicAcquired) {
+        if (gDebug.invDebug.miscDebug.showMiscScreen && gSaveContext.isMagicAcquired) {
             updateMeter = true;
         }
     }
@@ -3208,7 +3208,7 @@ void Interface_Draw(PlayState* play) {
             smallKeyPosY -= gDebug.invDebug.miscDebug.invertVal;
         }
 
-        if (gDebug.invDebug.miscDebug.showHUDEditor) {
+        if (gDebug.invDebug.miscDebug.showMiscScreen) {
             mapIndex = gDebug.invDebug.miscDebug.mapIndex;
         }
     }
@@ -3260,7 +3260,7 @@ void Interface_Draw(PlayState* play) {
 
         smallKeyCond = play->sceneId;
 #ifdef ENABLE_INV_EDITOR
-        if (INVDBG_IS_ENABLED && gDebug.invDebug.miscDebug.showHUDEditor) {
+        if (INVDBG_IS_ENABLED && gDebug.invDebug.miscDebug.showMiscScreen) {
             smallKeyCond = 10000;
         }
 #endif
@@ -3286,7 +3286,7 @@ void Interface_Draw(PlayState* play) {
 #endif
                 if ((gSaveContext.inventory.dungeonKeys[mapIndex] >= 0)
 #ifdef ENABLE_INV_EDITOR
-                    || (INVDBG_IS_ENABLED && gDebug.invDebug.miscDebug.showHUDEditor)
+                    || (INVDBG_IS_ENABLED && gDebug.invDebug.miscDebug.showMiscScreen)
 #endif
                 ) {
                     // Small Key Icon
@@ -3371,7 +3371,7 @@ void Interface_Draw(PlayState* play) {
         Magic_DrawMeter(play);
 
 #ifdef ENABLE_INV_EDITOR
-    if (gDebug.invDebug.miscDebug.showHUDEditor && gDebug.invDebug.elementsAlpha == 0) {
+    if (gDebug.invDebug.miscDebug.showMiscScreen && gDebug.invDebug.elementsAlpha == 0) {
         return;
     }
 #endif
@@ -4354,7 +4354,7 @@ void Interface_Update(PlayState* play) {
         (play->gameOverCtx.state == GAMEOVER_INACTIVE) && (play->transitionMode == TRANS_MODE_OFF) &&
         ((play->csCtx.state == CS_STATE_IDLE) || !Player_InCsMode(play)))
 #ifdef ENABLE_INV_EDITOR
-        || (INVDBG_IS_ENABLED && gDebug.invDebug.miscDebug.showHUDEditor)
+        || (INVDBG_IS_ENABLED && gDebug.invDebug.miscDebug.showMiscScreen)
 #endif
         ) {
 
