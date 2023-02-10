@@ -31,10 +31,10 @@ void KaleidoScope_DrawEquipmentImage(PlayState* play, void* source, u32 width, u
     s16 alpha = pauseCtx->alpha;
 
 #ifdef ENABLE_INV_EDITOR
-    if (gDebug.invDebug.showInfos || gDebug.invDebug.hudDebug.showHUDEditor) {
-        alpha = gDebug.invDebug.invIconAlpha;
+    if (gDebug.invDebug.showInfoScreen || gDebug.invDebug.miscDebug.showHUDEditor) {
+        alpha = gDebug.invDebug.elementsAlpha;
     } else {
-        alpha = gDebug.invDebug.invIconAlpha < 255 ? gDebug.invDebug.invIconAlpha : pauseCtx->alpha;
+        alpha = gDebug.invDebug.elementsAlpha < 255 ? gDebug.invDebug.elementsAlpha : pauseCtx->alpha;
     }
 #endif
 
@@ -148,14 +148,14 @@ void KaleidoScope_DrawEquipment(PlayState* play) {
     s16 alpha = pauseCtx->alpha;
 
 #ifdef ENABLE_INV_EDITOR
-    if (gDebug.invDebug.showInfos || gDebug.invDebug.hudDebug.showHUDEditor) {
-        alpha = gDebug.invDebug.invIconAlpha;
+    if (gDebug.invDebug.showInfoScreen || gDebug.invDebug.miscDebug.showHUDEditor) {
+        alpha = gDebug.invDebug.elementsAlpha;
 
         if (alpha == 0) {
             return;
         }
     } else {
-        alpha = gDebug.invDebug.invIconAlpha < 255 ? gDebug.invDebug.invIconAlpha : pauseCtx->alpha;
+        alpha = gDebug.invDebug.elementsAlpha < 255 ? gDebug.invDebug.elementsAlpha : pauseCtx->alpha;
     }
 #endif
 

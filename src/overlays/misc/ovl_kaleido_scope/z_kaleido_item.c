@@ -21,14 +21,14 @@ void KaleidoScope_DrawAmmoCount(PauseContext* pauseCtx, GraphicsContext* gfxCtx,
     s16 alpha = pauseCtx->alpha;
 
 #ifdef ENABLE_INV_EDITOR
-    if (gDebug.invDebug.showInfos || gDebug.invDebug.hudDebug.showHUDEditor) {
-        alpha = gDebug.invDebug.invIconAlpha;
+    if (gDebug.invDebug.showInfoScreen || gDebug.invDebug.miscDebug.showHUDEditor) {
+        alpha = gDebug.invDebug.elementsAlpha;
 
         if (alpha == 0) {
             return;
         }
     } else {
-        alpha = gDebug.invDebug.invIconAlpha < 255 ? gDebug.invDebug.invIconAlpha : pauseCtx->alpha;
+        alpha = gDebug.invDebug.elementsAlpha < 255 ? gDebug.invDebug.elementsAlpha : pauseCtx->alpha;
     }
 #endif
 
@@ -111,14 +111,14 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
     s16 alpha = pauseCtx->alpha;
 
 #ifdef ENABLE_INV_EDITOR
-    if (gDebug.invDebug.showInfos || gDebug.invDebug.hudDebug.showHUDEditor) {
-        alpha = gDebug.invDebug.invIconAlpha;
+    if (gDebug.invDebug.showInfoScreen || gDebug.invDebug.miscDebug.showHUDEditor) {
+        alpha = gDebug.invDebug.elementsAlpha;
 
         if (alpha == 0) {
             return;
         }
     } else {
-        alpha = gDebug.invDebug.invIconAlpha < 255 ? gDebug.invDebug.invIconAlpha : pauseCtx->alpha;
+        alpha = gDebug.invDebug.elementsAlpha < 255 ? gDebug.invDebug.elementsAlpha : pauseCtx->alpha;
     }
 #endif
 

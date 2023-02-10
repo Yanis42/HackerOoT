@@ -10,81 +10,82 @@
 struct GraphicsContext;
 
 typedef enum {
-    CURSOR_POS_HEARTS,
-    CURSOR_POS_MAGIC,
-    CURSOR_POS_RUPEES,
-    CURSOR_POS_SMALL_KEYS,
-    CURSOR_POS_BOSS_KEY,
-    CURSOR_POS_COMPASS,
-    CURSOR_POS_MAP,
-    CURSOR_POS_MAX
-} InventoryDebugCursorPos;
+    INVDBG_CURSOR_POS_HEARTS,
+    INVDBG_CURSOR_POS_MAGIC,
+    INVDBG_CURSOR_POS_RUPEES,
+    INVDBG_CURSOR_POS_SMALL_KEYS,
+    INVDBG_CURSOR_POS_BOSS_KEY,
+    INVDBG_CURSOR_POS_COMPASS,
+    INVDBG_CURSOR_POS_MAP,
+    INVDBG_CURSOR_POS_MAX
+} InvDebugCursorPos;
 
 typedef enum {
-    PRINT_STATE_TITLE,
-    PRINT_STATE_COMMANDS,
-    PRINT_STATE_HUD_EDITOR,
-} InventoryDebugPrintState;
+    INVDBG_TITLE_STATE_NAME,
+    INVDBG_TITLE_STATE_COMMANDS,
+    INVDBG_TITLE_STATE_MISCDBG
+} InvDebugTitleState;
 
 typedef enum {
     INVDBG_COMMON_STATE_UNREADY,
-    INVDBG_COMMON_STATE_READY,
+    INVDBG_COMMON_STATE_READY
 } InvDebugCommonState;
 
 typedef enum {
-    INV_DEBUG_STATE_OFF,
-    INV_DEBUG_STATE_INIT,
-    INV_DEBUG_STATE_UPDATE,
-    INV_DEBUG_STATE_DESTROY,
-    INV_DEBUG_STATE_MAX
-} InventoryDebugState;
+    INVDBG_STATE_OFF,
+    INVDBG_STATE_INIT,
+    INVDBG_STATE_UPDATE,
+    INVDBG_STATE_DESTROY
+} InvDebugState;
 
 typedef struct InventoryDebugCommon {
     u8 state;
     u8 selectedItem;
     u8 selectedSlot;
     s8 changeBy;
-} InventoryDebugCommon;
+} InvDebugCommon;
 
-typedef struct ItemDebug {
+typedef struct InvDebugItems {
     u8 childTradeItem;
     u8 adultTradeItem;
     u8 hookshotType;
-    u8 bottleContents[4];
-} ItemDebug;
+    u8 bottleItems[4];
+} InvDebugItems;
 
-typedef struct EquipmentDebug {
-    u8 showOtherUpgrades;
+typedef struct InvDebugEquipment {
+    u8 showMiscUpgrades;
     u8 upgradeSlots[8];
-} EquipmentDebug;
+} InvDebugEquipment;
 
-typedef struct HudDebug {
+typedef struct InvDebugMisc {
     u8 showHUDEditor;
-    s16 hudTopPosY;
-    s16 hudBottomPosY;
-    s16 hudBottomInvertVal;
-    s8 hudCursorPos;
-    s8 hudDungeonIconIndex;
-    s16 mapIndex;
     u8 stickMoved;
     u8 updateDefenseHearts;
-} HudDebug;
+    s8 hudCursorPos;
+    s8 hudDungeonIconIndex;
+    s16 hudTopPosY;
+    s16 hudBottomPosY;
+    s16 invertVal;
+    s16 mapIndex;
+} InvDebugMisc;
 
 typedef struct InventoryDebug {
     u8 state;
     GraphicsContext* gfxCtx;
     PauseContext* pauseCtx;
-    InventoryDebugCommon common;
-    ItemDebug itemDebug;
-    EquipmentDebug equipDebug;
-    HudDebug hudDebug;
-    u8 printTimer;
-    u8 printState;
-    u8 showInfos;
+    InvDebugCommon common;
+    InvDebugItems itemDebug;
+    InvDebugEquipment equipDebug;
+    InvDebugMisc miscDebug;
+    u8 titleTimer;
+    u8 titleState;
+    s16 titlePosY;
     s16 backgroundPosY;
-    s16 bottomTextPosY;
-    s16 invIconAlpha;
+    u8 showInfoScreen;
+    s16 elementsAlpha;
 } InventoryDebug;
+
+Gfx* Gfx_TextureIA8(Gfx* displayListHead, void* texture, s16 textureWidth, s16 textureHeight, s16 rectLeft, s16 rectTop, s16 rectWidth, s16 rectHeight, u16 dsdx, u16 dtdy);
 
 u8 InventoryDebug_GetItemFromSlot(InventoryDebug* this);
 void InventoryDebug_SetItemFromSlot(InventoryDebug* this);
@@ -93,25 +94,23 @@ void InventoryDebug_UpdateMiscScreen(InventoryDebug* this);
 void InventoryDebug_UpdateQuestScreen(InventoryDebug* this);
 void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this);
 void InventoryDebug_UpdateItemScreen(InventoryDebug* this);
+void InventoryDebug_UpdateInformationScreen(InventoryDebug* this);
+void InventoryDebug_DrawRectangle(InventoryDebug* this, s32 leftX, s32 leftY, s32 rightX, s32 rightY, Color_RGBA8 rgba);
 void InventoryDebug_DrawMiscScreen(InventoryDebug* this);
 void InventoryDebug_DrawEquipmentUpgrades(InventoryDebug* this, u16 i, s16 alpha);
-void InventoryDebug_DrawRectangle(InventoryDebug* this, s32 leftX, s32 leftY, s32 rightX, s32 rightY, Color_RGBA8 rgba);
-void InventoryDebug_DrawTitle(InventoryDebug* this);
 void InventoryDebug_DrawInformationScreen(InventoryDebug* this);
-void InventoryDebug_Main(InventoryDebug* this);
 void InventoryDebug_Init(InventoryDebug* this);
 void InventoryDebug_Update(InventoryDebug* this);
 void InventoryDebug_Draw(InventoryDebug* this);
 bool InventoryDebug_Destroy(InventoryDebug* this);
-
-Gfx* Gfx_TextureIA8(Gfx* displayListHead, void* texture, s16 textureWidth, s16 textureHeight, s16 rectLeft, s16 rectTop, s16 rectWidth, s16 rectHeight, u16 dsdx, u16 dtdy);
+void InventoryDebug_Main(InventoryDebug* this);
 
 // General
 #define INVDBG_TITLE_TIMER 70 // frames
 #define INVDBG_PRINT_NEWLINE "\n  "
 
 // Items
-#define INVDBG_GET_BOTTLE_ITEM(invDebug) (RANGE((invDebug)->common.selectedSlot, SLOT_BOTTLE_1, SLOT_BOTTLE_4) ? (invDebug)->itemDebug.bottleContents[(invDebug)->common.selectedSlot - SLOT_BOTTLE_1] : ITEM_NONE)
+#define INVDBG_GET_BOTTLE_ITEM(invDebug) (RANGE((invDebug)->common.selectedSlot, SLOT_BOTTLE_1, SLOT_BOTTLE_4) ? (invDebug)->itemDebug.bottleItems[(invDebug)->common.selectedSlot - SLOT_BOTTLE_1] : ITEM_NONE)
 #define INVDBG_GET_CHILD_TRADE_ITEM(invDebug) (((invDebug)->common.selectedSlot == SLOT_TRADE_CHILD) ? (invDebug)->itemDebug.childTradeItem : ITEM_NONE)
 #define INVDBG_GET_ADULT_TRADE_ITEM(invDebug) (((invDebug)->common.selectedSlot == SLOT_TRADE_ADULT) ? (invDebug)->itemDebug.adultTradeItem : ITEM_NONE)
 #define INVDBG_GET_HOOKSHOT(invDebug) (((invDebug)->common.selectedSlot == SLOT_HOOKSHOT) ? (invDebug)->itemDebug.hookshotType : ITEM_NONE)

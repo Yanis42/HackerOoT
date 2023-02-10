@@ -75,7 +75,7 @@ static u8 sSlotToItems[] = {
 u8 InventoryDebug_GetItemFromSlot(InventoryDebug* this) {
     if (INVDBG_IS_ENABLED && this->pauseCtx->pageIndex == PAUSE_ITEM) {
         if (RANGE(this->common.selectedSlot, SLOT_BOTTLE_1, SLOT_BOTTLE_4)) {
-            return this->itemDebug.bottleContents[this->common.selectedSlot - SLOT_BOTTLE_1];
+            return this->itemDebug.bottleItems[this->common.selectedSlot - SLOT_BOTTLE_1];
         }
 
         if (this->common.selectedSlot == SLOT_TRADE_CHILD) {
@@ -101,7 +101,7 @@ u8 InventoryDebug_GetItemFromSlot(InventoryDebug* this) {
 void InventoryDebug_SetItemFromSlot(InventoryDebug* this) {
     if ((this->common.selectedSlot != SLOT_NONE) && (this->common.selectedItem != ITEM_NONE)) {
         if (RANGE(this->common.selectedSlot, SLOT_BOTTLE_1, SLOT_BOTTLE_4)) {
-            this->itemDebug.bottleContents[this->common.selectedSlot - SLOT_BOTTLE_1] = this->common.selectedItem;
+            this->itemDebug.bottleItems[this->common.selectedSlot - SLOT_BOTTLE_1] = this->common.selectedItem;
         }
 
         if (RANGE(this->common.selectedItem, ITEM_WEIRD_EGG, ITEM_SOLD_OUT)) {
@@ -121,43 +121,18 @@ void InventoryDebug_SetItemFromSlot(InventoryDebug* this) {
 void InventoryDebug_SetHUDAlpha(InventoryDebug* this) {
     InterfaceContext* interfaceCtx = &gDebug.play->interfaceCtx;
 
-    interfaceCtx->bAlpha = this->invIconAlpha;
-    interfaceCtx->aAlpha = this->invIconAlpha;
-    interfaceCtx->cLeftAlpha = this->invIconAlpha;
-    interfaceCtx->cDownAlpha = this->invIconAlpha;
-    interfaceCtx->cRightAlpha = this->invIconAlpha;
-    interfaceCtx->minimapAlpha = this->invIconAlpha;
-    interfaceCtx->startAlpha = this->invIconAlpha;
+    interfaceCtx->bAlpha = this->elementsAlpha;
+    interfaceCtx->aAlpha = this->elementsAlpha;
+    interfaceCtx->cLeftAlpha = this->elementsAlpha;
+    interfaceCtx->cDownAlpha = this->elementsAlpha;
+    interfaceCtx->cRightAlpha = this->elementsAlpha;
+    interfaceCtx->minimapAlpha = this->elementsAlpha;
+    interfaceCtx->startAlpha = this->elementsAlpha;
 
-    if (!this->hudDebug.showHUDEditor) {
-        interfaceCtx->healthAlpha = this->invIconAlpha;
-        interfaceCtx->magicAlpha = this->invIconAlpha;
+    if (!this->miscDebug.showHUDEditor) {
+        interfaceCtx->healthAlpha = this->elementsAlpha;
+        interfaceCtx->magicAlpha = this->elementsAlpha;
     }
-}
-
-void InventoryDebug_UpdateInfosPanel(InventoryDebug* this) {
-    // Background lifting/lowering animation
-    if (this->showInfos || this->hudDebug.showHUDEditor) {
-        this->backgroundPosY = TIMER_DECR(this->backgroundPosY, INVDBG_BG_YPOS_TARGET, INVDBG_BG_ANIM_SPEED);
-        this->bottomTextPosY = TIMER_DECR(this->bottomTextPosY, INVDBG_TITLE_YPOS_TARGET, INVDBG_TITLE_ANIM_SPEED);
-        this->invIconAlpha = TIMER_DECR(this->invIconAlpha, 0, INVDBG_ALPHA_TRANS_SPEED);
-    } else {
-        this->backgroundPosY = TIMER_INCR(this->backgroundPosY, INVDBG_BG_YPOS, INVDBG_BG_ANIM_SPEED);
-        this->bottomTextPosY = TIMER_INCR(this->bottomTextPosY, INVDBG_TITLE_YPOS, INVDBG_TITLE_ANIM_SPEED);
-        this->invIconAlpha = TIMER_INCR(this->invIconAlpha, 255, INVDBG_ALPHA_TRANS_SPEED);
-    }
-
-    if (this->hudDebug.showHUDEditor) {
-        this->hudDebug.hudTopPosY = TIMER_INCR(this->hudDebug.hudTopPosY, INVDBG_HUD_TOP_YPOS_TARGET, INVDBG_HUD_TOP_ANIM_SPEED);
-        this->hudDebug.hudBottomPosY = TIMER_INCR(this->hudDebug.hudBottomPosY, INVDBG_HUD_BOTTOM_YPOS_TARGET, INVDBG_HUD_BOTTOM_ANIM_SPEED);
-        this->hudDebug.hudBottomInvertVal = TIMER_INCR(this->hudDebug.hudBottomInvertVal, INVDBG_HUD_BOTTOM_INVERT_TARGET, INVDBG_HUD_BOTTOM_INVERT_SPEED);
-    } else {
-        this->hudDebug.hudTopPosY = TIMER_DECR(this->hudDebug.hudTopPosY, INVDBG_HUD_TOP_YPOS, INVDBG_HUD_TOP_ANIM_SPEED);
-        this->hudDebug.hudBottomPosY = TIMER_DECR(this->hudDebug.hudBottomPosY, INVDBG_HUD_BOTTOM_YPOS, INVDBG_HUD_BOTTOM_ANIM_SPEED);
-        this->hudDebug.hudBottomInvertVal = TIMER_DECR(this->hudDebug.hudBottomInvertVal, INVDBG_HUD_BOTTOM_YPOS, INVDBG_HUD_BOTTOM_INVERT_SPEED);
-    }
-
-    InventoryDebug_SetHUDAlpha(this);
 }
 
 void InventoryDebug_UpdateMiscScreen(InventoryDebug* this) {
@@ -179,69 +154,69 @@ void InventoryDebug_UpdateMiscScreen(InventoryDebug* this) {
         this->common.changeBy = 100;
     }
 
-    if (!this->hudDebug.stickMoved && ((gDebug.input->rel.stick_y > 30) || (gDebug.input->rel.stick_x < -30))) {
-        this->hudDebug.hudCursorPos--;
-        this->hudDebug.stickMoved = true;
+    if (!this->miscDebug.stickMoved && ((gDebug.input->rel.stick_y > 30) || (gDebug.input->rel.stick_x < -30))) {
+        this->miscDebug.hudCursorPos--;
+        this->miscDebug.stickMoved = true;
     }
 
-    if (!this->hudDebug.stickMoved && ((gDebug.input->rel.stick_y < -30) || (gDebug.input->rel.stick_x > 30))) {
-        this->hudDebug.hudCursorPos++;
-        this->hudDebug.stickMoved = true;
+    if (!this->miscDebug.stickMoved && ((gDebug.input->rel.stick_y < -30) || (gDebug.input->rel.stick_x > 30))) {
+        this->miscDebug.hudCursorPos++;
+        this->miscDebug.stickMoved = true;
     }
 
     if ((gDebug.input->rel.stick_y == 0) && (gDebug.input->rel.stick_x == 0)) {
-        this->hudDebug.stickMoved = false;
+        this->miscDebug.stickMoved = false;
     }
 
-    if (this->hudDebug.hudCursorPos > CURSOR_POS_MAP) {
-        this->hudDebug.hudCursorPos = CURSOR_POS_HEARTS;
+    if (this->miscDebug.hudCursorPos > INVDBG_CURSOR_POS_MAP) {
+        this->miscDebug.hudCursorPos = INVDBG_CURSOR_POS_HEARTS;
     }
 
-    if (this->hudDebug.hudCursorPos < CURSOR_POS_HEARTS) {
-        this->hudDebug.hudCursorPos = CURSOR_POS_MAP;
+    if (this->miscDebug.hudCursorPos < INVDBG_CURSOR_POS_HEARTS) {
+        this->miscDebug.hudCursorPos = INVDBG_CURSOR_POS_MAP;
     }
 
     // dungeon change
-    if (RANGE(this->hudDebug.hudCursorPos, CURSOR_POS_SMALL_KEYS, CURSOR_POS_MAP)) {
+    if (RANGE(this->miscDebug.hudCursorPos, INVDBG_CURSOR_POS_SMALL_KEYS, INVDBG_CURSOR_POS_MAP)) {
         if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_R)) {
-            this->hudDebug.hudDungeonIconIndex++;
-            if (this->hudDebug.hudDungeonIconIndex == 5) { // light medallion
-                this->hudDebug.hudDungeonIconIndex++;
+            this->miscDebug.hudDungeonIconIndex++;
+            if (this->miscDebug.hudDungeonIconIndex == 5) { // light medallion
+                this->miscDebug.hudDungeonIconIndex++;
             }
         }
 
         if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_Z)) {
-            this->hudDebug.hudDungeonIconIndex--;
-            if (this->hudDebug.hudDungeonIconIndex == 5) { // light medallion
-                this->hudDebug.hudDungeonIconIndex--;
+            this->miscDebug.hudDungeonIconIndex--;
+            if (this->miscDebug.hudDungeonIconIndex == 5) { // light medallion
+                this->miscDebug.hudDungeonIconIndex--;
             }
         }
 
         // texture safeguards
-        if (this->hudDebug.hudDungeonIconIndex < 0) {
-            this->hudDebug.hudDungeonIconIndex = 15;
+        if (this->miscDebug.hudDungeonIconIndex < 0) {
+            this->miscDebug.hudDungeonIconIndex = 15;
         }
 
-        if (this->hudDebug.hudDungeonIconIndex > 15) {
-            this->hudDebug.hudDungeonIconIndex = 0;
+        if (this->miscDebug.hudDungeonIconIndex > 15) {
+            this->miscDebug.hudDungeonIconIndex = 0;
         }
 
-        this->hudDebug.mapIndex = sDungeonIndexToMapIndex[this->hudDebug.hudDungeonIconIndex];
+        this->miscDebug.mapIndex = sDungeonIndexToMapIndex[this->miscDebug.hudDungeonIconIndex];
 
-        if (this->hudDebug.mapIndex == -1) {
-            osSyncPrintf("Something's wrong with the map index: %d\n", this->hudDebug.mapIndex);
+        if (this->miscDebug.mapIndex == -1) {
+            osSyncPrintf("Something's wrong with the map index: %d\n", this->miscDebug.mapIndex);
             return;
         }
     }
 
-    switch (this->hudDebug.hudCursorPos) {
-        case CURSOR_POS_HEARTS:
+    switch (this->miscDebug.hudCursorPos) {
+        case INVDBG_CURSOR_POS_HEARTS:
             if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_A)) {
                 gSaveContext.isDoubleDefenseAcquired ^= 1;
-                this->hudDebug.updateDefenseHearts = true;
+                this->miscDebug.updateDefenseHearts = true;
             }
 
-            if (this->hudDebug.updateDefenseHearts) {
+            if (this->miscDebug.updateDefenseHearts) {
                 if (gSaveContext.isDoubleDefenseAcquired) {
                     // 20 because 20 hearts in total
                     gSaveContext.inventory.defenseHearts = TIMER_INCR(gSaveContext.inventory.defenseHearts, 20, 1);
@@ -252,7 +227,7 @@ void InventoryDebug_UpdateMiscScreen(InventoryDebug* this) {
                 }
 
                 if ((gSaveContext.inventory.defenseHearts == 20) || (gSaveContext.inventory.defenseHearts == 0)) {
-                    this->hudDebug.updateDefenseHearts = false;
+                    this->miscDebug.updateDefenseHearts = false;
                 }
             }
 
@@ -274,7 +249,7 @@ void InventoryDebug_UpdateMiscScreen(InventoryDebug* this) {
                 }
             }
             break;
-        case CURSOR_POS_MAGIC:
+        case INVDBG_CURSOR_POS_MAGIC:
             if (!CHECK_BTN_ALL(gDebug.input->cur.button, BTN_Z) && CHECK_BTN_ALL(gDebug.input->press.button, BTN_A)) {
                 gSaveContext.isDoubleMagicAcquired ^= 1;
                 gSaveContext.magicLevel = 0;
@@ -294,7 +269,7 @@ void InventoryDebug_UpdateMiscScreen(InventoryDebug* this) {
                 }
             }
             break;
-        case CURSOR_POS_RUPEES:
+        case INVDBG_CURSOR_POS_RUPEES:
             if (this->common.changeBy != 0) {
                 gSaveContext.rupees += this->common.changeBy;
             }
@@ -303,21 +278,21 @@ void InventoryDebug_UpdateMiscScreen(InventoryDebug* this) {
                 gSaveContext.rupees = 0;
             }
             break;
-        case CURSOR_POS_SMALL_KEYS:
+        case INVDBG_CURSOR_POS_SMALL_KEYS:
             if ((this->common.changeBy != 0) && (this->common.changeBy != 100) && (this->common.changeBy != -100)) {
-                gSaveContext.inventory.dungeonKeys[this->hudDebug.mapIndex] += this->common.changeBy;
+                gSaveContext.inventory.dungeonKeys[this->miscDebug.mapIndex] += this->common.changeBy;
 
-                if (gSaveContext.inventory.dungeonKeys[this->hudDebug.mapIndex] < 0) {
-                    gSaveContext.inventory.dungeonKeys[this->hudDebug.mapIndex] = 0;
+                if (gSaveContext.inventory.dungeonKeys[this->miscDebug.mapIndex] < 0) {
+                    gSaveContext.inventory.dungeonKeys[this->miscDebug.mapIndex] = 0;
                 }
             }
             break;
-        case CURSOR_POS_BOSS_KEY:
-        case CURSOR_POS_COMPASS:
-        case CURSOR_POS_MAP:
+        case INVDBG_CURSOR_POS_BOSS_KEY:
+        case INVDBG_CURSOR_POS_COMPASS:
+        case INVDBG_CURSOR_POS_MAP:
             if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_A)) {
-                gSaveContext.inventory.dungeonItems[this->hudDebug.mapIndex] ^=
-                                        gBitFlags[this->hudDebug.hudCursorPos - CURSOR_POS_BOSS_KEY];
+                gSaveContext.inventory.dungeonItems[this->miscDebug.mapIndex] ^=
+                                        gBitFlags[this->miscDebug.hudCursorPos - INVDBG_CURSOR_POS_BOSS_KEY];
             }
             break;
         default:
@@ -400,7 +375,7 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
     }
 
     if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CUP)) {
-        this->equipDebug.showOtherUpgrades ^= 1;
+        this->equipDebug.showMiscUpgrades ^= 1;
     }
 
     if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_A)) {
@@ -421,7 +396,7 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
             u8 slotIndex = this->common.selectedSlot / 4;
             s32 upgradeValue = CUR_UPG_VALUE(upgradeType);
 
-            if (this->equipDebug.showOtherUpgrades) {
+            if (this->equipDebug.showMiscUpgrades) {
                 upgradeType = sOtherUpgradeTypes[slotIndex];
                 slotIndex *= 2;
                 upgradeValue = CUR_UPG_VALUE(upgradeType);
@@ -455,7 +430,7 @@ void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this) {
                 maxValue = 3;
                 FALLTHROUGH;
             case SLOT_UPG_SCALE:
-                if (this->equipDebug.showOtherUpgrades) {
+                if (this->equipDebug.showMiscUpgrades) {
                     upgradeType = sOtherUpgradeTypes[this->common.selectedSlot / 4];
                 }
 
@@ -594,23 +569,53 @@ void InventoryDebug_UpdateItemScreen(InventoryDebug* this) {
     }
 }
 
+void InventoryDebug_UpdateInformationScreen(InventoryDebug* this) {
+    // Background lifting/lowering animation
+    if (this->showInfoScreen || this->miscDebug.showHUDEditor) {
+        this->backgroundPosY = TIMER_DECR(this->backgroundPosY, INVDBG_BG_YPOS_TARGET, INVDBG_BG_ANIM_SPEED);
+        this->titlePosY = TIMER_DECR(this->titlePosY, INVDBG_TITLE_YPOS_TARGET, INVDBG_TITLE_ANIM_SPEED);
+        this->elementsAlpha = TIMER_DECR(this->elementsAlpha, 0, INVDBG_ALPHA_TRANS_SPEED);
+    } else {
+        this->backgroundPosY = TIMER_INCR(this->backgroundPosY, INVDBG_BG_YPOS, INVDBG_BG_ANIM_SPEED);
+        this->titlePosY = TIMER_INCR(this->titlePosY, INVDBG_TITLE_YPOS, INVDBG_TITLE_ANIM_SPEED);
+        this->elementsAlpha = TIMER_INCR(this->elementsAlpha, 255, INVDBG_ALPHA_TRANS_SPEED);
+    }
+
+    if (this->miscDebug.showHUDEditor) {
+        this->miscDebug.hudTopPosY = TIMER_INCR(this->miscDebug.hudTopPosY, INVDBG_HUD_TOP_YPOS_TARGET, INVDBG_HUD_TOP_ANIM_SPEED);
+        this->miscDebug.hudBottomPosY = TIMER_INCR(this->miscDebug.hudBottomPosY, INVDBG_HUD_BOTTOM_YPOS_TARGET, INVDBG_HUD_BOTTOM_ANIM_SPEED);
+        this->miscDebug.invertVal = TIMER_INCR(this->miscDebug.invertVal, INVDBG_HUD_BOTTOM_INVERT_TARGET, INVDBG_HUD_BOTTOM_INVERT_SPEED);
+    } else {
+        this->miscDebug.hudTopPosY = TIMER_DECR(this->miscDebug.hudTopPosY, INVDBG_HUD_TOP_YPOS, INVDBG_HUD_TOP_ANIM_SPEED);
+        this->miscDebug.hudBottomPosY = TIMER_DECR(this->miscDebug.hudBottomPosY, INVDBG_HUD_BOTTOM_YPOS, INVDBG_HUD_BOTTOM_ANIM_SPEED);
+        this->miscDebug.invertVal = TIMER_DECR(this->miscDebug.invertVal, INVDBG_HUD_BOTTOM_YPOS, INVDBG_HUD_BOTTOM_INVERT_SPEED);
+    }
+
+    InventoryDebug_SetHUDAlpha(this);
+}
+
+void InventoryDebug_DrawRectangle(InventoryDebug* this, s32 leftX, s32 leftY, s32 rightX, s32 rightY, Color_RGBA8 rgba) {
+    Vec2s leftPos = { leftX, leftY }, rightPos = { rightX, rightY };
+    Debug_DrawColorRectangle(this->gfxCtx, leftPos, rightPos, rgba);
+}
+
 void InventoryDebug_DrawMiscScreen(InventoryDebug* this) {
     // Cursor
     s32 leftX, leftY, rightX, rightY;
     Color_RGBA8 rgba = { 0, 50, 220, 100 };
-    s32 cursorPos[CURSOR_POS_MAX][4] = {
+    s32 cursorPos[INVDBG_CURSOR_POS_MAX][4] = {
         // { leftX, leftY, rightX, rightY },
-        { 20, 55, 128, 77 },    // CURSOR_POS_HEARTS
-        { 20, 77, 128, 90 },    // CURSOR_POS_MAGIC
-        { 20, 90, 76, 106 },    // CURSOR_POS_RUPEES
-        { 20, 105, 66, 123 },   // CURSOR_POS_SMALL_KEYS
-        { 70, 105, 90, 123 },   // CURSOR_POS_BOSS_KEY
-        { 97, 105, 117, 123 },  // CURSOR_POS_COMPASS
-        { 124, 105, 144, 123 }, // CURSOR_POS_MAP
+        { 20, 55, 128, 77 },    // INVDBG_CURSOR_POS_HEARTS
+        { 20, 77, 128, 90 },    // INVDBG_CURSOR_POS_MAGIC
+        { 20, 90, 76, 106 },    // INVDBG_CURSOR_POS_RUPEES
+        { 20, 105, 66, 123 },   // INVDBG_CURSOR_POS_SMALL_KEYS
+        { 70, 105, 90, 123 },   // INVDBG_CURSOR_POS_BOSS_KEY
+        { 97, 105, 117, 123 },  // INVDBG_CURSOR_POS_COMPASS
+        { 124, 105, 144, 123 }, // INVDBG_CURSOR_POS_MAP
     };
 
     // Dungeon Icons
-    u8 index = this->hudDebug.hudDungeonIconIndex;
+    u8 index = this->miscDebug.hudDungeonIconIndex;
     u8 width = ITEM_ICON_WIDTH;
     u8 height = ITEM_ICON_HEIGHT;
     u16 resizeFactor = 0;
@@ -629,14 +634,14 @@ void InventoryDebug_DrawMiscScreen(InventoryDebug* this) {
     OPEN_DISPS(this->gfxCtx, __BASE_FILE__, __LINE__);
 
     // Cursor
-    if ((this->hudDebug.hudCursorPos == CURSOR_POS_MAGIC) && !gSaveContext.isDoubleMagicAcquired) {
-        cursorPos[this->hudDebug.hudCursorPos][2] -= 48;
+    if ((this->miscDebug.hudCursorPos == INVDBG_CURSOR_POS_MAGIC) && !gSaveContext.isDoubleMagicAcquired) {
+        cursorPos[this->miscDebug.hudCursorPos][2] -= 48;
     }
 
-    leftX = cursorPos[this->hudDebug.hudCursorPos][0];
-    leftY = cursorPos[this->hudDebug.hudCursorPos][1];
-    rightX = cursorPos[this->hudDebug.hudCursorPos][2];
-    rightY = cursorPos[this->hudDebug.hudCursorPos][3];
+    leftX = cursorPos[this->miscDebug.hudCursorPos][0];
+    leftY = cursorPos[this->miscDebug.hudCursorPos][1];
+    rightX = cursorPos[this->miscDebug.hudCursorPos][2];
+    rightY = cursorPos[this->miscDebug.hudCursorPos][3];
     InventoryDebug_DrawRectangle(this, leftX, leftY, rightX, rightY, rgba);
 
     // Dungeon Icons
@@ -653,7 +658,7 @@ void InventoryDebug_DrawMiscScreen(InventoryDebug* this) {
     for (posX = 258, i = 0; i < ARRAY_COUNTU(sDungeonItems); posX += 110, i++) {
         Color_RGBA8 rgba;
 
-        if (CHECK_DUNGEON_ITEM(i, this->hudDebug.mapIndex)) {
+        if (CHECK_DUNGEON_ITEM(i, this->miscDebug.mapIndex)) {
             rgba.r = rgba.g = rgba.b = rgba.a = 255;
         } else {
             rgba.r = rgba.g = rgba.b = rgba.a = 64;
@@ -681,7 +686,7 @@ void InventoryDebug_DrawEquipmentUpgrades(InventoryDebug* this, u16 i, s16 alpha
     void* ammoTexture = NULL;
     u8 posY = 0;
 
-    if (!this->equipDebug.showOtherUpgrades) {
+    if (!this->equipDebug.showMiscUpgrades) {
         upgradeValue = CUR_UPG_VALUE(sUpgradeTypes[i]);
 
         if (upgradeValue != 0) {
@@ -756,54 +761,33 @@ void InventoryDebug_DrawEquipmentUpgrades(InventoryDebug* this, u16 i, s16 alpha
     }
 }
 
-void InventoryDebug_DrawRectangle(InventoryDebug* this, s32 leftX, s32 leftY, s32 rightX, s32 rightY, Color_RGBA8 rgba) {
-    Vec2s leftPos = { leftX, leftY }, rightPos = { rightX, rightY };
-    Debug_DrawColorRectangle(this->gfxCtx, leftPos, rightPos, rgba);
-}
-
-void InventoryDebug_DrawTitle(InventoryDebug* this) {
-    // bottom screen text that moves on top if showing informations
-    Color_RGBA8 rgba = { 255, 255, 255, 255 };
-
-    switch (this->printState) {
-        case PRINT_STATE_TITLE:
-            Print_SetInfos(&gDebug.printer, this->gfxCtx, 14, this->bottomTextPosY, rgba);
-            Print_Screen(&gDebug.printer, "[DEBUG MODE]");
-            break;
-        case PRINT_STATE_COMMANDS:
-            Print_SetInfos(&gDebug.printer, this->gfxCtx, 9, this->bottomTextPosY, rgba);
-            Print_Screen(&gDebug.printer, "[C-DOWN: INFORMATIONS]");
-            break;
-        case PRINT_STATE_HUD_EDITOR:
-            Print_SetInfos(&gDebug.printer, this->gfxCtx, 14, this->bottomTextPosY, rgba);
-            Print_Screen(&gDebug.printer, "[HUD EDITOR]");
-            break;
-        default:
-            break;
-    }
-}
-
 void InventoryDebug_DrawInformationScreen(InventoryDebug* this) {
     Color_RGBA8 rgba = { 255, 255, 255, 255 };
-    s16 posY = this->bottomTextPosY + 2;
+    s16 posY = this->titlePosY + 2;
     const char* ctrlsToPrint = NULL;
 
     // draw controls for the current inventory screen
-    if (!this->hudDebug.showHUDEditor) {
+    if (!this->miscDebug.showHUDEditor) {
         switch (this->pauseCtx->pageIndex) {
             case PAUSE_ITEM:
             case PAUSE_QUEST:
                 ctrlsToPrint = (
-                    "[C-Left]: Decrement" INVDBG_PRINT_NEWLINE "[C-Right]: Increment" INVDBG_PRINT_NEWLINE
-                    "[C-Up]: Hold to change by 10" INVDBG_PRINT_NEWLINE "[A]: Delete/Give item" INVDBG_PRINT_NEWLINE
+                    "[C-Left]: Decrement" INVDBG_PRINT_NEWLINE
+                    "[C-Right]: Increment" INVDBG_PRINT_NEWLINE
+                    "[C-Up]: Hold to change by 10" INVDBG_PRINT_NEWLINE
+                    "[A]: Delete/Give item" INVDBG_PRINT_NEWLINE
                 );
                 break;
             case PAUSE_EQUIP:
                 ctrlsToPrint = (
-                    "[C-Left/C-Right]: Change Upgrade Type" INVDBG_PRINT_NEWLINE "[C-Up]: Show Other Upgrades" INVDBG_PRINT_NEWLINE
-                    "[A]: Delete/Give item\n" INVDBG_PRINT_NEWLINE "Other Upgrades:" INVDBG_PRINT_NEWLINE
-                    "- Bullet Bag" INVDBG_PRINT_NEWLINE "- Deku Stick Capacity" INVDBG_PRINT_NEWLINE
-                    "- Nut Capacity" INVDBG_PRINT_NEWLINE "- Wallet" INVDBG_PRINT_NEWLINE
+                    "[C-Left/C-Right]: Change Upgrade Type" INVDBG_PRINT_NEWLINE
+                    "[C-Up]: Show Other Upgrades" INVDBG_PRINT_NEWLINE
+                    "[A]: Delete/Give item\n" INVDBG_PRINT_NEWLINE
+                    "Other Upgrades:" INVDBG_PRINT_NEWLINE
+                    "- Bullet Bag" INVDBG_PRINT_NEWLINE
+                    "- Deku Stick Capacity" INVDBG_PRINT_NEWLINE
+                    "- Nut Capacity" INVDBG_PRINT_NEWLINE
+                    "- Wallet" INVDBG_PRINT_NEWLINE
                 );
                 break;
             default:
@@ -827,44 +811,14 @@ void InventoryDebug_DrawInformationScreen(InventoryDebug* this) {
     Print_Screen(&gDebug.printer, "[B]: Show HUD Editor (from anywhere)");
 }
 
-void InventoryDebug_Main(InventoryDebug* this) {
-    switch (this->state) {
-        case INV_DEBUG_STATE_INIT:
-            osSyncPrintf("[INVENTORY DEBUG]: Init Start!\n");
-            this->state = INV_DEBUG_STATE_UPDATE;
-            InventoryDebug_Init(this);
-            osSyncPrintf("[INVENTORY DEBUG]: Init Complete!\n");
-            break;
-        case INV_DEBUG_STATE_UPDATE:
-            if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_L)) {
-                this->state = INV_DEBUG_STATE_DESTROY;
-            }
-
-            if (this->common.state == INVDBG_COMMON_STATE_READY) {
-                InventoryDebug_Update(this);
-                InventoryDebug_Draw(this);
-            }
-            break;
-        case INV_DEBUG_STATE_DESTROY:
-            if (InventoryDebug_Destroy(this)) {
-                this->state = INV_DEBUG_STATE_OFF;
-                osSyncPrintf("[INVENTORY DEBUG]: Quitting!\n");
-            }
-            break;
-        default:
-            osSyncPrintf("[INVENTORY DEBUG]: This state is not implemented yet.\n");
-            break;
-    }
-}
-
 void InventoryDebug_Init(InventoryDebug* this) {
     // Init general variables
-    this->printTimer = INVDBG_TITLE_TIMER;
-    this->printState = PRINT_STATE_TITLE;
-    this->showInfos = false;
-    this->hudDebug.showHUDEditor = false;
+    this->titleTimer = INVDBG_TITLE_TIMER;
+    this->titleState = INVDBG_TITLE_STATE_NAME;
+    this->showInfoScreen = false;
+    this->miscDebug.showHUDEditor = false;
     this->backgroundPosY = INVDBG_BG_YPOS;
-    this->bottomTextPosY = INVDBG_TITLE_YPOS;
+    this->titlePosY = INVDBG_TITLE_YPOS;
     this->common.changeBy = 0;
 
     if (this->common.state == INVDBG_COMMON_STATE_UNREADY) {
@@ -878,25 +832,25 @@ void InventoryDebug_Init(InventoryDebug* this) {
         this->itemDebug.hookshotType = ITEM_HOOKSHOT;
 
         for (i = 0; i < ARRAY_COUNTU(sBottleContents); i++) {
-            this->itemDebug.bottleContents[i] = sBottleContents[i];
+            this->itemDebug.bottleItems[i] = sBottleContents[i];
         }
 
         // Init equipment debug values
-        this->equipDebug.showOtherUpgrades = false;
+        this->equipDebug.showMiscUpgrades = false;
 
         for (i = 0; i < ARRAY_COUNTU(sUpgradeSlots); i++) {
             this->equipDebug.upgradeSlots[i] = sUpgradeSlots[i];
         }
 
         // Init hud element debug
-        this->hudDebug.hudTopPosY = INVDBG_HUD_TOP_YPOS;
-        this->hudDebug.hudBottomPosY = INVDBG_HUD_BOTTOM_YPOS;
-        this->hudDebug.hudBottomInvertVal = INVDBG_HUD_BOTTOM_YPOS;
-        this->hudDebug.hudCursorPos = CURSOR_POS_HEARTS;
-        this->hudDebug.hudDungeonIconIndex = 0;
-        this->hudDebug.mapIndex = sDungeonIndexToMapIndex[this->hudDebug.hudDungeonIconIndex];
-        this->hudDebug.stickMoved = false;
-        this->hudDebug.updateDefenseHearts = false;
+        this->miscDebug.hudTopPosY = INVDBG_HUD_TOP_YPOS;
+        this->miscDebug.hudBottomPosY = INVDBG_HUD_BOTTOM_YPOS;
+        this->miscDebug.invertVal = INVDBG_HUD_BOTTOM_YPOS;
+        this->miscDebug.hudCursorPos = INVDBG_CURSOR_POS_HEARTS;
+        this->miscDebug.hudDungeonIconIndex = 0;
+        this->miscDebug.mapIndex = sDungeonIndexToMapIndex[this->miscDebug.hudDungeonIconIndex];
+        this->miscDebug.stickMoved = false;
+        this->miscDebug.updateDefenseHearts = false;
 
         // Update state to ready
         this->common.state = INVDBG_COMMON_STATE_READY;
@@ -913,7 +867,7 @@ void InventoryDebug_Update(InventoryDebug* this) {
 
     // Update the current screen if the cursor isn't on the L or R icons
     if ((this->pauseCtx->cursorSpecialPos != PAUSE_CURSOR_PAGE_LEFT) && (this->pauseCtx->cursorSpecialPos != PAUSE_CURSOR_PAGE_RIGHT)
-        && !this->showInfos && !this->hudDebug.showHUDEditor) {
+        && !this->showInfoScreen && !this->miscDebug.showHUDEditor) {
         switch (this->pauseCtx->pageIndex) {
             case PAUSE_ITEM:
                 InventoryDebug_UpdateItemScreen(this);
@@ -931,84 +885,96 @@ void InventoryDebug_Update(InventoryDebug* this) {
 
     // Toggle informations screen
     if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_CDOWN)) {
-        this->showInfos ^= 1;
-        this->hudDebug.showHUDEditor = false;
+        this->showInfoScreen ^= 1;
+        this->miscDebug.showHUDEditor = false;
 
-        if (this->printState == PRINT_STATE_HUD_EDITOR) {
-            this->printState = PRINT_STATE_TITLE;
+        if (this->titleState == INVDBG_TITLE_STATE_MISCDBG) {
+            this->titleState = INVDBG_TITLE_STATE_NAME;
         }
     }
 
     // Toggle HUD editor
     if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_B)) {
-        this->hudDebug.showHUDEditor ^= 1;
-        this->showInfos = false;
+        this->miscDebug.showHUDEditor ^= 1;
+        this->showInfoScreen = false;
 
-        if (this->hudDebug.showHUDEditor) {
-            this->printState = PRINT_STATE_HUD_EDITOR;
+        if (this->miscDebug.showHUDEditor) {
+            this->titleState = INVDBG_TITLE_STATE_MISCDBG;
         } else {
-            this->printState = PRINT_STATE_TITLE;
+            this->titleState = INVDBG_TITLE_STATE_NAME;
         }
     }
 
-    if (this->hudDebug.showHUDEditor) {
+    if (this->miscDebug.showHUDEditor) {
         InventoryDebug_UpdateMiscScreen(this);
     }
 
-    InventoryDebug_UpdateInfosPanel(this);
+    InventoryDebug_UpdateInformationScreen(this);
 
     // Update the printing state, used to switch between several texts on-screen
-    this->printTimer = TIMER_DECR(this->printTimer, 0, 1);
-    if (this->printTimer == 0) {
-        switch (this->printState) {
-            case PRINT_STATE_TITLE:
-                this->printState = PRINT_STATE_COMMANDS;
+    this->titleTimer = TIMER_DECR(this->titleTimer, 0, 1);
+    if (this->titleTimer == 0) {
+        switch (this->titleState) {
+            case INVDBG_TITLE_STATE_NAME:
+                this->titleState = INVDBG_TITLE_STATE_COMMANDS;
                 break;
-            case PRINT_STATE_COMMANDS:
-                this->printState = PRINT_STATE_TITLE;
+            case INVDBG_TITLE_STATE_COMMANDS:
+                this->titleState = INVDBG_TITLE_STATE_NAME;
                 break;
             default:
                 break;
         }
 
-        this->printTimer = INVDBG_TITLE_TIMER;
+        this->titleTimer = INVDBG_TITLE_TIMER;
     }
 }
 
 void InventoryDebug_Draw(InventoryDebug* this) {
     // draw background for the "debug mode" text
-    {
-        Color_RGBA8 rgba = { 0, 0, 0, 220 };
-        InventoryDebug_DrawRectangle(this, 0, this->backgroundPosY, SCREEN_WIDTH, SCREEN_HEIGHT, rgba);
-    }
+    Color_RGBA8 rgba = { 0, 0, 0, 220 };
+    InventoryDebug_DrawRectangle(this, 0, this->backgroundPosY, SCREEN_WIDTH, SCREEN_HEIGHT, rgba);
 
     // draw bottom screen text, will be on top if in info mode
-    InventoryDebug_DrawTitle(this);
+    rgba.r = rgba.g = rgba.b = rgba.a = 255;
+    switch (this->titleState) {
+        case INVDBG_TITLE_STATE_NAME:
+            Print_SetInfos(&gDebug.printer, this->gfxCtx, 14, this->titlePosY, rgba);
+            Print_Screen(&gDebug.printer, "[DEBUG MODE]");
+            break;
+        case INVDBG_TITLE_STATE_COMMANDS:
+            Print_SetInfos(&gDebug.printer, this->gfxCtx, 9, this->titlePosY, rgba);
+            Print_Screen(&gDebug.printer, "[C-DOWN: INFORMATIONS]");
+            break;
+        case INVDBG_TITLE_STATE_MISCDBG:
+            Print_SetInfos(&gDebug.printer, this->gfxCtx, 14, this->titlePosY, rgba);
+            Print_Screen(&gDebug.printer, "[HUD EDITOR]");
+            break;
+        default:
+            break;
+    }
 
     // draw the informations on the panel
-    if ((this->showInfos || this->hudDebug.showHUDEditor) && (this->bottomTextPosY == INVDBG_TITLE_YPOS_TARGET)) {
+    if ((this->showInfoScreen || this->miscDebug.showHUDEditor) && (this->titlePosY == INVDBG_TITLE_YPOS_TARGET)) {
         InventoryDebug_DrawInformationScreen(this);
 
-        if (this->hudDebug.showHUDEditor) {
-            u8 mapIndex = this->hudDebug.hudDungeonIconIndex;
-            Color_RGBA8 rgba = { 255, 255, 255, 255 };
-            const char* dungeonName[] = {
+        if (this->miscDebug.showHUDEditor) {
+            u8 mapIndex = this->miscDebug.hudDungeonIconIndex;
+            const char* dungeonNames[] = {
                 "Forest Temple", "Fire Temple", "Water Temple", "Spirit Temple", "Shadow Temple", NULL,
                 "Inside the Deku Tree", "Dodongo's Cavern", "Jabu-Jabu's Belly", "Bottom of the Well",
                 "Ice Cavern", "Ganon's Tower", "Gerudo Training Grounds", "Thieves Hideout",
                 "Ganon's Castle", "Treasure Chest Minigame"
             };
 
-            if (dungeonName[mapIndex] != NULL) {
+            if (dungeonNames[mapIndex] != NULL) {
                 Print_SetInfos(&gDebug.printer, this->gfxCtx, 6, 16, rgba);
-                Print_Screen(&gDebug.printer, dungeonName[mapIndex]);
+                Print_Screen(&gDebug.printer, dungeonNames[mapIndex]);
                 InventoryDebug_DrawMiscScreen(this);
             }
         }
 
         // draw separators (from top to bottom)
         {
-            Color_RGBA8 rgba = { 255, 255, 255, 220 };
             u8 i;
             s32 positions[][4] = {
                 // { leftX, leftY, rightX, rightY },
@@ -1025,13 +991,13 @@ void InventoryDebug_Draw(InventoryDebug* this) {
 
 bool InventoryDebug_Destroy(InventoryDebug* this) {
     // Restore alpha values for the HUD/Inventory
-    if (this->showInfos || this->hudDebug.showHUDEditor) {
-        this->showInfos = false;
-        this->hudDebug.showHUDEditor = false;
+    if (this->showInfoScreen || this->miscDebug.showHUDEditor) {
+        this->showInfoScreen = false;
+        this->miscDebug.showHUDEditor = false;
     } else {
         // When the alpha hits 255 exit the inventory editor
         if (this->backgroundPosY == INVDBG_BG_YPOS)
-        if (this->invIconAlpha == 255) {
+        if (this->elementsAlpha == 255) {
             this->pauseCtx->cursorSpecialPos = PAUSE_CURSOR_PAGE_LEFT; // avoids having the cursor on a blank slot
             return true;
         }
@@ -1039,10 +1005,40 @@ bool InventoryDebug_Destroy(InventoryDebug* this) {
 
     // In order to make the transition properly we need to keep updating the info panel
     // and draw stuff until everything's back to normal
-    InventoryDebug_UpdateInfosPanel(this);
+    InventoryDebug_UpdateInformationScreen(this);
     InventoryDebug_Draw(this);
 
     return false;
+}
+
+void InventoryDebug_Main(InventoryDebug* this) {
+    switch (this->state) {
+        case INVDBG_STATE_INIT:
+            osSyncPrintf("[INVENTORY DEBUG]: Init Start!\n");
+            this->state = INVDBG_STATE_UPDATE;
+            InventoryDebug_Init(this);
+            osSyncPrintf("[INVENTORY DEBUG]: Init Complete!\n");
+            break;
+        case INVDBG_STATE_UPDATE:
+            if (CHECK_BTN_ALL(gDebug.input->press.button, BTN_L)) {
+                this->state = INVDBG_STATE_DESTROY;
+            }
+
+            if (this->common.state == INVDBG_COMMON_STATE_READY) {
+                InventoryDebug_Update(this);
+                InventoryDebug_Draw(this);
+            }
+            break;
+        case INVDBG_STATE_DESTROY:
+            if (InventoryDebug_Destroy(this)) {
+                this->state = INVDBG_STATE_OFF;
+                osSyncPrintf("[INVENTORY DEBUG]: Quitting!\n");
+            }
+            break;
+        default:
+            osSyncPrintf("[INVENTORY DEBUG]: This state is not implemented yet.\n");
+            break;
+    }
 }
 
 #endif

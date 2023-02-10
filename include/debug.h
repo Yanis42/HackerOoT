@@ -13,7 +13,7 @@
 #ifdef ENABLE_INV_EDITOR
     #include "debug/inventory_debug.h"
 
-    #define INVDBG_IS_ENABLED (gDebug.invDebug.state != INV_DEBUG_STATE_OFF)
+    #define INVDBG_IS_ENABLED (gDebug.invDebug.state != INVDBG_STATE_OFF)
 #endif
 
 #define DEBUG_PRINT_VAR(var) osSyncPrintf("%s: %d\n", #var, var)

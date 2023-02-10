@@ -403,7 +403,7 @@ void KaleidoScope_HandlePageToggles(PauseContext* pauseCtx, Input* input) {
         return;
     }
 
-    if (INVDBG_IS_ENABLED && gDebug.invDebug.hudDebug.showHUDEditor) {
+    if (INVDBG_IS_ENABLED && gDebug.invDebug.miscDebug.showHUDEditor) {
         return;
     }
 #endif
@@ -1148,7 +1148,7 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
 
     if ((pauseCtx->state == 6) && (pauseCtx->namedItem != PAUSE_ITEM_NONE)
 #ifdef ENABLE_INV_EDITOR
-    && (gDebug.invDebug.invIconAlpha == 255)
+    && (gDebug.invDebug.elementsAlpha == 255)
 #endif
     && (pauseCtx->nameDisplayTimer < WREG(89)) &&
         (!pauseCtx->unk_1E4 || (pauseCtx->unk_1E4 == 2) || ((pauseCtx->unk_1E4 >= 4) && (pauseCtx->unk_1E4 <= 7)) ||
@@ -1169,7 +1169,7 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
                 u8 alpha = 255;
                 u8 colorIsGrey = pauseCtx->nameColorSet == 1;
 #ifdef ENABLE_INV_EDITOR
-                alpha = INVDBG_IS_ENABLED ? gDebug.invDebug.invIconAlpha : 255;
+                alpha = INVDBG_IS_ENABLED ? gDebug.invDebug.elementsAlpha : 255;
                 colorIsGrey = colorIsGrey && !INVDBG_IS_ENABLED;
 #endif
                 if (colorIsGrey) {
@@ -1284,7 +1284,7 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
         } else {
             if (!pauseCtx->pageIndex // pageIndex == PAUSE_ITEM
 #ifdef ENABLE_INV_EDITOR
-            && (pauseCtx->cursorItem[PAUSE_ITEM] != ITEM_NONE) && (gDebug.invDebug.invIconAlpha == 255)
+            && (pauseCtx->cursorItem[PAUSE_ITEM] != ITEM_NONE) && (gDebug.invDebug.elementsAlpha == 255)
 #endif
             ) {
                 pauseCtx->infoPanelVtx[16].v.ob[0] = pauseCtx->infoPanelVtx[18].v.ob[0] =
@@ -1309,7 +1309,7 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
                 {
                     u8 alpha = 255;
 #ifdef ENABLE_INV_EDITOR
-                    alpha = INVDBG_IS_ENABLED ? gDebug.invDebug.invIconAlpha : 255;
+                    alpha = INVDBG_IS_ENABLED ? gDebug.invDebug.elementsAlpha : 255;
 #endif
                     gDPPipeSync(POLY_OPA_DISP++);
                     gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, alpha);
@@ -1405,7 +1405,7 @@ void KaleidoScope_UpdateNamePanel(PlayState* play) {
 
         if ((pauseCtx->namedItem != PAUSE_ITEM_NONE)
 #ifdef ENABLE_INV_EDITOR
-       && (gDebug.invDebug.invIconAlpha == 255)
+       && (gDebug.invDebug.elementsAlpha == 255)
 #endif
         ) {
             if ((pauseCtx->pageIndex == PAUSE_MAP) && !sInDungeonScene) {
@@ -3616,7 +3616,7 @@ void KaleidoScope_Update(PlayState* play) {
 #ifdef ENABLE_INV_EDITOR
     if (!INVDBG_IS_ENABLED && CHECK_BTN_ALL(play->state.input[0].press.button, BTN_L)
         && (pauseCtx->debugState == 0)) {
-        gDebug.invDebug.state = INV_DEBUG_STATE_INIT;
+        gDebug.invDebug.state = INVDBG_STATE_INIT;
     }
 
     if (INVDBG_IS_ENABLED) {

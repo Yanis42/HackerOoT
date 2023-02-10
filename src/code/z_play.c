@@ -231,10 +231,10 @@ void Play_Init(GameState* thisx) {
 #ifndef DISABLE_DEBUG_FEATURES
     gDebug.play = this;
     gDebug.input = &this->state.input[0];
-    gDebug.invDebug.state = INV_DEBUG_STATE_OFF;
+    gDebug.invDebug.state = INVDBG_STATE_OFF;
     gDebug.invDebug.gfxCtx = this->state.gfxCtx;
     gDebug.invDebug.pauseCtx = &this->pauseCtx;
-    gDebug.invDebug.invIconAlpha = 255;
+    gDebug.invDebug.elementsAlpha = 255;
 #endif
 
     if (gSaveContext.entranceIndex == ENTR_LOAD_OPENING) {

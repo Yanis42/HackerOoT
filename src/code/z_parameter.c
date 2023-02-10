@@ -2647,9 +2647,9 @@ void Magic_DrawMeter(PlayState* play) {
     u8 updateMeter = gSaveContext.magicLevel != 0;
 #ifdef ENABLE_INV_EDITOR
     if (INVDBG_IS_ENABLED) {
-        posY += gDebug.invDebug.hudDebug.hudTopPosY;
+        posY += gDebug.invDebug.miscDebug.hudTopPosY;
 
-        if (gDebug.invDebug.hudDebug.showHUDEditor && gSaveContext.isMagicAcquired) {
+        if (gDebug.invDebug.miscDebug.showHUDEditor && gSaveContext.isMagicAcquired) {
             updateMeter = true;
         }
     }
@@ -3195,21 +3195,21 @@ void Interface_Draw(PlayState* play) {
     u16 mapIndex = gSaveContext.mapIndex;
 
 #ifdef ENABLE_INV_EDITOR
-    if (gDebug.invDebug.showInfos && gDebug.invDebug.invIconAlpha == 0) {
+    if (gDebug.invDebug.showInfoScreen && gDebug.invDebug.elementsAlpha == 0) {
         return;
     }
 
     if (INVDBG_IS_ENABLED) {
-        rupeePosY = gDebug.invDebug.hudDebug.hudBottomPosY;
-        smallKeyPosY = gDebug.invDebug.hudDebug.hudBottomPosY;
+        rupeePosY = gDebug.invDebug.miscDebug.hudBottomPosY;
+        smallKeyPosY = gDebug.invDebug.miscDebug.hudBottomPosY;
 
-        if (gDebug.invDebug.hudDebug.hudBottomPosY > 0) {
-            rupeePosY += gDebug.invDebug.hudDebug.hudBottomInvertVal;
-            smallKeyPosY -= gDebug.invDebug.hudDebug.hudBottomInvertVal;
+        if (gDebug.invDebug.miscDebug.hudBottomPosY > 0) {
+            rupeePosY += gDebug.invDebug.miscDebug.invertVal;
+            smallKeyPosY -= gDebug.invDebug.miscDebug.invertVal;
         }
 
-        if (gDebug.invDebug.hudDebug.showHUDEditor) {
-            mapIndex = gDebug.invDebug.hudDebug.mapIndex;
+        if (gDebug.invDebug.miscDebug.showHUDEditor) {
+            mapIndex = gDebug.invDebug.miscDebug.mapIndex;
         }
     }
 #endif
@@ -3260,7 +3260,7 @@ void Interface_Draw(PlayState* play) {
 
         smallKeyCond = play->sceneId;
 #ifdef ENABLE_INV_EDITOR
-        if (INVDBG_IS_ENABLED && gDebug.invDebug.hudDebug.showHUDEditor) {
+        if (INVDBG_IS_ENABLED && gDebug.invDebug.miscDebug.showHUDEditor) {
             smallKeyCond = 10000;
         }
 #endif
@@ -3286,7 +3286,7 @@ void Interface_Draw(PlayState* play) {
 #endif
                 if ((gSaveContext.inventory.dungeonKeys[mapIndex] >= 0)
 #ifdef ENABLE_INV_EDITOR
-                    || (INVDBG_IS_ENABLED && gDebug.invDebug.hudDebug.showHUDEditor)
+                    || (INVDBG_IS_ENABLED && gDebug.invDebug.miscDebug.showHUDEditor)
 #endif
                 ) {
                     // Small Key Icon
@@ -3371,7 +3371,7 @@ void Interface_Draw(PlayState* play) {
         Magic_DrawMeter(play);
 
 #ifdef ENABLE_INV_EDITOR
-    if (gDebug.invDebug.hudDebug.showHUDEditor && gDebug.invDebug.invIconAlpha == 0) {
+    if (gDebug.invDebug.miscDebug.showHUDEditor && gDebug.invDebug.elementsAlpha == 0) {
         return;
     }
 #endif
@@ -4354,7 +4354,7 @@ void Interface_Update(PlayState* play) {
         (play->gameOverCtx.state == GAMEOVER_INACTIVE) && (play->transitionMode == TRANS_MODE_OFF) &&
         ((play->csCtx.state == CS_STATE_IDLE) || !Player_InCsMode(play)))
 #ifdef ENABLE_INV_EDITOR
-        || (INVDBG_IS_ENABLED && gDebug.invDebug.hudDebug.showHUDEditor)
+        || (INVDBG_IS_ENABLED && gDebug.invDebug.miscDebug.showHUDEditor)
 #endif
         ) {
 

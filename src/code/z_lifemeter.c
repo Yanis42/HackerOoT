@@ -323,7 +323,7 @@ void Health_DrawMeter(PlayState* play) {
     u8 posY = 0;
 #ifdef ENABLE_INV_EDITOR
     if (INVDBG_IS_ENABLED) {
-        posY = gDebug.invDebug.hudDebug.hudTopPosY;
+        posY = gDebug.invDebug.miscDebug.hudTopPosY;
     }
 #endif
 
