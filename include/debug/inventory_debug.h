@@ -89,17 +89,15 @@ typedef struct InventoryDebug {
 u8 InventoryDebug_GetItemFromSlot(InventoryDebug* this);
 void InventoryDebug_SetItemFromSlot(InventoryDebug* this);
 void InventoryDebug_SetHUDAlpha(InventoryDebug* this);
-void InventoryDebug_UpdateHUDEditor(InventoryDebug* this);
+void InventoryDebug_UpdateMiscScreen(InventoryDebug* this);
 void InventoryDebug_UpdateQuestScreen(InventoryDebug* this);
 void InventoryDebug_UpdateEquipmentScreen(InventoryDebug* this);
 void InventoryDebug_UpdateItemScreen(InventoryDebug* this);
-void InventoryDebug_DrawCursor(InventoryDebug* this);
-void InventoryDebug_DrawDungeonItems(InventoryDebug* this);
-void InventoryDebug_DrawDungeonIcon(InventoryDebug* this);
-void InventoryDebug_DrawUpgrades(InventoryDebug* this, u16 i, s16 alpha);
+void InventoryDebug_DrawMiscScreen(InventoryDebug* this);
+void InventoryDebug_DrawEquipmentUpgrades(InventoryDebug* this, u16 i, s16 alpha);
 void InventoryDebug_DrawRectangle(InventoryDebug* this, s32 leftX, s32 leftY, s32 rightX, s32 rightY, Color_RGBA8 rgba);
 void InventoryDebug_DrawTitle(InventoryDebug* this);
-void InventoryDebug_DrawInformations(InventoryDebug* this);
+void InventoryDebug_DrawInformationScreen(InventoryDebug* this);
 void InventoryDebug_Main(InventoryDebug* this);
 void InventoryDebug_Init(InventoryDebug* this);
 void InventoryDebug_Update(InventoryDebug* this);
@@ -108,13 +106,25 @@ bool InventoryDebug_Destroy(InventoryDebug* this);
 
 Gfx* Gfx_TextureIA8(Gfx* displayListHead, void* texture, s16 textureWidth, s16 textureHeight, s16 rectLeft, s16 rectTop, s16 rectWidth, s16 rectHeight, u16 dsdx, u16 dtdy);
 
+// General
+#define INVDBG_TITLE_TIMER 70 // frames
+#define INVDBG_PRINT_NEWLINE "\n  "
+
 // Items
-#define BOTTLE_CONTENT(invDebug) (RANGE((invDebug)->common.selectedSlot, SLOT_BOTTLE_1, SLOT_BOTTLE_4) ? (invDebug)->itemDebug.bottleContents[(invDebug)->common.selectedSlot - SLOT_BOTTLE_1] : ITEM_NONE)
-#define CHILD_TRADE_ITEM(invDebug) (((invDebug)->common.selectedSlot == SLOT_TRADE_CHILD) ? (invDebug)->itemDebug.childTradeItem : ITEM_NONE)
-#define ADULT_TRADE_ITEM(invDebug) (((invDebug)->common.selectedSlot == SLOT_TRADE_ADULT) ? (invDebug)->itemDebug.adultTradeItem : ITEM_NONE)
-#define HOOKSHOT_TYPE(invDebug) (((invDebug)->common.selectedSlot == SLOT_HOOKSHOT) ? (invDebug)->itemDebug.hookshotType : ITEM_NONE)
-#define GET_SPECIAL_ITEM(invDebug) ((BOTTLE_CONTENT(invDebug) != ITEM_NONE) ? BOTTLE_CONTENT(invDebug) : (CHILD_TRADE_ITEM(invDebug) != ITEM_NONE) ? CHILD_TRADE_ITEM(invDebug) : (ADULT_TRADE_ITEM(invDebug) != ITEM_NONE) ? ADULT_TRADE_ITEM(invDebug) : (HOOKSHOT_TYPE(invDebug) != ITEM_NONE) ? HOOKSHOT_TYPE(invDebug) : ITEM_NONE)
-#define UPDATE_ITEM(invDbgCommon, min, max) {                                             \
+#define INVDBG_GET_BOTTLE_ITEM(invDebug) (RANGE((invDebug)->common.selectedSlot, SLOT_BOTTLE_1, SLOT_BOTTLE_4) ? (invDebug)->itemDebug.bottleContents[(invDebug)->common.selectedSlot - SLOT_BOTTLE_1] : ITEM_NONE)
+#define INVDBG_GET_CHILD_TRADE_ITEM(invDebug) (((invDebug)->common.selectedSlot == SLOT_TRADE_CHILD) ? (invDebug)->itemDebug.childTradeItem : ITEM_NONE)
+#define INVDBG_GET_ADULT_TRADE_ITEM(invDebug) (((invDebug)->common.selectedSlot == SLOT_TRADE_ADULT) ? (invDebug)->itemDebug.adultTradeItem : ITEM_NONE)
+#define INVDBG_GET_HOOKSHOT(invDebug) (((invDebug)->common.selectedSlot == SLOT_HOOKSHOT) ? (invDebug)->itemDebug.hookshotType : ITEM_NONE)
+
+#define INVDBG_GET_VARIABLE_ITEM(invDebug) (                                                        \
+    (INVDBG_GET_BOTTLE_ITEM(invDebug) != ITEM_NONE) ? INVDBG_GET_BOTTLE_ITEM(invDebug)              \
+    : (INVDBG_GET_CHILD_TRADE_ITEM(invDebug) != ITEM_NONE) ? INVDBG_GET_CHILD_TRADE_ITEM(invDebug)  \
+    : (INVDBG_GET_ADULT_TRADE_ITEM(invDebug) != ITEM_NONE) ? INVDBG_GET_ADULT_TRADE_ITEM(invDebug)  \
+    : (INVDBG_GET_HOOKSHOT(invDebug) != ITEM_NONE) ? INVDBG_GET_HOOKSHOT(invDebug)                  \
+    : ITEM_NONE                                                                                     \
+)
+
+#define INVDBG_UPDATE_ITEM(invDbgCommon, min, max) {                                             \
     if (RANGE(invDbgCommon.selectedItem, min, max)) {                                     \
         gSaveContext.inventory.items[invDbgCommon.selectedSlot] += invDbgCommon.changeBy; \
         if (gSaveContext.inventory.items[invDbgCommon.selectedSlot] > max) {              \
@@ -128,37 +138,32 @@ Gfx* Gfx_TextureIA8(Gfx* displayListHead, void* texture, s16 textureWidth, s16 t
 }
 
 // Equipment
-#define IS_UPGRADE(invDbgCommon) (((invDbgCommon).selectedSlot == SLOT_UPG_QUIVER) || ((invDbgCommon).selectedSlot == SLOT_UPG_BOMB_BAG) || ((invDbgCommon).selectedSlot == SLOT_UPG_STRENGTH) || ((invDbgCommon).selectedSlot == SLOT_UPG_SCALE))
+#define INVDBG_IS_UPGRADE(invDbgCommon) (((invDbgCommon).selectedSlot == SLOT_UPG_QUIVER) || ((invDbgCommon).selectedSlot == SLOT_UPG_BOMB_BAG) || ((invDbgCommon).selectedSlot == SLOT_UPG_STRENGTH) || ((invDbgCommon).selectedSlot == SLOT_UPG_SCALE))
+
+// Animations
+#define INVDBG_ANIM_BASE_SPEED 16
 
 // HUD Editor
-#define HUD_TOP_YPOS_START 0
-#define HUD_TOP_YPOS_TARGET 35
-#define HUD_TOP_ANIM_SPEED 16 / 5
+#define INVDBG_HUD_TOP_ANIM_SPEED INVDBG_ANIM_BASE_SPEED / 5
+#define INVDBG_HUD_TOP_YPOS_TARGET 35
+#define INVDBG_HUD_TOP_YPOS 0
 
-#define HUD_BOTTOM_YPOS_START 0
-#define HUD_BOTTOM_YPOS_TARGET 100
-#define HUD_BOTTOM_ANIM_SPEED 16 / 2
-#define HUD_BOTTOM_INVERT_TARGET 16
-#define HUD_BOTTOM_INVERT_SPEED 1
+#define INVDBG_HUD_BOTTOM_ANIM_SPEED INVDBG_ANIM_BASE_SPEED / 2
+#define INVDBG_HUD_BOTTOM_YPOS_TARGET 100
+#define INVDBG_HUD_BOTTOM_YPOS 0
 
-// Other
-#define INV_EDITOR_ENABLED (gDebug.invDebug.state != INV_DEBUG_STATE_OFF)
+#define INVDBG_HUD_BOTTOM_INVERT_SPEED INVDBG_ANIM_BASE_SPEED / 16
+#define INVDBG_HUD_BOTTOM_INVERT_TARGET 16
 
-#define PRINT_TIMER_START 70 // frames
+#define INVDBG_BG_ANIM_SPEED INVDBG_ANIM_BASE_SPEED
+#define INVDBG_BG_YPOS_TARGET 0
+#define INVDBG_BG_YPOS 220
 
-#define BG_YPOS_TITLE 220
-#define BG_YPOS_TARGET 0
-#define BG_ANIM_SPEED 16
+#define INVDBG_TITLE_ANIM_SPEED INVDBG_ANIM_BASE_SPEED / 8
+#define INVDBG_TITLE_YPOS_TARGET 2
+#define INVDBG_TITLE_YPOS 28
 
-#define TXT_YPOS_TITLE 28
-#define TXT_YPOS_TARGET 2
-#define TXT_ANIM_SPEED BG_ANIM_SPEED / 8
-
-#define INV_ALPHA_TRANS_SPEED 32
-
-#define PRINT_NEWLINE "\n  "
-
-#define DEBUG_PRINT_VAR(var) osSyncPrintf("%s: %d\n", #var, var)
+#define INVDBG_ALPHA_TRANS_SPEED INVDBG_ANIM_BASE_SPEED * 2
 
 #endif
 

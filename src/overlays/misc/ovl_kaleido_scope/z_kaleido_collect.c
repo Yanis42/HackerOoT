@@ -212,7 +212,7 @@ void KaleidoScope_DrawQuestStatus(PlayState* play, GraphicsContext* gfxCtx) {
                 }
             } else if (pauseCtx->unk_1E4 == 8) {
 #ifdef ENABLE_INV_EDITOR
-                if (!INV_EDITOR_ENABLED) {
+                if (!INVDBG_IS_ENABLED) {
 #endif
                     if (CHECK_BTN_ALL(input->press.button, BTN_A) && (sp216 >= QUEST_SONG_MINUET) &&
                         (sp216 < QUEST_KOKIRI_EMERALD)) {

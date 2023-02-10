@@ -20,7 +20,7 @@ void KaleidoSetup_Update(PlayState* play) {
          (play->sceneId != SCENE_BOMBCHU_BOWLING_ALLEY || !Flags_GetSwitch(play, 0x38)));
 
 #ifdef ENABLE_INV_EDITOR
-    canUpdate = (pauseCtx->state == 0 && pauseCtx->debugState == 0 && !INV_EDITOR_ENABLED) && canUpdate;
+    canUpdate = (pauseCtx->state == 0 && pauseCtx->debugState == 0 && !INVDBG_IS_ENABLED) && canUpdate;
 #else
     canUpdate = (pauseCtx->state == 0) && canUpdate;
 #endif
@@ -32,9 +32,9 @@ void KaleidoSetup_Update(PlayState* play) {
             if (BREG(0)) {
                 pauseCtx->debugState = 3;
             }
-        } else if (CHECK_BTN_ALL(input->press.button, BTN_START) && !INV_EDITOR_ENABLED) {
+        } else if (CHECK_BTN_ALL(input->press.button, BTN_START) && !INVDBG_IS_ENABLED) {
 #else
-        if (CHECK_BTN_ALL(input->press.button, BTN_START) && !INV_EDITOR_ENABLED) {
+        if (CHECK_BTN_ALL(input->press.button, BTN_START) && !INVDBG_IS_ENABLED) {
 #endif
             gSaveContext.prevHudVisibilityMode = gSaveContext.hudVisibilityMode;
 

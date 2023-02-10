@@ -1984,7 +1984,7 @@ void Inventory_DeleteItem(u16 item, u16 invSlot) {
     osSyncPrintf("\nItem_Register(%d)\n", invSlot, gSaveContext.inventory.items[invSlot]);
 
 #ifdef ENABLE_INV_EDITOR
-    if (!INV_EDITOR_ENABLED) {
+    if (!INVDBG_IS_ENABLED) {
 #endif
         for (i = 1; i < 4; i++) {
             if (gSaveContext.equips.buttonItems[i] == item) {
@@ -2558,7 +2558,7 @@ void Magic_Update(PlayState* play) {
             // Slowly consume magic while lens is on
             if ((play->pauseCtx.state == 0) &&
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-                (play->pauseCtx.debugState == 0) && !INV_EDITOR_ENABLED &&
+                (play->pauseCtx.debugState == 0) && !INVDBG_IS_ENABLED &&
 #endif
                 (msgCtx->msgMode == MSGMODE_NONE) && (play->gameOverCtx.state == GAMEOVER_INACTIVE) &&
                 (play->transitionTrigger == TRANS_TRIGGER_OFF) && (play->transitionMode == TRANS_MODE_OFF) &&
@@ -2646,7 +2646,7 @@ void Magic_DrawMeter(PlayState* play) {
     s16 posY = 0;
     u8 updateMeter = gSaveContext.magicLevel != 0;
 #ifdef ENABLE_INV_EDITOR
-    if (INV_EDITOR_ENABLED) {
+    if (INVDBG_IS_ENABLED) {
         posY += gDebug.invDebug.hudDebug.hudTopPosY;
 
         if (gDebug.invDebug.hudDebug.showHUDEditor && gSaveContext.isMagicAcquired) {
@@ -2850,7 +2850,7 @@ void Interface_DrawItemButtons(PlayState* play) {
 
     if ((pauseCtx->state < 8) || (pauseCtx->state >= 18)) {
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-        if ((play->pauseCtx.state != 0) || (INV_EDITOR_ENABLED && play->pauseCtx.debugState != 0)) {
+        if ((play->pauseCtx.state != 0) || (INVDBG_IS_ENABLED && play->pauseCtx.debugState != 0)) {
 #else
         if (play->pauseCtx.state != 0) {
 #endif
@@ -2885,7 +2885,7 @@ void Interface_DrawItemButtons(PlayState* play) {
 
     if (interfaceCtx->naviCalling && (play->pauseCtx.state == 0) &&
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-        (play->pauseCtx.debugState == 0) && !INV_EDITOR_ENABLED &&
+        (play->pauseCtx.debugState == 0) && !INVDBG_IS_ENABLED &&
 #endif
         (play->csCtx.state == CS_STATE_IDLE)) {
         if (!sCUpInvisible) {
@@ -3199,7 +3199,7 @@ void Interface_Draw(PlayState* play) {
         return;
     }
 
-    if (INV_EDITOR_ENABLED) {
+    if (INVDBG_IS_ENABLED) {
         rupeePosY = gDebug.invDebug.hudDebug.hudBottomPosY;
         smallKeyPosY = gDebug.invDebug.hudDebug.hudBottomPosY;
 
@@ -3224,11 +3224,11 @@ void Interface_Draw(PlayState* play) {
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
     if ((
     #ifdef ENABLE_INV_EDITOR
-        !INV_EDITOR_ENABLED &&
+        !INVDBG_IS_ENABLED &&
     #endif
         pauseCtx->debugState == 0)
     #ifdef ENABLE_INV_EDITOR
-    || INV_EDITOR_ENABLED
+    || INVDBG_IS_ENABLED
     #endif
     ) {
 #endif
@@ -3260,7 +3260,7 @@ void Interface_Draw(PlayState* play) {
 
         smallKeyCond = play->sceneId;
 #ifdef ENABLE_INV_EDITOR
-        if (INV_EDITOR_ENABLED && gDebug.invDebug.hudDebug.showHUDEditor) {
+        if (INVDBG_IS_ENABLED && gDebug.invDebug.hudDebug.showHUDEditor) {
             smallKeyCond = 10000;
         }
 #endif
@@ -3286,7 +3286,7 @@ void Interface_Draw(PlayState* play) {
 #endif
                 if ((gSaveContext.inventory.dungeonKeys[mapIndex] >= 0)
 #ifdef ENABLE_INV_EDITOR
-                    || (INV_EDITOR_ENABLED && gDebug.invDebug.hudDebug.showHUDEditor)
+                    || (INVDBG_IS_ENABLED && gDebug.invDebug.hudDebug.showHUDEditor)
 #endif
                 ) {
                     // Small Key Icon
@@ -3546,7 +3546,7 @@ void Interface_Draw(PlayState* play) {
         Gfx_SetupDL_39Overlay(play->state.gfxCtx);
 
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-        if ((play->pauseCtx.state == 0) && (!INV_EDITOR_ENABLED && play->pauseCtx.debugState == 0)) {
+        if ((play->pauseCtx.state == 0) && (!INVDBG_IS_ENABLED && play->pauseCtx.debugState == 0)) {
 #else
     if (play->pauseCtx.state == 0) {
 #endif
@@ -3649,7 +3649,7 @@ void Interface_Draw(PlayState* play) {
 
         if ((play->pauseCtx.state == 0) &&
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-            (!INV_EDITOR_ENABLED && play->pauseCtx.debugState == 0) &&
+            (!INVDBG_IS_ENABLED && play->pauseCtx.debugState == 0) &&
 #endif
             (play->gameOverCtx.state == GAMEOVER_INACTIVE) && (msgCtx->msgMode == MSGMODE_NONE) &&
             !(player->stateFlags2 & PLAYER_STATE2_24) && (play->transitionTrigger == TRANS_TRIGGER_OFF) &&
@@ -4101,7 +4101,7 @@ void Interface_Update(PlayState* play) {
     Input* debugInput = &play->state.input[2];
 
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-    if ((play->pauseCtx.state == 0) && (!INV_EDITOR_ENABLED && play->pauseCtx.debugState == 0)) {
+    if ((play->pauseCtx.state == 0) && (!INVDBG_IS_ENABLED && play->pauseCtx.debugState == 0)) {
 #else
     if (play->pauseCtx.state == 0) {
 #endif
@@ -4258,7 +4258,7 @@ void Interface_Update(PlayState* play) {
 
     if ((gSaveContext.timerState >= TIMER_STATE_ENV_HAZARD_MOVE) && (play->pauseCtx.state == 0) &&
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-        (!INV_EDITOR_ENABLED && play->pauseCtx.debugState == 0) &&
+        (!INVDBG_IS_ENABLED && play->pauseCtx.debugState == 0) &&
 #endif
         (msgCtx->msgMode == MSGMODE_NONE) && !(player->stateFlags2 & PLAYER_STATE2_24) &&
         (play->transitionTrigger == TRANS_TRIGGER_OFF) && (play->transitionMode == TRANS_MODE_OFF) &&
@@ -4348,13 +4348,13 @@ void Interface_Update(PlayState* play) {
     // Update Magic
     if (((play->pauseCtx.state == 0) &&
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-        (!INV_EDITOR_ENABLED && play->pauseCtx.debugState == 0) &&
+        (!INVDBG_IS_ENABLED && play->pauseCtx.debugState == 0) &&
 #endif
         (msgCtx->msgMode == MSGMODE_NONE) && (play->transitionTrigger == TRANS_TRIGGER_OFF) &&
         (play->gameOverCtx.state == GAMEOVER_INACTIVE) && (play->transitionMode == TRANS_MODE_OFF) &&
         ((play->csCtx.state == CS_STATE_IDLE) || !Player_InCsMode(play)))
 #ifdef ENABLE_INV_EDITOR
-        || (INV_EDITOR_ENABLED && gDebug.invDebug.hudDebug.showHUDEditor)
+        || (INVDBG_IS_ENABLED && gDebug.invDebug.hudDebug.showHUDEditor)
 #endif
         ) {
 

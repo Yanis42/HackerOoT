@@ -201,7 +201,7 @@ void KaleidoScope_DrawEquipment(PlayState* play) {
                             if (pauseCtx->cursorY[PAUSE_EQUIP] == 0) {
                                 if (
 #ifdef ENABLE_INV_EDITOR
-                                    INV_EDITOR_ENABLED ||
+                                    INVDBG_IS_ENABLED ||
 #endif
                                     CUR_UPG_VALUE(UPG_BULLET_BAG) != 0) {
                                     cursorMoveResult = 1;
@@ -209,7 +209,7 @@ void KaleidoScope_DrawEquipment(PlayState* play) {
                             } else {
                                 if (
 #ifdef ENABLE_INV_EDITOR
-                                    INV_EDITOR_ENABLED ||
+                                    INVDBG_IS_ENABLED ||
 #endif
                                     CUR_UPG_VALUE(pauseCtx->cursorY[PAUSE_EQUIP]) != 0) {
                                     cursorMoveResult = 1;
@@ -218,7 +218,7 @@ void KaleidoScope_DrawEquipment(PlayState* play) {
                         } else {
                             if (
 #ifdef ENABLE_INV_EDITOR
-                                INV_EDITOR_ENABLED ||
+                                INVDBG_IS_ENABLED ||
 #endif
                                 gBitFlags[pauseCtx->cursorPoint[PAUSE_EQUIP] - 1] & gSaveContext.inventory.equipment) {
                                 cursorMoveResult = 2;
@@ -254,7 +254,7 @@ void KaleidoScope_DrawEquipment(PlayState* play) {
                         if (pauseCtx->cursorX[PAUSE_EQUIP] == 0) {
                             if (
 #ifdef ENABLE_INV_EDITOR
-                                INV_EDITOR_ENABLED ||
+                                INVDBG_IS_ENABLED ||
 #endif
                                 CUR_UPG_VALUE(pauseCtx->cursorY[PAUSE_EQUIP]) != 0) {
                                 cursorMoveResult = 1;
@@ -262,7 +262,7 @@ void KaleidoScope_DrawEquipment(PlayState* play) {
                         } else {
                             if (
 #ifdef ENABLE_INV_EDITOR
-                                INV_EDITOR_ENABLED ||
+                                INVDBG_IS_ENABLED ||
 #endif
                                 gBitFlags[pauseCtx->cursorPoint[PAUSE_EQUIP] - 1] & gSaveContext.inventory.equipment) {
                                 cursorMoveResult = 2;
@@ -311,21 +311,21 @@ void KaleidoScope_DrawEquipment(PlayState* play) {
                             if (pauseCtx->cursorY[PAUSE_EQUIP] == 0) {
                                 if (
 #ifdef ENABLE_INV_EDITOR
-                                    INV_EDITOR_ENABLED ||
+                                    INVDBG_IS_ENABLED ||
 #endif
                                     CUR_UPG_VALUE(UPG_BULLET_BAG) != 0) {
                                     cursorMoveResult = 1;
                                 }
                             } else if (
 #ifdef ENABLE_INV_EDITOR
-                                INV_EDITOR_ENABLED ||
+                                INVDBG_IS_ENABLED ||
 #endif
                                 CUR_UPG_VALUE(pauseCtx->cursorY[PAUSE_EQUIP]) != 0) {
                                 cursorMoveResult = 1;
                             }
                         } else if (
 #ifdef ENABLE_INV_EDITOR
-                                    INV_EDITOR_ENABLED ||
+                                    INVDBG_IS_ENABLED ||
 #endif
                                     gBitFlags[pauseCtx->cursorPoint[PAUSE_EQUIP] - 1] &
                                    gSaveContext.inventory.equipment) {
@@ -344,14 +344,14 @@ void KaleidoScope_DrawEquipment(PlayState* play) {
                         if (pauseCtx->cursorX[PAUSE_EQUIP] == 0) {
                             if (
 #ifdef ENABLE_INV_EDITOR
-                                INV_EDITOR_ENABLED ||
+                                INVDBG_IS_ENABLED ||
 #endif
                                 CUR_UPG_VALUE(pauseCtx->cursorY[PAUSE_EQUIP]) != 0) {
                                 cursorMoveResult = 1;
                             }
                         } else if (
 #ifdef ENABLE_INV_EDITOR
-                                    INV_EDITOR_ENABLED ||
+                                    INVDBG_IS_ENABLED ||
 #endif
                                     gBitFlags[pauseCtx->cursorPoint[PAUSE_EQUIP] - 1] &
                                    gSaveContext.inventory.equipment) {
@@ -532,7 +532,7 @@ void KaleidoScope_DrawEquipment(PlayState* play) {
         if ((pauseCtx->cursorSpecialPos == 0) && (cursorItem != PAUSE_ITEM_NONE) && (pauseCtx->state == 6) &&
             (pauseCtx->unk_1E4 == 0) && CHECK_BTN_ALL(input->press.button, BTN_A)
 #ifdef ENABLE_INV_EDITOR
-            && !INV_EDITOR_ENABLED &&
+            && !INVDBG_IS_ENABLED &&
 #endif
             (pauseCtx->cursorX[PAUSE_EQUIP] != 0)) {
 
@@ -616,7 +616,7 @@ void KaleidoScope_DrawEquipment(PlayState* play) {
         gSPVertex(POLY_OPA_DISP++, &pauseCtx->equipVtx[j], 16, 0);
 
 #ifdef ENABLE_INV_EDITOR
-        if (!INV_EDITOR_ENABLED) {
+        if (!INVDBG_IS_ENABLED) {
 #endif
             if (LINK_AGE_IN_YEARS == YEARS_CHILD) {
                 point = CUR_UPG_VALUE(sChildUpgrades[i]);
@@ -640,7 +640,7 @@ void KaleidoScope_DrawEquipment(PlayState* play) {
             }
 #ifdef ENABLE_INV_EDITOR
         } else if (pauseCtx->pageIndex == PAUSE_EQUIP) {
-            InventoryDebug_DrawUpgrades(&gDebug.invDebug, i, alpha);
+            InventoryDebug_DrawEquipmentUpgrades(&gDebug.invDebug, i, alpha);
         }
 #endif
 

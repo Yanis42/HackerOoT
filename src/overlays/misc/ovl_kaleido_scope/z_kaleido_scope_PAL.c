@@ -398,12 +398,12 @@ void KaleidoScope_SwitchPage(PauseContext* pauseCtx, u8 pt) {
 
 void KaleidoScope_HandlePageToggles(PauseContext* pauseCtx, Input* input) {
 #ifdef ENABLE_INV_EDITOR
-    if ((pauseCtx->debugState == 0) && !INV_EDITOR_ENABLED && CHECK_BTN_ALL(input->press.button, BTN_CUP)) {
+    if ((pauseCtx->debugState == 0) && !INVDBG_IS_ENABLED && CHECK_BTN_ALL(input->press.button, BTN_CUP)) {
         pauseCtx->debugState = 1;
         return;
     }
 
-    if (INV_EDITOR_ENABLED && gDebug.invDebug.hudDebug.showHUDEditor) {
+    if (INVDBG_IS_ENABLED && gDebug.invDebug.hudDebug.showHUDEditor) {
         return;
     }
 #endif
@@ -454,7 +454,7 @@ void KaleidoScope_DrawCursor(PlayState* play, u16 pageIndex) {
             s16 i;
             s16 j;
 #ifdef ENABLE_INV_EDITOR
-            s16 cursorColorIndex = INV_EDITOR_ENABLED ? 3 : pauseCtx->cursorColorSet >> 2;
+            s16 cursorColorIndex = INVDBG_IS_ENABLED ? 3 : pauseCtx->cursorColorSet >> 2;
 #else
             s16 cursorColorIndex = pauseCtx->cursorColorSet >> 2;
 #endif
@@ -541,7 +541,7 @@ void KaleidoScope_DrawPages(PlayState* play, GraphicsContext* gfxCtx) {
     if ((pauseCtx->state < 8) || (pauseCtx->state > 0x11)) {
         if (pauseCtx->state != 7) {
 #ifdef ENABLE_INV_EDITOR
-            s16 cursorColorIndex = INV_EDITOR_ENABLED ? (3 << 2) : pauseCtx->cursorColorSet;
+            s16 cursorColorIndex = INVDBG_IS_ENABLED ? (3 << 2) : pauseCtx->cursorColorSet;
 #else
             s16 cursorColorIndex = pauseCtx->cursorColorSet;
 #endif
@@ -1169,8 +1169,8 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
                 u8 alpha = 255;
                 u8 colorIsGrey = pauseCtx->nameColorSet == 1;
 #ifdef ENABLE_INV_EDITOR
-                alpha = INV_EDITOR_ENABLED ? gDebug.invDebug.invIconAlpha : 255;
-                colorIsGrey = colorIsGrey && !INV_EDITOR_ENABLED;
+                alpha = INVDBG_IS_ENABLED ? gDebug.invDebug.invIconAlpha : 255;
+                colorIsGrey = colorIsGrey && !INVDBG_IS_ENABLED;
 #endif
                 if (colorIsGrey) {
                     gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 70, 70, 70, alpha);
@@ -1309,7 +1309,7 @@ void KaleidoScope_DrawInfoPanel(PlayState* play) {
                 {
                     u8 alpha = 255;
 #ifdef ENABLE_INV_EDITOR
-                    alpha = INV_EDITOR_ENABLED ? gDebug.invDebug.invIconAlpha : 255;
+                    alpha = INVDBG_IS_ENABLED ? gDebug.invDebug.invIconAlpha : 255;
 #endif
                     gDPPipeSync(POLY_OPA_DISP++);
                     gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, 255, 255, 255, alpha);
@@ -2344,7 +2344,7 @@ void KaleidoScope_Draw(PlayState* play) {
     gSPSegment(POLY_OPA_DISP++, 0x0D, pauseCtx->iconItemLangSegment);
 
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-    if ((pauseCtx->debugState == 0) || INV_EDITOR_ENABLED) {
+    if ((pauseCtx->debugState == 0) || INVDBG_IS_ENABLED) {
 #endif
         KaleidoScope_SetView(pauseCtx, pauseCtx->eye.x, pauseCtx->eye.y, pauseCtx->eye.z);
 
@@ -2991,14 +2991,14 @@ void KaleidoScope_Update(PlayState* play) {
         case 6:
             switch (pauseCtx->unk_1E4) {
                 case 0:
-                    if (CHECK_BTN_ALL(input->press.button, BTN_START) && !INV_EDITOR_ENABLED) {
+                    if (CHECK_BTN_ALL(input->press.button, BTN_START) && !INVDBG_IS_ENABLED) {
                         Interface_SetDoAction(play, DO_ACTION_NONE);
                         pauseCtx->state = 0x12;
                         WREG(2) = -6240;
                         func_800F64E0(0);
                     } else if (CHECK_BTN_ALL(input->press.button, BTN_B)
 #ifdef ENABLE_INV_EDITOR
-                    && !INV_EDITOR_ENABLED
+                    && !INVDBG_IS_ENABLED
 #endif
                     ) {
                         pauseCtx->mode = 0;
@@ -3037,7 +3037,7 @@ void KaleidoScope_Update(PlayState* play) {
                 case 5:
                     pauseCtx->ocarinaStaff = AudioOcarina_GetPlayingStaff();
 
-                    if (CHECK_BTN_ALL(input->press.button, BTN_START) && !INV_EDITOR_ENABLED) {
+                    if (CHECK_BTN_ALL(input->press.button, BTN_START) && !INVDBG_IS_ENABLED) {
                         AudioOcarina_SetInstrument(OCARINA_INSTRUMENT_OFF);
                         Interface_SetDoAction(play, DO_ACTION_NONE);
                         pauseCtx->state = 0x12;
@@ -3047,7 +3047,7 @@ void KaleidoScope_Update(PlayState* play) {
                         break;
                     } else if (CHECK_BTN_ALL(input->press.button, BTN_B)
 #ifdef ENABLE_INV_EDITOR
-                    && !INV_EDITOR_ENABLED
+                    && !INVDBG_IS_ENABLED
 #endif
                     ) {
                         AudioOcarina_SetInstrument(OCARINA_INSTRUMENT_OFF);
@@ -3094,7 +3094,7 @@ void KaleidoScope_Update(PlayState* play) {
                 case 8:
                     if (CHECK_BTN_ALL(input->press.button, BTN_START)
 #ifdef ENABLE_INV_EDITOR
-                    && !INV_EDITOR_ENABLED
+                    && !INVDBG_IS_ENABLED
 #endif
                     ) {
                         AudioOcarina_SetInstrument(OCARINA_INSTRUMENT_OFF);
@@ -3105,7 +3105,7 @@ void KaleidoScope_Update(PlayState* play) {
                         pauseCtx->unk_1E4 = 0;
                     } else if (CHECK_BTN_ALL(input->press.button, BTN_B)
 #ifdef ENABLE_INV_EDITOR
-                    && !INV_EDITOR_ENABLED
+                    && !INVDBG_IS_ENABLED
 #endif
                     ) {
                         AudioOcarina_SetInstrument(OCARINA_INSTRUMENT_OFF);
@@ -3170,7 +3170,7 @@ void KaleidoScope_Update(PlayState* play) {
                     } else if ((CHECK_BTN_ALL(input->press.button, BTN_START) ||
                                CHECK_BTN_ALL(input->press.button, BTN_B))
 #ifdef ENABLE_INV_EDITOR
-                                && !INV_EDITOR_ENABLED
+                                && !INVDBG_IS_ENABLED
 #endif
                     ) {
                         Interface_SetDoAction(play, DO_ACTION_NONE);
@@ -3189,7 +3189,7 @@ void KaleidoScope_Update(PlayState* play) {
                     if ((CHECK_BTN_ALL(input->press.button, BTN_B) || CHECK_BTN_ALL(input->press.button, BTN_A) ||
                         (CHECK_BTN_ALL(input->press.button, BTN_START)) || (--D_8082B25C == 0))
 #ifdef ENABLE_INV_EDITOR
-                        && !INV_EDITOR_ENABLED
+                        && !INVDBG_IS_ENABLED
 #endif
                         ) {
                         Interface_SetDoAction(play, DO_ACTION_NONE);
@@ -3425,7 +3425,7 @@ void KaleidoScope_Update(PlayState* play) {
                 pauseCtx->state = 0x10;
                 gameOverCtx->state++;
             } else if ((D_8082B25C <= 80) &&
-                       (CHECK_BTN_ALL(input->press.button, BTN_A) || (CHECK_BTN_ALL(input->press.button, BTN_START) && !INV_EDITOR_ENABLED))) {
+                       (CHECK_BTN_ALL(input->press.button, BTN_A) || (CHECK_BTN_ALL(input->press.button, BTN_START) && !INVDBG_IS_ENABLED))) {
                 pauseCtx->state = 0x10;
                 gameOverCtx->state++;
                 func_800F64E0(0);
@@ -3433,7 +3433,7 @@ void KaleidoScope_Update(PlayState* play) {
             break;
 
         case 0x10:
-            if (CHECK_BTN_ALL(input->press.button, BTN_A) || (CHECK_BTN_ALL(input->press.button, BTN_START) && !INV_EDITOR_ENABLED)) {
+            if (CHECK_BTN_ALL(input->press.button, BTN_A) || (CHECK_BTN_ALL(input->press.button, BTN_START) && !INVDBG_IS_ENABLED)) {
                 if (pauseCtx->promptChoice == 0) {
                     Audio_PlaySfxGeneral(NA_SE_SY_PIECE_OF_HEART, &gSfxDefaultPos, 4, &gSfxDefaultFreqAndVolScale,
                                          &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
@@ -3614,12 +3614,12 @@ void KaleidoScope_Update(PlayState* play) {
     }
 
 #ifdef ENABLE_INV_EDITOR
-    if (!INV_EDITOR_ENABLED && CHECK_BTN_ALL(play->state.input[0].press.button, BTN_L)
+    if (!INVDBG_IS_ENABLED && CHECK_BTN_ALL(play->state.input[0].press.button, BTN_L)
         && (pauseCtx->debugState == 0)) {
         gDebug.invDebug.state = INV_DEBUG_STATE_INIT;
     }
 
-    if (INV_EDITOR_ENABLED) {
+    if (INVDBG_IS_ENABLED) {
         InventoryDebug_Main(&gDebug.invDebug);
     }
 #endif

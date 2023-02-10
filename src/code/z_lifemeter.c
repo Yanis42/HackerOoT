@@ -322,7 +322,7 @@ void Health_DrawMeter(PlayState* play) {
 
     u8 posY = 0;
 #ifdef ENABLE_INV_EDITOR
-    if (INV_EDITOR_ENABLED) {
+    if (INVDBG_IS_ENABLED) {
         posY = gDebug.invDebug.hudDebug.hudTopPosY;
     }
 #endif
@@ -522,7 +522,7 @@ void Health_UpdateBeatingHeart(PlayState* play) {
 
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
             canPlayLowHealthSFX =
-                canPlayLowHealthSFX && (!INV_EDITOR_ENABLED && play->pauseCtx.debugState == 0) && Health_IsCritical() && !Play_InCsMode(play);
+                canPlayLowHealthSFX && (!INVDBG_IS_ENABLED && play->pauseCtx.debugState == 0) && Health_IsCritical() && !Play_InCsMode(play);
 #else
             canPlayLowHealthSFX = (canPlayLowHealthSFX && Health_IsCritical() && !Play_InCsMode(play));
 #endif

@@ -164,7 +164,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
 
                             if ((gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM]] != ITEM_NONE)
 #ifdef ENABLE_INV_EDITOR
-                            || INV_EDITOR_ENABLED
+                            || INVDBG_IS_ENABLED
 #endif
                             ) {
                                 moveCursorResult = 1;
@@ -200,7 +200,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
 
                             if ((gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM]] != ITEM_NONE)
 #ifdef ENABLE_INV_EDITOR
-                            || INV_EDITOR_ENABLED
+                            || INVDBG_IS_ENABLED
 #endif
                             ) {
                                 moveCursorResult = 1;
@@ -252,7 +252,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
                 while (true) {
                     if ((gSaveContext.inventory.items[cursorPoint] != ITEM_NONE)
 #ifdef ENABLE_INV_EDITOR
-                            || INV_EDITOR_ENABLED
+                            || INVDBG_IS_ENABLED
 #endif
                             ) {                        pauseCtx->cursorPoint[PAUSE_ITEM] = cursorPoint;
                         pauseCtx->cursorX[PAUSE_ITEM] = cursorX;
@@ -291,7 +291,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
                 while (true) {
                     if ((gSaveContext.inventory.items[cursorPoint] != ITEM_NONE)
 #ifdef ENABLE_INV_EDITOR
-                            || INV_EDITOR_ENABLED
+                            || INVDBG_IS_ENABLED
 #endif
                             ) {
                         pauseCtx->cursorPoint[PAUSE_ITEM] = cursorPoint;
@@ -335,7 +335,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
 
                                 if ((gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM]] != ITEM_NONE)
 #ifdef ENABLE_INV_EDITOR
-                            || INV_EDITOR_ENABLED
+                            || INVDBG_IS_ENABLED
 #endif
                                 ) {
                                     moveCursorResult = 1;
@@ -353,7 +353,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
 
                                 if ((gSaveContext.inventory.items[pauseCtx->cursorPoint[PAUSE_ITEM]] != ITEM_NONE)
 #ifdef ENABLE_INV_EDITOR
-                            || INV_EDITOR_ENABLED
+                            || INVDBG_IS_ENABLED
 #endif
                                 ) {
                                     moveCursorResult = 1;
@@ -396,7 +396,7 @@ void KaleidoScope_DrawItemSelect(PlayState* play) {
                 KaleidoScope_SetCursorVtx(pauseCtx, index, pauseCtx->itemVtx);
 
 #if (defined ENABLE_INV_EDITOR || defined ENABLE_EVENT_EDITOR)
-                if (!INV_EDITOR_ENABLED && (pauseCtx->debugState == 0) && (pauseCtx->state == 6) && (pauseCtx->unk_1E4 == 0)) {
+                if (!INVDBG_IS_ENABLED && (pauseCtx->debugState == 0) && (pauseCtx->state == 6) && (pauseCtx->unk_1E4 == 0)) {
 #else
                 if ((pauseCtx->state == 6) && (pauseCtx->unk_1E4 == 0)) {
 #endif
