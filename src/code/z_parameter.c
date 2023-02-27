@@ -3195,7 +3195,8 @@ void Interface_Draw(PlayState* play) {
     u16 mapIndex = gSaveContext.mapIndex;
 
 #ifdef ENABLE_INV_EDITOR
-    if (gDebug.invDebug.showInfoScreen && gDebug.invDebug.elementsAlpha == 0) {
+    if ((gDebug.invDebug.showInfoScreen && gDebug.invDebug.elementsAlpha == 0)
+        || (!gDebug.invDebug.miscDebug.showMiscScreen && gDebug.invDebug.miscElementsAlpha == 0)) {
         return;
     }
 

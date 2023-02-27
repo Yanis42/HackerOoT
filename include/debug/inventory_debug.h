@@ -83,6 +83,7 @@ typedef struct InventoryDebug {
     s16 backgroundPosY;
     u8 showInfoScreen;
     s16 elementsAlpha;
+    s16 miscElementsAlpha;
 } InventoryDebug;
 
 Gfx* Gfx_TextureIA8(Gfx* displayListHead, void* texture, s16 textureWidth, s16 textureHeight, s16 rectLeft, s16 rectTop, s16 rectWidth, s16 rectHeight, u16 dsdx, u16 dtdy);

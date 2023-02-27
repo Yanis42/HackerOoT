@@ -80,8 +80,8 @@ void InventoryDebug_SetHUDAlpha(InventoryDebug* this) {
     interfaceCtx->startAlpha = this->elementsAlpha;
 
     if (!this->miscDebug.showMiscScreen) {
-        interfaceCtx->healthAlpha = this->elementsAlpha;
-        interfaceCtx->magicAlpha = this->elementsAlpha;
+        interfaceCtx->healthAlpha = this->miscElementsAlpha;
+        interfaceCtx->magicAlpha = this->miscElementsAlpha;
     }
 }
 
@@ -560,6 +560,9 @@ void InventoryDebug_DrawMiscScreen(InventoryDebug* this) {
     u16 posX;
     void* dgnItemTextures[] = { gQuestIconDungeonBossKeyTex, gQuestIconDungeonCompassTex, gQuestIconDungeonMapTex };
 
+    OPEN_DISPS(this->gfxCtx, __BASE_FILE__, __LINE__);
+
+    // Dungeon Icons
     if ((index <= 8) || RANGE(index, 11, 15)) {
         width = QUEST_ICON_WIDTH;
         height = QUEST_ICON_HEIGHT;
@@ -567,7 +570,14 @@ void InventoryDebug_DrawMiscScreen(InventoryDebug* this) {
         resizeFactor = 400;
     }
 
-    OPEN_DISPS(this->gfxCtx, __BASE_FILE__, __LINE__);
+    gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, 255);
+
+    gDPLoadTextureBlock(OVERLAY_DISP++,  dgnIconTextures[index], G_IM_FMT_RGBA, G_IM_SIZ_32b,
+                        width, height, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP,
+                        G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
+
+    gSPTextureRectangle(OVERLAY_DISP++, 26 + 64, 417 + 75, 100 + 64, 490 + 75,
+                        G_TX_RENDERTILE, 0, 0, (1 << 10) + 270 + resizeFactor, (1 << 10) + 270 + resizeFactor);
 
     // Cursor
     if ((this->miscDebug.hudCursorPos == INVDBG_CURSOR_POS_MAGIC) && !gSaveContext.isDoubleMagicAcquired) {
@@ -580,33 +590,24 @@ void InventoryDebug_DrawMiscScreen(InventoryDebug* this) {
     rightY = cursorPos[this->miscDebug.hudCursorPos][3];
     InventoryDebug_DrawRectangle(this, leftX, leftY, rightX, rightY, rgba);
 
-    // Dungeon Icons
-    gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, 255);
-
-    gDPLoadTextureBlock(OVERLAY_DISP++,  dgnIconTextures[index], G_IM_FMT_RGBA, G_IM_SIZ_32b,
-                        width, height, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP,
-                        G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
-
-    gSPTextureRectangle(OVERLAY_DISP++, 26 + 64, 417 + 75, 100 + 64, 490 + 75,
-                        G_TX_RENDERTILE, 0, 0, (1 << 10) + 270 + resizeFactor, (1 << 10) + 270 + resizeFactor);
-
     // Dungeon Items
+    Gfx_SetupDL_39Opa(this->gfxCtx);
     for (posX = 258, i = 0; i < ARRAY_COUNTU(dgnItemTextures); posX += 110, i++) {
         Color_RGBA8 rgba;
 
         if (CHECK_DUNGEON_ITEM(i, this->miscDebug.mapIndex)) {
             rgba.r = rgba.g = rgba.b = rgba.a = 255;
         } else {
-            rgba.r = rgba.g = rgba.b = rgba.a = 64;
+            rgba.r = rgba.g = rgba.b = rgba.a = 127;
         }
 
-        gDPSetPrimColor(OVERLAY_DISP++, 0, 0, rgba.r, rgba.g, rgba.b, rgba.a);
+        gDPSetPrimColor(POLY_OPA_DISP++, 0, 0, rgba.r, rgba.g, rgba.b, rgba.a);
 
-        gDPLoadTextureBlock(OVERLAY_DISP++,  dgnItemTextures[i], G_IM_FMT_RGBA, G_IM_SIZ_32b,
+        gDPLoadTextureBlock(POLY_OPA_DISP++,  dgnItemTextures[i], G_IM_FMT_RGBA, G_IM_SIZ_32b,
                             QUEST_ICON_WIDTH, QUEST_ICON_HEIGHT, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP,
                             G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
 
-        gSPTextureRectangle(OVERLAY_DISP++, 26 + posX, 422, 95 + posX, 490,
+        gSPTextureRectangle(POLY_OPA_DISP++, 26 + posX, 422, 95 + posX, 490,
                         G_TX_RENDERTILE, 0, 0, (1 << 10) + 400, (1 << 10) + 400);
     }
 
@@ -867,6 +868,7 @@ void InventoryDebug_Update(InventoryDebug* this) {
     }
 
     if (this->miscDebug.showMiscScreen) {
+        this->miscElementsAlpha = TIMER_INCR(this->miscElementsAlpha, 255, INVDBG_ALPHA_TRANS_SPEED);
         InventoryDebug_UpdateMiscScreen(this);
     }
 
@@ -957,8 +959,7 @@ bool InventoryDebug_Destroy(InventoryDebug* this) {
         this->miscDebug.showMiscScreen = false;
     } else {
         // When the alpha hits 255 exit the inventory editor
-        if (this->backgroundPosY == INVDBG_BG_YPOS)
-        if (this->elementsAlpha == 255) {
+        if ((this->elementsAlpha == 255) && (this->backgroundPosY == INVDBG_BG_YPOS)) {
             this->pauseCtx->cursorSpecialPos = PAUSE_CURSOR_PAGE_LEFT; // avoids having the cursor on a blank slot
             return true;
         }
