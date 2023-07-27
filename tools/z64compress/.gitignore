@@ -1,0 +1,6 @@
+bin/
+o/
+z64compress
+*.z64
+cache/
+.vscode/

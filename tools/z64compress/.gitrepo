@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/Yanis42/z64compress.git
+	branch = lz4
+	commit = a95f3806d95d4ae85e70a172da64c039e4cea0e0
+	parent = f6adca7af0c7dafae45a774f1a8c9b5b4365d4b7
+	method = merge
+	cmdver = 0.4.6
