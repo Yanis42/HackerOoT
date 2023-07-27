@@ -27,7 +27,17 @@ void ViConfig_UpdateBlack(void);
 void* Yaz0_FirstDMA(void);
 void* Yaz0_NextDMA(u8* curSrcPos);
 void Yaz0_DecompressImpl(Yaz0Header* hdr, u8* dst);
-void Yaz0_Decompress(uintptr_t romStart, u8* dst, size_t size);
+
+#ifdef COMPRESSION_YAZ
+    void Yaz0_Decompress(uintptr_t romStart, u8* dst, size_t size);
+#elif defined (COMPRESSION_LZO)
+    void LZO_Decompress(uintptr_t romStart, u8* dst, size_t size);
+#elif defined (COMPRESSION_APLIB)
+    void APLIB_Decompress(uintptr_t romStart, u8* dst, size_t size);
+#elif defined (COMPRESSION_LZ4)
+    void LZ4_Decompress(uintptr_t romStart, u8* dst, size_t size);
+#endif
+
 void Locale_Init(void);
 void Locale_ResetRegion(void);
 u32 func_80001F48(void);

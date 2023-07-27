@@ -211,7 +211,7 @@ static inline void* aP_depack(void* source, unsigned char* destination) {
     return destination;
 }
 
-void Yaz0_Decompress(unsigned rom, unsigned char* dst, unsigned compSz) {
+void APLIB_Decompress(unsigned rom, unsigned char* dst, unsigned compSz) {
     dec.pstart = rom;
     dec.buf_end = dec.buf + sizeof(dec.buf);
     dst = aP_depack(dec.buf_end, dst);

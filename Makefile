@@ -12,7 +12,7 @@ COMPILER ?= gcc
 # If DEBUG_BUILD is 0, compile with ``RELEASE_ROM`` defined
 DEBUG_BUILD ?= 1
 
-# Valid compression algorithms are yaz, lzo and aplib
+# Valid compression algorithms are yaz, lzo, aplib and lz4
 COMPRESSION ?= yaz
 
 ifeq ($(COMPRESSION),lzo)
@@ -28,6 +28,11 @@ endif
 ifeq ($(COMPRESSION),aplib)
   CFLAGS += -DCOMPRESSION_APLIB
   CPPFLAGS += -DCOMPRESSION_APLIB
+endif
+
+ifeq ($(COMPRESSION),lz4)
+  CFLAGS += -DCOMPRESSION_LZ4
+  CPPFLAGS += -DCOMPRESSION_LZ4
 endif
 
 CFLAGS ?=

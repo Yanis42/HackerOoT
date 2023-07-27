@@ -65,7 +65,7 @@ static unsigned char* refill(unsigned char* ip) {
     return ip;
 }
 
-void Yaz0_Decompress(unsigned int pstart /* physical rom offset of file      */
+void LZO_Decompress(unsigned int pstart /* physical rom offset of file      */
                      ,
                      unsigned char* op /* destination of decompressed data */
                      ,
