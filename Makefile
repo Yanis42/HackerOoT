@@ -241,8 +241,12 @@ setup:
 test: $(ROM)
 	$(EMULATOR) $(EMU_FLAGS) $<
 
+updateZ64Compress:
+	git subrepo pull --force tools/z64compress
+	git rm --cached tools/z64compress/src/enc/libdeflate
+	git submodule add --force https://github.com/ebiggers/libdeflate tools/z64compress/src/enc/libdeflate
 
-.PHONY: all clean setup test distclean assetclean compress wad rebuildtools
+.PHONY: all clean setup test distclean assetclean compress wad rebuildtools updateZ64Compress
 
 #### Various Recipes ####
 

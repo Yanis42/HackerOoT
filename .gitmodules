@@ -1,0 +1,3 @@
+[submodule "tools/z64compress/src/enc/libdeflate"]
+	path = tools/z64compress/src/enc/libdeflate
+	url = https://github.com/ebiggers/libdeflate
