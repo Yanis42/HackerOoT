@@ -6,7 +6,7 @@
 [subrepo]
 	remote = https://github.com/Yanis42/z64compress.git
 	branch = lz4
-	commit = a95f3806d95d4ae85e70a172da64c039e4cea0e0
-	parent = f6adca7af0c7dafae45a774f1a8c9b5b4365d4b7
+	commit = 598fa085ab79e6546ea67bf9d5c66194d0bddd49
+	parent = 5e518043400cd31bf909a76833dc3b5f95567906
 	method = merge
 	cmdver = 0.4.6
