@@ -1,49 +1,46 @@
+/* adapted from libdragon */
+
 #include <string.h>
+#include <stdbool.h>
+#include <assert.h>
+#include <stdio.h>
 
 #define LZ4_DISTANCE_MAX 16384
-#include "./lz4/lz4hc.h"
+#include "lz4/lz4hc.h"
 
-int
-lz4enc(
-	void *_src
-	, unsigned src_sz
-	, void *_dst
-	, unsigned *dst_sz
-	, void *_ctx
-)
-{
+
+int lz4enc(void *_src, unsigned src_sz, void *_dst, unsigned *dst_sz, void *_ctx) {
 	char *src = _src;
 	char *dst = _dst;
-	unsigned long result_sz = 0;
-	int compress_bound = 0;
-	
+	int result_sz = 0;
 	extern int g_hlen; /* header length */
-	short lenHeader = g_hlen + 4 + 4;
-	memset(dst, 0, lenHeader);
+
+	/* build header */
+	memset(dst, 0, g_hlen);
 	memcpy(dst, "LZ40", 4);
 
-	// save src_sz
+	// save decompressed size
 	dst[4] = (src_sz >> 24);
 	dst[5] = (src_sz >> 16);
-	dst[6] = (src_sz >>  8);
-	dst[7] = (src_sz >>  0);
+	dst[6] = (src_sz >> 8);
+	dst[7] = (src_sz >> 0);
 
-	compress_bound = LZ4_COMPRESSBOUND(src_sz);
-	result_sz = LZ4_compress_HC(src, dst + lenHeader, src_sz, compress_bound, LZ4HC_CLEVEL_MAX);
+	/* compress */
+	int compress_bound = LZ4_COMPRESSBOUND(src_sz) - g_hlen;
+	dst += g_hlen;
 
-	if (!result_sz || !(result_sz <= compress_bound))
+	if (!compress_bound) {
+		fprintf(stderr, "error with compression bound\n");
 		return 1;
+	}
 
-	// save result_sz
-	dst[8] 	= (result_sz >> 24);
-	dst[9] 	= (result_sz >> 16);
-	dst[10] = (result_sz >>  8);
-	dst[11] = (result_sz >>  0);
+	result_sz = LZ4_compress_HC(src, dst, src_sz, compress_bound, LZ4HC_CLEVEL_MAX);
+	if (!result_sz || !(result_sz <= compress_bound)) {
+		fprintf(stderr, "error with result (0x%08X, 0x%08X)\n", result_sz, compress_bound);
+		return 1;
+	}
 
-	// align
-	dst[12] = dst[13] = dst[14] = dst[15] = 0;
-
-	*dst_sz = result_sz + lenHeader;
-
+	/* update the compressed size parameter */
+	*dst_sz = result_sz + g_hlen;
 	return 0;
 }
