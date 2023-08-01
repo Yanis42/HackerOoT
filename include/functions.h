@@ -35,7 +35,7 @@ void Yaz0_DecompressImpl(Yaz0Header* hdr, u8* dst);
 #elif defined (COMPRESSION_APLIB)
     void APLIB_Decompress(uintptr_t romStart, u8* dst, size_t size);
 #elif defined (COMPRESSION_LZ4)
-    void LZ4_Decompress(uintptr_t romStart, u8* dst, size_t size);
+    size_t LZ4_Decompress(uintptr_t *src, void *dst, size_t sz);
 #endif
 
 void Locale_Init(void);
@@ -2057,5 +2057,7 @@ void TitleSetup_Init(GameState* thisx);
 void TitleSetup_Destroy(GameState* thisx);
 void FileSelect_Init(GameState* thisx);
 void FileSelect_Destroy(GameState* thisx);
+
+void* memset(void* str, s32 c, size_t n);
 
 #endif

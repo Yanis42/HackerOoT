@@ -1,265 +1,264 @@
-/* lz4 decompression, inspired by libdragon */
+/* adapted from libdragon */
 
 #include "ultra64.h"
 #include "functions.h"
 
-// main data
-typedef struct lz4_header {
-    char magic[4];
-    u8 headerOriginalSize[4];
-    u8 headerCompressedSize[4];
-} lz4_header;
+/*** General ***/
+void wait_dma();
 
-#define OFFSET_MAGIC offsetof(lz4_header, magic)
-#define OFFSET_DEC_SIZE offsetof(lz4_header, headerOriginalSize)
-#define OFFSET_COMP_SIZE offsetof(lz4_header, headerCompressedSize)
-#define HEADER_SIZE ALIGN16(sizeof(lz4_header))
-#define DMA_ALIGN 8
-#define BUFFER_SIZE sizeof(lz4Data.dataBuffer)
+#define likely(x)   __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
+#define assert(cond, msg) ASSERT(cond, msg, __FILE__, __LINE__)
+#define DMARomToRam(src, dst, size) {                               \
+    assert(DmaMgr_DmaRomToRam(src, dst, size) != -1, "dma error");  \
+    wait_dma();                                                     \
+}
 
-#define MIN_MATCH_SIZE 4
-#define LITERALS_RUN_LEN 15
-#define MATCH_RUN_LEN 15
-#define likely(v) (v)
-#define unlikely(v) (v)
+typedef signed long ssize_t;
+typedef u8 uint8_t;
+typedef u16 uint16_t;
+typedef u64 uint64_t;
 
-#define LZ4ULTRA_DECOMPRESSOR_BUILD_LEN(__len)        \
-    {                                                 \
-        unsigned int byte;                            \
-        do {                                          \
-            if (unlikely(pInBlock >= pInBlockEnd))    \
-                return -1;                            \
-            /* if (dma_race) wait_dma(pInBlock+1); */ \
-            byte = (unsigned int)*pInBlock++;         \
-            __len += byte;                            \
-        } while (unlikely(byte == 255));              \
+/*** Ring Buffer ***/
+#define RING_BUFFER_SIZE (16 * 1024)
+
+typedef struct decoder_ringbuf {
+	uint8_t ringbuf[RING_BUFFER_SIZE];    ///< The ring buffer itself
+	unsigned int ringbuf_pos;                   ///< Current write position in the ring buffer
+} decoder_ringbuf;
+
+void __ringbuf_init(decoder_ringbuf* ringbuf) {
+    ringbuf->ringbuf_pos = 0;
+}
+
+inline void __ringbuf_writebyte(decoder_ringbuf *ringbuf, uint8_t byte) {
+    ringbuf->ringbuf[ringbuf->ringbuf_pos++] = byte;
+    ringbuf->ringbuf_pos &= (RING_BUFFER_SIZE - 1);
+}
+
+void __ringbuf_write(decoder_ringbuf* ringbuf, uint8_t* src, int count) {
+    while (count > 0) {
+        int n = MIN(count, (int)(RING_BUFFER_SIZE - ringbuf->ringbuf_pos));
+        memcpy(ringbuf->ringbuf + ringbuf->ringbuf_pos, src, n);
+        ringbuf->ringbuf_pos += n;
+        ringbuf->ringbuf_pos &= RING_BUFFER_SIZE - 1;
+        src += n;
+        count -= n;
     }
-
-typedef struct lz4_data {
-    lz4_header header;
-    u32 originalSize;
-    u32 compressedSize;
-    u8 headerBuffer[HEADER_SIZE];
-    uintptr_t romStart;
-    u8* dst;
-    size_t size;
-    u8 dataBuffer[1024]; // 1MB
-    u8* dataBufferEnd;
-} lz4_data;
-
-typedef struct lz4_state {
-    u8* source;
-    u8* destination;
-} lz4_state;
-
-static lz4_data lz4Data;
-static lz4_state state;
-static bool isDebug = true;
-
-u32 getSizeFromHeader(u8* sizePtr) {
-    return (sizePtr[0] << 24) | (sizePtr[1] << 16) | (sizePtr[2] << 8) | (sizePtr[3] << 0);
 }
 
-bool isMagicValid(char* magic) {
-    return magic[0] == 'L' && magic[1] == 'Z' && magic[2] == '4' && magic[3] == '0';
-}
+void __ringbuf_copy(decoder_ringbuf* ringbuf, int copy_offset, uint8_t* dst, int count) {
+    int ringbuf_copy_pos = (ringbuf->ringbuf_pos - copy_offset) & (RING_BUFFER_SIZE - 1);
+    int dst_pos = 0;
 
-void setHeaderData() {
-    if (isDebug) {
-        osSyncPrintf("ROM START: 0x%08X\n", lz4Data.romStart);
-        osSyncPrintf("DATA ADDR: 0x%08X\n", &lz4Data);
-    }
+    while (count > 0) {
+		int wn = count;
+        wn = wn < (int)(RING_BUFFER_SIZE - ringbuf_copy_pos)     ? wn : (int)(RING_BUFFER_SIZE - ringbuf_copy_pos);
+		wn = wn < (int)(RING_BUFFER_SIZE - ringbuf->ringbuf_pos) ? wn : (int)(RING_BUFFER_SIZE - ringbuf->ringbuf_pos);
+        count -= wn;
 
-    // loading header data
-    DmaMgr_DmaRomToRam(lz4Data.romStart, lz4Data.headerBuffer, sizeof(lz4Data.headerBuffer));
+        // Check if there's an overlap in the ring buffer between lz4_read and write pos, in which
+        // case we need to copy byte by byte.
+        if ((int)ringbuf->ringbuf_pos < ringbuf_copy_pos || 
+            (int)ringbuf->ringbuf_pos > ringbuf_copy_pos+7) {
+            while (wn >= 8) {
+                // Copy 8 bytes at at time, using a unaligned memory access (LDL/LDR/SDL/SDR)
+                typedef uint64_t u_uint64_t __attribute__((aligned(1)));
+                uint64_t value = *(u_uint64_t*)&ringbuf->ringbuf[ringbuf_copy_pos];
+                *(u_uint64_t*)&dst[dst_pos] = value;
+                *(u_uint64_t*)&ringbuf->ringbuf[ringbuf->ringbuf_pos] = value;
 
-    // get header data, prefix, original file size and compressed size
-    memcpy(lz4Data.header.magic, &lz4Data.headerBuffer[OFFSET_MAGIC], 4);
-    memcpy(lz4Data.header.headerOriginalSize, &lz4Data.headerBuffer[OFFSET_DEC_SIZE], 4);
-    memcpy(lz4Data.header.headerCompressedSize, &lz4Data.headerBuffer[OFFSET_COMP_SIZE], 4);
-
-    // get the real values
-    lz4Data.originalSize = getSizeFromHeader(lz4Data.header.headerOriginalSize);
-    lz4Data.compressedSize = getSizeFromHeader(lz4Data.header.headerCompressedSize);
-
-    if (isDebug) {
-        osSyncPrintf("magic: %s, originalSize: 0x%08X, compressedSize: 0x%08X\n", lz4Data.header.magic,
-                     lz4Data.originalSize, lz4Data.compressedSize);
-    }
-
-    // safety checks
-    ASSERT(isMagicValid(lz4Data.header.magic), "isMagicValid(magic)", __FILE__, __LINE__);
-    ASSERT(lz4Data.originalSize > 0, "originalSize > 0", __FILE__, __LINE__);
-    ASSERT(lz4Data.compressedSize > 0, "compressedSize > 0", __FILE__, __LINE__);
-    ASSERT(lz4Data.originalSize > lz4Data.compressedSize, "originalSize > compressedSize", __FILE__, __LINE__);
-
-    lz4Data.romStart += HEADER_SIZE;
-}
-
-/* block copy, with desired overlapping behavior */
-u8* copyBlock(u8* _src, u8* _dst, u32 n) {
-    u8* src = _src;
-    u8* dst = _dst;
-
-    do {
-        *dst++ = *src++;
-    } while (--n);
-
-    return dst;
-}
-
-u8* refill(u8* src) {
-    u32 offset;
-    u32 size;
-
-    /* intermediate buffer is not yet due for a refill */
-    if (src < lz4Data.dataBufferEnd - DMA_ALIGN) {
-        return src;
-    }
-
-    /* the number 8 is used throughout to ensure *
-     * dma transfers are always 8 byte aligned   */
-    offset = lz4Data.dataBufferEnd - src;
-    size = BUFFER_SIZE - DMA_ALIGN;
-
-    /* the last eight bytes wrap around */
-    copyBlock(lz4Data.dataBufferEnd - DMA_ALIGN, lz4Data.dataBuffer, DMA_ALIGN);
-
-    /* transfer data from rom */
-    DmaMgr_DmaRomToRam(lz4Data.romStart, lz4Data.dataBuffer, size);
-    lz4Data.romStart += size;
-
-    return lz4Data.dataBuffer + (DMA_ALIGN - offset);
-}
-
-/**
- * Decompress one data block
- *
- * @param pInBlock pointer to compressed data
- * @param nBlockSize size of compressed data, in bytes
- * @param pOutData pointer to output decompression buffer (previously decompressed bytes + room for decompressing this
- * block)
- * @param nBlockMaxSize total size of output decompression buffer, in bytes
- *
- * @return size of decompressed data in bytes, or -1 for error
- */
-s32 decompress_lz4_full_mem(u8* pInBlock, u32 nBlockSize, u8* pOutData, u32 nBlockMaxSize) {
-    const unsigned char* pInBlockEnd = pInBlock + nBlockSize;
-    unsigned char* pCurOutData = pOutData;
-    const unsigned char* pOutDataEnd = pCurOutData + nBlockMaxSize;
-    const unsigned char* pOutDataFastEnd = pOutDataEnd - 18;
-
-    //    if (dma_race) wait_dma(NULL);
-    while (likely(pInBlock < pInBlockEnd)) {
-        //   if (dma_race) wait_dma(pInBlock+1);
-        const unsigned int token = (unsigned int)*pInBlock++;
-        unsigned int nLiterals = ((token & 0xf0) >> 4);
-
-        if (nLiterals != LITERALS_RUN_LEN && pCurOutData <= pOutDataFastEnd && (pInBlock + 16) <= pInBlockEnd) {
-            //  if (dma_race) wait_dma(pInBlock+16);
-            memcpy(pCurOutData, pInBlock, 16);
-        } else {
-            if (likely(nLiterals == LITERALS_RUN_LEN))
-                LZ4ULTRA_DECOMPRESSOR_BUILD_LEN(nLiterals);
-
-            osSyncPrintf("saucisse 1\n");
-            if (unlikely((pInBlock + nLiterals) > pInBlockEnd))
-                return -1;
-            osSyncPrintf("saucisse 1 ok\n");
-            osSyncPrintf("saucisse 2\n");
-            if (unlikely((pCurOutData + nLiterals) > pOutDataEnd))
-                return -1;
-            osSyncPrintf("saucisse 2 ok\n");
-
-            //  if (dma_race) wait_dma(pInBlock+nLiterals);
-            memcpy(pCurOutData, pInBlock, nLiterals);
-        }
-
-        pInBlock += nLiterals;
-        pCurOutData += nLiterals;
-
-        if (likely((pInBlock + 2) <= pInBlockEnd)) {
-            unsigned int nMatchOffset;
-
-            //  if (dma_race) wait_dma(pInBlock+2);
-            nMatchOffset = (unsigned int)*pInBlock++;
-            nMatchOffset |= ((unsigned int)*pInBlock++) << 8;
-
-            unsigned int nMatchLen = (token & 0x0f);
-
-            nMatchLen += MIN_MATCH_SIZE;
-            if (nMatchLen != (MATCH_RUN_LEN + MIN_MATCH_SIZE) && nMatchOffset >= 8 && pCurOutData <= pOutDataFastEnd) {
-                const unsigned char* pSrc = pCurOutData - nMatchOffset;
-
-                osSyncPrintf("saucisse 3\n");
-                if (unlikely(pSrc < pOutData))
-                    return -1;
-                osSyncPrintf("saucisse 3 ok\n");
-
-                memcpy(pCurOutData, pSrc, 8);
-                memcpy(pCurOutData + 8, pSrc + 8, 8);
-                memcpy(pCurOutData + 16, pSrc + 16, 2);
-
-                pCurOutData += nMatchLen;
-            } else {
-                if (likely(nMatchLen == (MATCH_RUN_LEN + MIN_MATCH_SIZE)))
-                    LZ4ULTRA_DECOMPRESSOR_BUILD_LEN(nMatchLen);
-
-                osSyncPrintf("saucisse 4\n");
-                if (unlikely((pCurOutData + nMatchLen) > pOutDataEnd))
-                    return -1;
-                osSyncPrintf("saucisse 4 ok\n");
-                const unsigned char* pSrc = pCurOutData - nMatchOffset;
-                osSyncPrintf("saucisse 5\n");
-                if (unlikely(pSrc < pOutData))
-                    return -1;
-                osSyncPrintf("saucisse 5 ok\n");
-
-                if (nMatchOffset >= 16 && (pCurOutData + nMatchLen) <= pOutDataFastEnd) {
-                    const unsigned char* pCopySrc = pSrc;
-                    unsigned char* pCopyDst = pCurOutData;
-                    const unsigned char* pCopyEndDst = pCurOutData + nMatchLen;
-
-                    do {
-                        memcpy(pCopyDst, pCopySrc, 16);
-                        pCopySrc += 16;
-                        pCopyDst += 16;
-                    } while (pCopyDst < pCopyEndDst);
-
-                    pCurOutData += nMatchLen;
-                } else {
-                    while (nMatchLen--) {
-                        *pCurOutData++ = *pSrc++;
-                    }
-                }
+                ringbuf_copy_pos += 8;
+                ringbuf->ringbuf_pos += 8;
+                dst_pos += 8;
+                wn -= 8;
             }
         }
 
-        state.source = refill(state.source);
-    }
+        // Finish copying the remaining bytes
+        while (wn > 0) {
+            uint8_t value = ringbuf->ringbuf[ringbuf_copy_pos];
+            dst[dst_pos] = value;
+            ringbuf->ringbuf[ringbuf->ringbuf_pos] = value;
 
-    return (s32)(pCurOutData - pOutData);
+            ringbuf_copy_pos += 1;
+            ringbuf->ringbuf_pos += 1;
+            dst_pos += 1;
+            wn -= 1;
+        }
+
+        ringbuf_copy_pos %= RING_BUFFER_SIZE;
+        ringbuf->ringbuf_pos %= RING_BUFFER_SIZE;
+    }
 }
 
-void LZ4_Decompress(uintptr_t romStart, u8* dst, size_t size) {
-    s32 decompressedSize = -1;
+/*** LZ4 Decoder ***/
+#define LZ4_BUFFER_SIZE 128
+#define LZ4_LITERALS_RUN_LEN 15
+#define LZ4_MATCH_RUN_LEN 15
+#define LZ4_MIN_MATCH_SIZE 4
+#define LZ4_EOF 0
+#define HEADER_SIZE 8
 
-    lz4Data.romStart = romStart;
-    lz4Data.dst = dst;
-    lz4Data.size = size;
-    lz4Data.dataBufferEnd = lz4Data.dataBuffer + BUFFER_SIZE;
-    setHeaderData();
-    state.source = lz4Data.dataBufferEnd;
+typedef struct decoder_faststate {
+    uint8_t token;
+    int litLen;
+    int matchLen;
+    int matchOffset;
+    int state;
+} decoder_faststate;
 
-    if (isDebug) {
-        osSyncPrintf("STATE ADDR: 0x%08X\n", &state);
-        osSyncPrintf("BUFFER ADDR: 0x%08X\n", lz4Data.dataBuffer);
+typedef struct decoder {
+    uint8_t buf[LZ4_BUFFER_SIZE] __attribute__((aligned(8)));
+    uint8_t* src;
+    uint8_t srcEnd;
+    int bufIndex;
+    int bufSize;
+    bool isEOF;
+    decoder_faststate fastState;
+    decoder_ringbuf ringbuf;
+} decoder;
+
+enum decState {
+    STATE_READ_TOKEN,
+    STATE_LITERALS,
+    STATE_MATCH,
+    STATE_MAX
+};
+
+void wait_dma() {
+    s32 status = IO_READ(PI_STATUS_REG);
+    while (status & (PI_STATUS_DMA_BUSY | PI_STATUS_IO_BUSY)) {
+        status = IO_READ(PI_STATUS_REG);
+    }
+}
+
+size_t lz4_fread(decoder* lz4) {
+    size_t i;
+
+    if (*lz4->src == lz4->srcEnd)
+        return LZ4_EOF;
+
+    i = (*lz4->src + LZ4_BUFFER_SIZE) > lz4->srcEnd ? (lz4->srcEnd - *lz4->src) : LZ4_BUFFER_SIZE;
+    DMARomToRam(*lz4->src, lz4->buf, i);
+    *lz4->src += i;
+    assert(*lz4->src <= lz4->srcEnd, "lz4->src <= lz4->srcEnd");
+    return i;
+}
+
+static void lz4_refill(decoder* lz4) {
+    lz4->bufSize = lz4_fread(lz4);
+    lz4->bufIndex = 0;
+    lz4->isEOF = (lz4->bufSize == LZ4_EOF);
+}
+
+static uint8_t lz4_readbyte(decoder* lz4) {
+    if (lz4->bufIndex >= lz4->bufSize)
+        lz4_refill(lz4);
+    return lz4->buf[lz4->bufIndex++];
+}
+
+static void lz4_read(decoder* lz4, void* buf, size_t len) {
+    while (!lz4->isEOF && len > 0) {
+        int n = MIN(len, (size_t)(lz4->bufSize - lz4->bufIndex));
+        memcpy(buf, lz4->buf + lz4->bufIndex, n);
+        buf += n;
+        len -= n;
+        lz4->bufIndex += n;
+        if (lz4->bufIndex >= lz4->bufSize)
+            lz4_refill(lz4);
+    }
+}
+
+void lz4_init(decoder* lz4, uint8_t* src, size_t srcSize) {
+    lz4->src = src;
+    lz4->srcEnd = *src + srcSize;
+    lz4->isEOF = false;
+    lz4->bufIndex = 0;
+    lz4->bufSize = 0;
+
+    memset(&lz4->fastState, 0, sizeof(lz4->fastState));
+    __ringbuf_init(&lz4->ringbuf);
+}
+
+ssize_t lz4_decompress_main(decoder* lz4, void* buf, size_t len) {
+    decoder_faststate st = lz4->fastState;
+    void* buf_orig = buf;
+    int n;
+
+	while (!lz4->isEOF && len > 0) {
+        switch (st.state) {
+            case STATE_READ_TOKEN:
+                st.token = lz4_readbyte(lz4);
+                st.litLen = ((st.token & 0xF0) >> 4);
+                if(unlikely(st.litLen == LZ4_LITERALS_RUN_LEN)) {
+                    uint8_t byte;
+                    do {
+                        byte = lz4_readbyte(lz4);
+                        st.litLen += byte;
+                    } while (unlikely(byte == 255) && !lz4->isEOF);
+                }
+                st.state = STATE_LITERALS;
+                FALLTHROUGH;
+            case STATE_LITERALS:
+                n = MIN(st.litLen, (int)len);
+                lz4_read(lz4, buf, n);
+                __ringbuf_write(&lz4->ringbuf, buf, n);
+                buf += n;
+                len -= n;
+                st.litLen -= n;
+                if (st.litLen) {
+                    break;
+                }
+                st.matchOffset = lz4_readbyte(lz4);
+                st.matchOffset |= ((uint16_t)lz4_readbyte(lz4)) << 8;
+                st.matchLen = (st.token & 0x0F);
+                if(unlikely(st.matchLen == LZ4_MATCH_RUN_LEN)) {
+                    uint8_t byte;
+                    do {
+                        byte = lz4_readbyte(lz4);
+                        st.matchLen += byte;
+                    } while (unlikely(byte == 255) && !lz4->isEOF);
+                }
+                st.matchLen += LZ4_MIN_MATCH_SIZE;
+                st.state = STATE_MATCH;
+                FALLTHROUGH;
+            case STATE_MATCH:
+                n = MIN(st.matchLen, (int)len);
+                __ringbuf_copy(&lz4->ringbuf, st.matchOffset, buf, n);
+                buf += n;
+                len -= n;
+                st.matchLen -= n;
+                if (st.matchLen) {
+                    break;
+                }
+                st.state = STATE_READ_TOKEN;
+        }
     }
 
-    state.source = refill(state.source); // initial refill
-    decompressedSize = decompress_lz4_full_mem(state.source, lz4Data.compressedSize, lz4Data.dst, lz4Data.originalSize);
-    osSyncPrintf("decompressedSize: %i\n", decompressedSize);
+    lz4->fastState = st;
+    return buf - buf_orig;
+}
 
-    ASSERT(decompressedSize > 0, "decompressedSize > 0", __FILE__, __LINE__);
-    dst = lz4Data.dst;
+/*** Main ***/
+static decoder lz4;
+
+unsigned int getSizeFromHeader(uintptr_t src) {
+    uintptr_t sizePtr[4];
+    DMARomToRam(src, sizePtr, sizeof(sizePtr));
+    return (sizePtr[0] << 24) | (sizePtr[1] << 16) | (sizePtr[2] << 8) | (sizePtr[3] << 0);
+}
+
+size_t LZ4_Decompress(uintptr_t *src, void *dst, size_t sz) {
+    uint8_t* _src = (uint8_t*)src;
+    size_t decSize = getSizeFromHeader(*_src + 4);
+
+    *_src += HEADER_SIZE;
+    sz -= HEADER_SIZE;
+
+    lz4_init(&lz4, _src, sz);
+    ssize_t result = lz4_decompress_main(&lz4, dst, sz);
+    assert(result == (ssize_t)sz, "result == (ssize_t)sz");
+
+    return decSize;
 }

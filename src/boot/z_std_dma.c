@@ -334,6 +334,10 @@ void DmaMgr_ProcessRequest(DmaRequest* req) {
 
             if (1) {} // Necessary to match
 
+            osSyncPrintf("\nCURRENT FILE: %s\n", filename);
+            osSyncPrintf("ROMSTART:%08X RAM:%08X ROMSIZE:%08X\n", iter->romStart, ram, iter->romEnd - iter->romStart);
+            osSyncPrintf("COMPRESSED: %s\n", iter->romEnd == 0 ? "False" : "True");
+
             if (iter->romEnd == 0) {
                 // romEnd of 0 indicates that the file is uncompressed. Files that are stored uncompressed can have
                 // only part of their content loaded into RAM, so DMA only the requested region.
@@ -353,6 +357,7 @@ void DmaMgr_ProcessRequest(DmaRequest* req) {
                     osSyncPrintf("No Press ROM:%08X RAM:%08X SIZE:%08X\n", vrom, ram, size);
                 }
             } else {
+                size_t result;
                 // File is compressed. Files that are stored compressed must be loaded into RAM all at once.
 
                 romStart = iter->romStart;
@@ -384,7 +389,8 @@ void DmaMgr_ProcessRequest(DmaRequest* req) {
 #elif defined (COMPRESSION_APLIB)
                 APLIB_Decompress(romStart, ram, romSize);
 #elif defined (COMPRESSION_LZ4)
-                LZ4_Decompress(romStart, ram, romSize);
+                result = LZ4_Decompress(&romStart, ram, romSize);
+                osSyncPrintf("LZ4 DONE!\n");
 #endif
                 osSetThreadPri(NULL, THREAD_PRI_DMAMGR);
                 found = true;
