@@ -1,5 +1,6 @@
 #include "global.h"
 #include "terminal.h"
+#include "../rdb/rdb.h"
 
 void Overlay_LoadGameState(GameStateOverlay* overlayEntry) {
     if (overlayEntry->loadedRamAddr != NULL) {
@@ -17,6 +18,8 @@ void Overlay_LoadGameState(GameStateOverlay* overlayEntry) {
             osSyncPrintf("ロードに失敗しました\n"); // "Loading failed"
             return;
         }
+
+        rdb_lib_changed(overlayEntry, rdb_gamestate_lib);
 
         osSyncPrintf(VT_FGCOL(GREEN));
         osSyncPrintf("OVL(d):Seg:%08x-%08x Ram:%08x-%08x Off:%08x %s\n", overlayEntry->vramStart, overlayEntry->vramEnd,
@@ -106,6 +109,7 @@ void Overlay_FreeGameState(GameStateOverlay* overlayEntry) {
 
             SystemArena_FreeDebug(overlayEntry->loadedRamAddr, "../z_DLF.c", 149);
             overlayEntry->loadedRamAddr = NULL;
+            rdb_lib_changed(overlayEntry, rdb_gamestate_lib);
         }
     }
 }
