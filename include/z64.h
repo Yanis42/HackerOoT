@@ -34,6 +34,7 @@
 #include "z64skybox.h"
 #include "z64sram.h"
 #include "z64view.h"
+#include "z64path.h"
 #include "alignment.h"
 #include "seqcmd.h"
 #include "sequence.h"

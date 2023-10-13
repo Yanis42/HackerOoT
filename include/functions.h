@@ -1000,9 +1000,6 @@ void Interface_SetSubTimerToFinalSecond(PlayState* play);
 void Interface_SetTimer(s16 seconds);
 void Interface_Draw(PlayState* play);
 void Interface_Update(PlayState* play);
-Path* Path_GetByIndex(PlayState* play, s16 index, s16 max);
-f32 Path_OrientAndGetDistSq(Actor* actor, Path* path, s16 waypoint, s16* yaw);
-void Path_CopyLastPoint(Path* path, Vec3f* dest);
 
 #ifdef ENABLE_FRAMERATE_OPTIONS
 void FrameAdvance_Init(FrameAdvanceContext* frameAdvCtx);
