@@ -437,10 +437,6 @@ void Graph_ThreadEntry(void* arg0) {
     osSyncPrintf("グラフィックスレッド実行開始\n"); // "Start graphic thread execution"
     Graph_Init(&gfxCtx);
 
-#ifdef ENABLE_WIDESCREEN
-    gIsUsingWidescreen = true;
-#endif
-
     while (nextOvl != NULL) {
         ovl = nextOvl;
         Overlay_LoadGameState(ovl);

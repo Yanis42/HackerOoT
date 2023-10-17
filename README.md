@@ -1,3 +1,11 @@
+# F3DEX3
+
+This is an experimental microcode to replace the default one used by Ocarina of Time. You can find it [here](https://github.com/sauraen/f3dex2/tree/RewriteVtxIdeas2).
+
+Currently you will need to build it manually, but ideally it would be included in this repo.
+
+To enable or disable this, simply comment/uncomment the ``ENABLE_F3DEX3`` define inside ``config_game.h``
+
 # Hacker Zelda: Ocarina of Time (HackerOoT)
 
 This project, based on the [Zelda: Ocarina of Time decompilation project](https://github.com/zeldaret/oot/), aims to be an easy-to-use base to make Zelda: Ocarina of Time mods. **It is not producing a PC port.**

@@ -555,7 +555,11 @@ beginseg
     include "build/src/code/z_construct.o"
     include "build/data/audio_tables.rodata.o"
     include "build/data/rsp.text.o"
+#ifdef ENABLE_F3DEX3
+    include "build/data/rsp.f3dex3.rodata.o"
+#else
     include "build/data/rsp.rodata.o"
+#endif
 endseg
 
 beginseg

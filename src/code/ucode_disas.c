@@ -1,5 +1,7 @@
 #include "global.h"
 
+#include "config.h"
+
 typedef struct {
     /* 0x00 */ u32 value;
     /* 0x04 */ const char* name;
@@ -889,7 +891,7 @@ void UCodeDisas_Disassemble(UCodeDisas* this, Gfx* ptr) {
                                 this->tri1Cnt++;
                                 this->pipeSyncRequired = true;
                             } break;
-
+#ifndef ENABLE_F3DEX3
                             case G_LINE3D: {
                                 if (curGfx->line.wd == 0) {
                                     DISAS_LOG("gsSPLine3D(%d, %d),", curGfx->line.v0, curGfx->line.v1);
@@ -901,7 +903,7 @@ void UCodeDisas_Disassemble(UCodeDisas* this, Gfx* ptr) {
                                 this->lineCnt++;
                                 this->pipeSyncRequired = true;
                             } break;
-
+#endif
                             case G_TRI2: {
                                 Gtri2 tri2 = ptr->tri2;
                                 u32 v0, v1, v2;
@@ -1014,13 +1016,13 @@ void UCodeDisas_Disassemble(UCodeDisas* this, Gfx* ptr) {
                                         DISAS_LOG("gsSPSegment(%d, 0x%08x),", movewd.offset / 4, movewd.data);
                                         this->segments[movewd.offset / 4] = movewd.data & 0xFFFFFF;
                                     } break;
-
+#ifndef ENABLE_F3DEX3
                                     case G_MW_CLIP: {
                                         DISAS_LOG("gsSPClipRatio(FRUSTRATIO_%d), ",
                                                   (movewd.data != 0) ? movewd.data : -movewd.data);
                                         ptr += 4 - 1;
                                     } break;
-
+#endif
                                     case G_MW_NUMLIGHT: {
                                         DISAS_LOG("gsSPNumLights(%d), ", movewd.data / 24);
                                     } break;
@@ -1057,12 +1059,11 @@ void UCodeDisas_Disassemble(UCodeDisas* this, Gfx* ptr) {
                                         DISAS_LOG("vtrans=[%d %d %d %d] ", vp->vtrans[0], vp->vtrans[1], vp->vtrans[2],
                                                   vp->vtrans[3]);
                                     } break;
-
+#ifndef ENABLE_F3DEX3
                                     case G_MV_MATRIX: {
                                         DISAS_LOG("gsSPForceMatrix(0x%08x),", movemem.data);
                                         ptr += 2 - 1;
                                     } break;
-
                                     case G_MV_LIGHT: {
                                         switch (movemem.offset * 8) {
                                             case G_MVO_LOOKATX: {
@@ -1079,7 +1080,7 @@ void UCodeDisas_Disassemble(UCodeDisas* this, Gfx* ptr) {
                                             } break;
                                         }
                                     } break;
-
+#endif
                                     default: {
                                         DISAS_LOG("gsMoveMem(0x%08x, %d, %d, %d),", movemem.data,
                                                   ((movemem.size >> 3) + 1) * 8, movemem.index, movemem.offset * 8);

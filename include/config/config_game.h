@@ -94,4 +94,10 @@
 */
 // #define MM_N64_BOOT_LOGO
 
+/**
+ * Enable the new F3DEX3 microcode (made by Sauraen)
+ * Note: experimental state
+*/
+#define ENABLE_F3DEX3
+
 #endif

@@ -1,7 +1,15 @@
 #include "global.h"
 #include "assets/objects/gameplay_keep/gameplay_keep.h"
 
+#include "config.h"
+
 #define LIGHTS_BUFFER_SIZE 32
+
+#ifdef ENABLE_F3DEX3
+#define LIGHTS_SLOTS 9
+#else
+#define LIGHTS_SLOTS 7
+#endif
 
 typedef struct {
     /* 0x000 */ s32 numOccupied;
@@ -61,6 +69,12 @@ void Lights_Draw(Lights* lights, GraphicsContext* gfxCtx) {
 
     OPEN_DISPS(gfxCtx);
 
+#ifdef ENABLE_F3DEX3
+    for (i = 0; i < ARRAY_COUNT(lights->l.l); i++) {
+        lights->l.l[i].l.type = 0;
+    }
+#endif
+
     gSPNumLights(POLY_OPA_DISP++, lights->numLights);
     gSPNumLights(POLY_XLU_DISP++, lights->numLights);
 
@@ -68,20 +82,30 @@ void Lights_Draw(Lights* lights, GraphicsContext* gfxCtx) {
     light = &lights->l.l[0];
 
     while (i < lights->numLights) {
+// #ifdef ENABLE_F3DEX3 // TODO: fix this
+        // gSPSetLights(POLY_OPA_DISP++, ++i, lights);
+        // gSPSetLights(POLY_XLU_DISP++, i, lights);
+// #else
         gSPLight(POLY_OPA_DISP++, light, ++i);
         gSPLight(POLY_XLU_DISP++, light, i);
         light++;
+// #endif
     }
 
+#ifdef ENABLE_F3DEX3
+    gSPAmbient(POLY_OPA_DISP++, &lights->l.a, ++i);
+    gSPAmbient(POLY_XLU_DISP++, &lights->l.a, i);
+#else
     // ambient light is total number of lights + 1
     gSPLight(POLY_OPA_DISP++, &lights->l.a, ++i);
     gSPLight(POLY_XLU_DISP++, &lights->l.a, i);
+#endif
 
     CLOSE_DISPS(gfxCtx);
 }
 
 Light* Lights_FindSlot(Lights* lights) {
-    if (lights->numLights >= 7) {
+    if (lights->numLights >= LIGHTS_SLOTS) {
         return NULL;
     } else {
         return &lights->l.l[lights->numLights++];
@@ -111,7 +135,9 @@ void Lights_BindPoint(Lights* lights, LightParams* params, Vec3f* vec) {
                 if (1) {}
                 scale = posDiff / scale;
                 scale = 1 - SQ(scale);
-
+#ifdef ENABLE_F3DEX3
+                light->l.type = 0;
+#endif
                 light->l.col[0] = light->l.colc[0] = params->point.color[0] * scale;
                 light->l.col[1] = light->l.colc[1] = params->point.color[1] * scale;
                 light->l.col[2] = light->l.colc[2] = params->point.color[2] * scale;
@@ -130,6 +156,9 @@ void Lights_BindDirectional(Lights* lights, LightParams* params, Vec3f* vec) {
     Light* light = Lights_FindSlot(lights);
 
     if (light != NULL) {
+#ifdef ENABLE_F3DEX3
+        light->l.type = 0;
+#endif
         light->l.col[0] = light->l.colc[0] = params->dir.color[0];
         light->l.col[1] = light->l.colc[1] = params->dir.color[1];
         light->l.col[2] = light->l.colc[2] = params->dir.color[2];
@@ -281,6 +310,12 @@ Lights* Lights_NewAndDraw(GraphicsContext* gfxCtx, u8 ambientR, u8 ambientG, u8 
 
     lights = Graph_Alloc(gfxCtx, sizeof(Lights));
 
+#ifdef ENABLE_F3DEX3
+    for (i = 0; i < ARRAY_COUNT(lights->l.l); i++) {
+        lights->l.l[i].l.type = 0;
+    }
+#endif
+
     lights->l.a.l.col[0] = lights->l.a.l.colc[0] = ambientR;
     lights->l.a.l.col[1] = lights->l.a.l.colc[1] = ambientG;
     lights->l.a.l.col[2] = lights->l.a.l.colc[2] = ambientB;
@@ -302,8 +337,15 @@ Lights* Lights_NewAndDraw(GraphicsContext* gfxCtx, u8 ambientR, u8 ambientG, u8 
 
 Lights* Lights_New(GraphicsContext* gfxCtx, u8 ambientR, u8 ambientG, u8 ambientB) {
     Lights* lights;
+    s32 i;
 
     lights = Graph_Alloc(gfxCtx, sizeof(Lights));
+
+#ifdef ENABLE_F3DEX3
+    for (i = 0; i < ARRAY_COUNT(lights->l.l); i++) {
+        lights->l.l[i].l.type = 0;
+    }
+#endif
 
     lights->l.a.l.col[0] = lights->l.a.l.colc[0] = ambientR;
     lights->l.a.l.col[1] = lights->l.a.l.colc[1] = ambientG;
