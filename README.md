@@ -1,10 +1,15 @@
 # F3DEX3
 
-This is an experimental microcode to replace the default one used by Ocarina of Time. You can find it [here](https://github.com/sauraen/f3dex2/tree/RewriteVtxIdeas2).
+This is an experimental microcode to replace the default one used by Ocarina of Time. You can find it [here](https://github.com/HackerN64/F3DEX3).
 
-Currently you will need to build it manually, but ideally it would be included in this repo.
+## How to use
 
-To enable or disable this, simply comment/uncomment the ``ENABLE_F3DEX3`` define inside ``config_game.h``
+1. You will need to build [armips](https://github.com/Kingcom/armips) from source since there's no package for Linux. Make sure to move the armips build to a ``/opt/armips/`` folder.
+2. Clone or download the [F3DEX3](https://github.com/HackerN64/F3DEX3) repository
+3. Unzip if not cloned then move to the F3DEX3 folder 
+4. Run ``make ARMIPS=/opt/armips/armips``
+5. Copy and paste the .code and .data files from ``F3DEX3/build/F3DEX3_BrW/`` to ``HackerOoT/data/F3DEX3/``, you don't need to rename those files.
+6. That's it, now make sure to have ``ENABLE_F3DEX3`` enabled in ``include/config/config_game.h`` and build this repo.
 
 # Hacker Zelda: Ocarina of Time (HackerOoT)
 

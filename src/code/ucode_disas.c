@@ -1036,11 +1036,11 @@ void UCodeDisas_Disassemble(UCodeDisas* this, Gfx* ptr) {
                                     case G_MW_FOG: {
                                         DISAS_LOG("gsSPFogFactor(%d, %d),", movewd.data >> 16, movewd.data & 0xFFFF);
                                     } break;
-
+#ifndef ENABLE_F3DEX3
                                     case G_MW_PERSPNORM: {
                                         DISAS_LOG("gsSPPerspNormalize(%d),", movewd.data);
                                     } break;
-
+#endif
                                     default: {
                                         DISAS_LOG("gsMoveWd(%d, %d, %d), ", movewd.index, movewd.offset, movewd.data);
                                     } break;

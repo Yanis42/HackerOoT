@@ -15,6 +15,12 @@ void ConsoleLogo_PrintBuildInfo(Gfx** gfxP) {
     Gfx* gfx;
     GfxPrint* printer;
 
+#ifdef ENABLE_F3DEX3
+    char* isF3DEX3 = "Yes";
+#else
+    char* isF3DEX3 = "No";
+#endif
+
     gfx = *gfxP;
     gfx = Gfx_SetupDL_28(gfx);
     printer = alloca(sizeof(GfxPrint));
@@ -34,6 +40,9 @@ void ConsoleLogo_PrintBuildInfo(Gfx** gfxP) {
 
     GfxPrint_SetPos(printer, WIDE_MULT(7, WIDE_GET_16_9), 25);
     GfxPrint_Printf(printer, "[Build Option:%s]", gBuildMakeOption);
+
+    GfxPrint_SetPos(printer, WIDE_MULT(7, WIDE_GET_16_9), 27);
+    GfxPrint_Printf(printer, "[F3DEX3:%s]", isF3DEX3);
 
     gfx = GfxPrint_Close(printer);
     GfxPrint_Destroy(printer);

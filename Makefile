@@ -280,6 +280,8 @@ build/baserom/%.o: baserom/%
 build/data/%.o: data/%.s
 	$(AS) $(ASFLAGS) $< -o $@
 
+build/data/rsp.f3dex3.rodata.o: data/F3DEX3/F3DEX3_BrW.code data/F3DEX3/F3DEX3_BrW.data
+
 build/assets/text/%.enc.h: assets/text/%.h assets/text/charmap.txt
 	python3 tools/msgenc.py assets/text/charmap.txt $< $@
 
