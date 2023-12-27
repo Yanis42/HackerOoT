@@ -14,11 +14,11 @@ glabel aspMainDataStart
 glabel aspMainDataEnd   
 
 glabel gspF3DZEX2_NoN_PosLight_fifoTextStart
-    .incbin "data/F3DEX3/F3DEX3.code"
+    .incbin "data/F3DEX3/F3DEX3_BrW.code"
 glabel gspF3DZEX2_NoN_PosLight_fifoTextEnd  
 
 glabel gspF3DZEX2_NoN_PosLight_fifoDataStart
-    .incbin "data/F3DEX3/F3DEX3.data"
+    .incbin "data/F3DEX3/F3DEX3_BrW.data"
     .balign 16
 glabel gspF3DZEX2_NoN_PosLight_fifoDataEnd  
 

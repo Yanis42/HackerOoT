@@ -8,9 +8,15 @@
 #define F3DEX_GBI_2 1
 #define F3DEX_GBI_3 1
 
-
-/* Private macro to wrap other macros in do {...} while (0) */
+#ifdef REQUIRE_SEMICOLONS_AFTER_GBI_COMMANDS
+/* OoT style, semicolons required after using macros, cleaner code. If modding
+SM64, will have to fix a few places the codebase omits the semicolons. */
 #define _DW(macro) do {macro} while (0)
+#else
+/* SM64 style, semicolons optional, uglier code, will produce tens of thousands
+of warnings if you use -Wpedantic. */
+#define _DW(macro) macro
+#endif
 
 /*
  * The following commands are the "generated" RDP commands; the user
@@ -36,8 +42,8 @@
  * GBI commands in order
  */
 /*#define G_SPECIAL_3       0xD3  no-op in F3DEX2 */
-#define G_RETURNNONEVISIBLE 0xD4 /* = G_SPECIAL_2, no-op in F3DEX2 */
-#define G_BOUNDINGVERTS     0xD5 /* = G_SPECIAL_1, triggered MVP recalculation, not supported in F3DEX3 */
+/*#define G_SPECIAL_2       0xD4  no-op in F3DEX2 */
+/*#define G_SPECIAL_1       0xD5  triggered MVP recalculation, not supported in F3DEX3 */
 #define G_DMA_IO            0xD6
 #define G_TEXTURE           0xD7
 #define G_POPMTX            0xD8
@@ -88,10 +94,9 @@
 #define G_TRI1              0x05
 #define G_TRI2              0x06
 #define G_QUAD              0x07
-#define G_POPBRANCHCALL     0x08 /* = G_LINE3D was a no-op in F3DEX2, has been removed */
-#define G_TRISTRIP          0x09
-#define G_TRIFAN            0x0A
-#define G_LIGHTTORDP        0x0B
+#define G_TRISTRIP          0x08 /* = G_LINE3D was a no-op in F3DEX2, has been removed */
+#define G_TRIFAN            0x09
+#define G_LIGHTTORDP        0x0A
 
 /* names differ between F3DEX2 and F3DZEX */
 #define G_BRANCH_Z G_BRANCH_WZ
@@ -119,17 +124,20 @@
  * any other F3DEX3 effects which use shade alpha.
  */
 #define G_ZBUFFER               0x00000001
-#define G_TEXTURE_ENABLE        0x00000000  /* actually 2, but do not set or may hang */
+#define G_TEXTURE_ENABLE        0x00000000  /* actually 2, but controlled by SPTexture */
 #define G_SHADE                 0x00000004
+#define G_AMBOCCLUSION          0x00000040
+#define G_ATTROFFSET_Z_ENABLE   0x00000080
+#define G_ATTROFFSET_ST_ENABLE  0x00000100
+#define G_CULL_NEITHER          0x00000000
 #define G_CULL_FRONT            0x00000200
 #define G_CULL_BACK             0x00000400
-#define G_CULL_BOTH             0x00000600
-#define G_ATTROFFSET_ST_ENABLE  0x00000100
-#define G_ATTROFFSET_Z_ENABLE   0x00000800
-#define G_PACKED_NORMALS        0x00001000
-#define G_LIGHTTOALPHA          0x00002000
-#define G_AMBOCCLUSION          0x00004000
-#define G_FRESNEL               0x00008000
+#define G_CULL_BOTH             0x00000600  /* useless but supported */
+#define G_PACKED_NORMALS        0x00000800
+#define G_LIGHTTOALPHA          0x00001000
+#define G_LIGHTING_SPECULAR     0x00002000
+#define G_FRESNEL_COLOR         0x00004000
+#define G_FRESNEL_ALPHA         0x00008000
 #define G_FOG                   0x00010000
 #define G_LIGHTING              0x00020000
 #define G_TEXTURE_GEN           0x00040000
@@ -161,10 +169,6 @@
 #define G_ALPHA_COMPARE_CULL_BELOW    1
 #define G_ALPHA_COMPARE_CULL_ABOVE   -1
 
-/* See SPBoundingVerts */
-#define G_BOUNDINGVERTS_REPLACE  0
-#define G_BOUNDINGVERTS_PUSH    -1
-
 /*
  * MOVEMEM indices
  * Each of these indexes an entry in a dmem table which points to an arbitrarily
@@ -188,11 +192,14 @@ longer a multiple of 8 (DMA word). This was not used in any command anyway. */
  */
 #define G_MW_FX             0x00 /* replaces G_MW_MATRIX which is no longer supported */
 #define G_MW_NUMLIGHT       0x02
-#define G_MW_PERSPNORM      0x04 /* replaces G_MW_CLIP which is no longer supported */
+/* nothing for 0x04; G_MW_CLIP is no longer supported */
 #define G_MW_SEGMENT        0x06
 #define G_MW_FOG            0x08
 #define G_MW_LIGHTCOL       0x0A
 /* G_MW_FORCEMTX is no longer supported because there is no MVP matrix in F3DEX3. */
+/* G_MW_PERSPNORM is removed; perspective norm is now set via G_MW_FX. */
+
+#define G_MW_HALFWORD_FLAG 0x8000 /* indicates store 2 bytes instead of 4 */
 
 /*
  * These are offsets from the address in the dmem table
@@ -244,13 +251,17 @@ longer a multiple of 8 (DMA word). This was not used in any command anyway. */
 #define G_MWO_POINT_XYSCREEN     0x18 /* not recommended to use, won't work if */
 #define G_MWO_POINT_ZSCREEN      0x1C /* the tri gets clipped */
 
-#define G_MWO_AMB_OCCLUSION      0x00
-#define G_MWO_FRESNEL            0x04
-#define G_MWO_ATTR_OFFSET_ST     0x08
-#define G_MWO_ATTR_OFFSET_Z      0x0C
-#define G_MWO_NORMALS_MODE       0x0E
-#define G_MWO_ALPHA_COMPARE_CULL 0x12
-#define G_MWO_BOUNDING_FLAGS     0x18
+#define G_MWO_AO_AMBIENT         0x00
+#define G_MWO_AO_DIRECTIONAL     0x02
+#define G_MWO_AO_POINT           0x04
+#define G_MWO_PERSPNORM          0x06
+#define G_MWO_FRESNEL_SCALE      0x0C
+#define G_MWO_FRESNEL_OFFSET     0x0E
+#define G_MWO_ATTR_OFFSET_S      0x10
+#define G_MWO_ATTR_OFFSET_T      0x12
+#define G_MWO_ATTR_OFFSET_Z      0x14
+#define G_MWO_ALPHA_COMPARE_CULL 0x16
+#define G_MWO_NORMALS_MODE       0x18
 
 /*
  * RDP command argument defines
@@ -369,49 +380,115 @@ longer a multiple of 8 (DMA word). This was not used in any command anyway. */
 #define G_ACMUX_0               7
 
 /* typical CC cycle 1 modes */
-#define G_CC_PRIMITIVE              0, 0, 0, PRIMITIVE, 0, 0, 0, PRIMITIVE
-#define G_CC_SHADE                  0, 0, 0, SHADE, 0, 0, 0, SHADE
-#define G_CC_MODULATEI              TEXEL0, 0, SHADE, 0, 0, 0, 0, SHADE
-#define G_CC_MODULATEIA             TEXEL0, 0, SHADE, 0, TEXEL0, 0, SHADE, 0
-#define G_CC_MODULATEIDECALA        TEXEL0, 0, SHADE, 0, 0, 0, 0, TEXEL0
-#define G_CC_MODULATERGB            G_CC_MODULATEI
-#define G_CC_MODULATERGBA           G_CC_MODULATEIA
-#define G_CC_MODULATERGBDECALA      G_CC_MODULATEIDECALA
-#define G_CC_MODULATEI_PRIM         TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, PRIMITIVE
-#define G_CC_MODULATEIA_PRIM        TEXEL0, 0, PRIMITIVE, 0, TEXEL0, 0, PRIMITIVE, 0
-#define G_CC_MODULATEIDECALA_PRIM   TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, TEXEL0
-#define G_CC_MODULATERGB_PRIM       G_CC_MODULATEI_PRIM
-#define G_CC_MODULATERGBA_PRIM      G_CC_MODULATEIA_PRIM
-#define G_CC_MODULATERGBDECALA_PRIM G_CC_MODULATEIDECALA_PRIM
-#define G_CC_DECALRGB               0, 0, 0, TEXEL0, 0, 0, 0, SHADE
-#define G_CC_DECALRGBA              0, 0, 0, TEXEL0, 0, 0, 0, TEXEL0
-#define G_CC_BLENDI                 ENVIRONMENT, SHADE, TEXEL0, SHADE, 0, 0, 0, SHADE
-#define G_CC_BLENDIA                ENVIRONMENT, SHADE, TEXEL0, SHADE, TEXEL0, 0, SHADE, 0
-#define G_CC_BLENDIDECALA           ENVIRONMENT, SHADE, TEXEL0, SHADE, 0, 0, 0, TEXEL0
-#define G_CC_BLENDRGBA              TEXEL0, SHADE, TEXEL0_ALPHA, SHADE, 0, 0, 0, SHADE
-#define G_CC_BLENDRGBDECALA         TEXEL0, SHADE, TEXEL0_ALPHA, SHADE, 0, 0, 0, TEXEL0
-#define G_CC_ADDRGB                 1, 0, TEXEL0, SHADE, 0, 0, 0, SHADE
-#define G_CC_ADDRGBDECALA           1, 0, TEXEL0, SHADE, 0, 0, 0, TEXEL0
+
+/* typical CC cycle 1 modes */
+#define	G_CC_PRIMITIVE              0, 0, 0, PRIMITIVE, 0, 0, 0, PRIMITIVE
+#define	G_CC_SHADE                  0, 0, 0, SHADE, 0, 0, 0, SHADE
+
+#define	G_CC_MODULATEI              TEXEL0, 0, SHADE, 0, 0, 0, 0, SHADE
+#define	G_CC_MODULATEIDECALA        TEXEL0, 0, SHADE, 0, 0, 0, 0, TEXEL0
+#define	G_CC_MODULATEIFADE          TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT
+
+#define	G_CC_MODULATERGB            G_CC_MODULATEI
+#define	G_CC_MODULATERGBDECALA      G_CC_MODULATEIDECALA
+#define	G_CC_MODULATERGBFADE        G_CC_MODULATEIFADE
+
+#define	G_CC_MODULATEIA             TEXEL0, 0, SHADE, 0, TEXEL0, 0, SHADE, 0
+#define	G_CC_MODULATEIFADEA         TEXEL0, 0, SHADE, 0, TEXEL0, 0, ENVIRONMENT, 0
+
+#define	G_CC_MODULATEFADE           TEXEL0, 0, SHADE, 0, ENVIRONMENT, 0, TEXEL0, 0
+
+#define	G_CC_MODULATERGBA           G_CC_MODULATEIA
+#define	G_CC_MODULATERGBFADEA       G_CC_MODULATEIFADEA
+
+#define	G_CC_MODULATEI_PRIM         TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, PRIMITIVE
+#define	G_CC_MODULATEIA_PRIM        TEXEL0, 0, PRIMITIVE, 0, TEXEL0, 0, PRIMITIVE, 0
+#define	G_CC_MODULATEIDECALA_PRIM   TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, TEXEL0
+
+#define	G_CC_MODULATERGB_PRIM       G_CC_MODULATEI_PRIM
+#define	G_CC_MODULATERGBA_PRIM      G_CC_MODULATEIA_PRIM
+#define	G_CC_MODULATERGBDECALA_PRIM G_CC_MODULATEIDECALA_PRIM
+
+#define	G_CC_FADE                   SHADE, 0, ENVIRONMENT, 0, SHADE, 0, ENVIRONMENT, 0
+#define	G_CC_FADEA                  TEXEL0, 0, ENVIRONMENT, 0, TEXEL0, 0, ENVIRONMENT, 0
+
+#define	G_CC_DECALRGB               0, 0, 0, TEXEL0, 0, 0, 0, SHADE
+#define	G_CC_DECALRGBA              0, 0, 0, TEXEL0, 0, 0, 0, TEXEL0
+#define	G_CC_DECALFADE              0, 0, 0, TEXEL0, 0, 0, 0, ENVIRONMENT
+
+#define	G_CC_DECALFADEA             0, 0, 0, TEXEL0, TEXEL0, 0, ENVIRONMENT, 0
+
+#define	G_CC_BLENDI                 ENVIRONMENT, SHADE, TEXEL0, SHADE, 0, 0, 0, SHADE
+#define	G_CC_BLENDIA                ENVIRONMENT, SHADE, TEXEL0, SHADE, TEXEL0, 0, SHADE, 0
+#define	G_CC_BLENDIDECALA           ENVIRONMENT, SHADE, TEXEL0, SHADE, 0, 0, 0, TEXEL0
+
+#define	G_CC_BLENDRGBA              TEXEL0, SHADE, TEXEL0_ALPHA, SHADE, 0, 0, 0, SHADE
+#define	G_CC_BLENDRGBDECALA         TEXEL0, SHADE, TEXEL0_ALPHA, SHADE, 0, 0, 0, TEXEL0
+#define	G_CC_BLENDRGBFADEA          TEXEL0, SHADE, TEXEL0_ALPHA, SHADE, 0, 0, 0, ENVIRONMENT
+
+#define G_CC_ADDRGB                 TEXEL0, 0, TEXEL0, SHADE, 0, 0, 0, SHADE
+#define G_CC_ADDRGBDECALA           TEXEL0, 0, TEXEL0, SHADE, 0, 0, 0, TEXEL0
+#define G_CC_ADDRGBFADE             TEXEL0, 0, TEXEL0, SHADE, 0, 0, 0, ENVIRONMENT
+
 #define G_CC_REFLECTRGB             ENVIRONMENT, 0, TEXEL0, SHADE, 0, 0, 0, SHADE
 #define G_CC_REFLECTRGBDECALA       ENVIRONMENT, 0, TEXEL0, SHADE, 0, 0, 0, TEXEL0
+
 #define G_CC_HILITERGB              PRIMITIVE, SHADE, TEXEL0, SHADE, 0, 0, 0, SHADE
 #define G_CC_HILITERGBA             PRIMITIVE, SHADE, TEXEL0, SHADE, PRIMITIVE, SHADE, TEXEL0, SHADE
 #define G_CC_HILITERGBDECALA        PRIMITIVE, SHADE, TEXEL0, SHADE, 0, 0, 0, TEXEL0
+
 #define G_CC_SHADEDECALA            0, 0, 0, SHADE, 0, 0, 0, TEXEL0
-#define G_CC_BLENDPE                PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, SHADE, 0
-#define G_CC_BLENDPEDECALA          PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, 0, 0, 0, TEXEL0
+#define G_CC_SHADEFADEA             0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT
+
+#define	G_CC_BLENDPE                PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, SHADE, 0
+#define	G_CC_BLENDPEDECALA          PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, 0, 0, 0, TEXEL0
 
 /* oddball modes */
-#define _G_CC_BLENDPE               ENVIRONMENT, PRIMITIVE, TEXEL0, PRIMITIVE, TEXEL0, 0, SHADE, 0
-#define _G_CC_BLENDPEDECALA         ENVIRONMENT, PRIMITIVE, TEXEL0, PRIMITIVE, 0, 0, 0, TEXEL0
-#define _G_CC_TWOCOLORTEX           PRIMITIVE, SHADE, TEXEL0, SHADE, 0, 0, 0, SHADE
+#define	_G_CC_BLENDPE               ENVIRONMENT, PRIMITIVE, TEXEL0, PRIMITIVE, TEXEL0, 0, SHADE, 0
+#define	_G_CC_BLENDPEDECALA         ENVIRONMENT, PRIMITIVE, TEXEL0, PRIMITIVE, 0, 0, 0, TEXEL0
+#define	_G_CC_TWOCOLORTEX           PRIMITIVE, SHADE, TEXEL0, SHADE, 0, 0, 0, SHADE
 /* used for 1-cycle sparse mip-maps, primitive color has color of lowest LOD */
-#define _G_CC_SPARSEST              PRIMITIVE, TEXEL0, LOD_FRACTION, TEXEL0, PRIMITIVE, TEXEL0, LOD_FRACTION, TEXEL0
+#define	_G_CC_SPARSEST              PRIMITIVE, TEXEL0, LOD_FRACTION, TEXEL0, PRIMITIVE, TEXEL0, LOD_FRACTION, TEXEL0
 #define G_CC_TEMPLERP               TEXEL1, TEXEL0, PRIM_LOD_FRAC, TEXEL0, TEXEL1, TEXEL0, PRIM_LOD_FRAC, TEXEL0
 
 /* typical CC cycle 1 modes, usually followed by other cycle 2 modes */
-#define G_CC_TRILERP                TEXEL1, TEXEL0, LOD_FRACTION, TEXEL0, TEXEL1, TEXEL0, LOD_FRACTION, TEXEL0
-#define G_CC_INTERFERENCE           TEXEL0, 0, TEXEL1, 0, TEXEL0, 0, TEXEL1, 0
+#define	G_CC_TRILERP                TEXEL1, TEXEL0, LOD_FRACTION, TEXEL0, TEXEL1, TEXEL0, LOD_FRACTION, TEXEL0
+#define	G_CC_INTERFERENCE           TEXEL0, 0, TEXEL1, 0, TEXEL0, 0, TEXEL1, 0
+
+/*
+ *  One-cycle color convert operation
+ */
+#define	G_CC_1CYUV2RGB              TEXEL0, K4, K5, TEXEL0, 0, 0, 0, SHADE
+
+/*
+ *  NOTE: YUV2RGB expects TF step1 color conversion to occur in 2nd clock.
+ * Therefore, CC looks for step1 results in TEXEL1
+ */
+#define	G_CC_YUV2RGB                TEXEL1, K4, K5, TEXEL1, 0, 0, 0, 0
+
+/* typical CC cycle 2 modes */
+#define	G_CC_PASS2                  0, 0, 0, COMBINED, 0, 0, 0, COMBINED
+#define	G_CC_MODULATEI2             COMBINED, 0, SHADE, 0, 0, 0, 0, SHADE
+#define	G_CC_MODULATEIA2            COMBINED, 0, SHADE, 0, COMBINED, 0, SHADE, 0
+#define	G_CC_MODULATERGB2           G_CC_MODULATEI2
+#define	G_CC_MODULATERGBA2          G_CC_MODULATEIA2
+#define	G_CC_MODULATEI_PRIM2        COMBINED, 0, PRIMITIVE, 0, 0, 0, 0, PRIMITIVE
+#define	G_CC_MODULATEIA_PRIM2       COMBINED, 0, PRIMITIVE, 0, COMBINED, 0, PRIMITIVE, 0
+#define	G_CC_MODULATERGB_PRIM2      G_CC_MODULATEI_PRIM2
+#define	G_CC_MODULATERGBA_PRIM2     G_CC_MODULATEIA_PRIM2
+#define	G_CC_DECALRGB2              0, 0, 0, COMBINED, 0, 0, 0, SHADE
+/*
+ * ?
+#define	G_CC_DECALRGBA2		        COMBINED, SHADE, COMBINED_ALPHA, SHADE, 0, 0, 0, SHADE
+*/
+#define	G_CC_BLENDI2                ENVIRONMENT, SHADE, COMBINED, SHADE, 0, 0, 0, SHADE
+#define	G_CC_BLENDIA2               ENVIRONMENT, SHADE, COMBINED, SHADE, COMBINED, 0, SHADE, 0
+#define	G_CC_CHROMA_KEY2            TEXEL0, CENTER, SCALE, 0, 0, 0, 0, 0
+#define G_CC_HILITERGB2             ENVIRONMENT, COMBINED, TEXEL0, COMBINED, 0, 0, 0, SHADE
+#define G_CC_HILITERGBA2            ENVIRONMENT, COMBINED, TEXEL0, COMBINED, ENVIRONMENT, COMBINED, TEXEL0, COMBINED
+#define G_CC_HILITERGBDECALA2       ENVIRONMENT, COMBINED, TEXEL0, COMBINED, 0, 0, 0, TEXEL0
+#define G_CC_HILITERGBPASSA2        ENVIRONMENT, COMBINED, TEXEL0, COMBINED, 0, 0, 0, COMBINED
+
 
 /*
  *  One-cycle color convert operation
@@ -786,7 +863,12 @@ longer a multiple of 8 (DMA word). This was not used in any command anyway. */
     CVG_DST_CLAMP | ZMODE_OPA |                                 \
     GBL_c##clk(G_BL_CLR_IN, G_BL_0, G_BL_CLR_IN, G_BL_1)
 
+/* Custom version of RM_AA_ZB_XLU_SURF with Z_UPD */
+#define RM_CUSTOM_AA_ZB_XLU_SURF(clk)				\
+	RM_AA_ZB_XLU_SURF(clk) | Z_UPD
 
+#define G_RM_CUSTOM_AA_ZB_XLU_SURF	RM_CUSTOM_AA_ZB_XLU_SURF(1)
+#define G_RM_CUSTOM_AA_ZB_XLU_SURF2	RM_CUSTOM_AA_ZB_XLU_SURF(2)
 
 #define G_RM_AA_ZB_OPA_SURF     RM_AA_ZB_OPA_SURF(1)
 #define G_RM_AA_ZB_OPA_SURF2    RM_AA_ZB_OPA_SURF(2)
@@ -915,10 +997,7 @@ longer a multiple of 8 (DMA word). This was not used in any command anyway. */
  */
 typedef struct {
     short          ob[3];   /* x, y, z */
-    union {
-        unsigned short packedNormals;
-        unsigned short flag;    /* for GBI backwards compatibility */
-    };
+    unsigned short flag;    /* Holds packed normals, or unused */
     short          tc[2];   /* texture coord */
     unsigned char  cn[4];   /* color & alpha */
 } Vtx_t;
@@ -928,7 +1007,7 @@ typedef struct {
  */
 typedef struct {
     short          ob[3];   /* x, y, z */
-    unsigned short flag;    /* not used when normals are in colors */
+    unsigned short flag;    /* Packed normals are not used when normals are in colors */
     short          tc[2];   /* texture coord */
     signed char    n[3];    /* normal */
     unsigned char  a;       /* alpha  */
@@ -1041,7 +1120,7 @@ typedef struct {
 
 typedef union {
     Vp_t vp;
-    long long int force_structure_alignment;
+    long long int force_structure_alignment[2];
 } Vp;
 
 /*
@@ -1058,6 +1137,8 @@ typedef struct {
     char          pad2;
     signed char   dir[3];   /* direction of light (normalized) */
     char          pad3;
+    char          pad4[3];
+    unsigned char size;     /* For specular only; reasonable values are 1-4 */
 } Light_t;
 
 typedef struct {
@@ -1067,6 +1148,7 @@ typedef struct {
     unsigned char kl;       /* linear attenuation Kl */
     short pos[3];           /* light position x, y, z in world space */
     unsigned char kq;       /* quadratic attenuation Kq */
+    unsigned char size;     /* For specular only; reasonable values are 1-4 */
 } PosLight_t;
 
 typedef struct {
@@ -1093,6 +1175,21 @@ typedef struct {
     int y2;
 } Hilite_t;
 
+typedef struct {
+    short c0;
+    short c1;
+    short c2;
+    short c3;
+    short c4;
+    short c5;
+    short c6;
+    short c7;
+    short kx;
+    short ky;
+    short kz;
+    short kc;
+} OcclusionPlane_t;
+
 typedef union {
     Light_t l;
     long long int force_structure_alignment[2];
@@ -1118,6 +1215,12 @@ typedef union {
     Hilite_t h;
     long int force_structure_alignment;
 } Hilite;
+
+typedef union {
+    OcclusionPlane_t o;
+    short c[12];
+    long long int force_structure_alignment[3];
+} OcclusionPlane;
 
 typedef struct {
     Light   l[9];
@@ -1247,6 +1350,7 @@ typedef struct {
                 { r1, g1, b1 }, 0,              \
                 { r1, g1, b1 }, 0,              \
                 { x1, y1, z1 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }}                                  \
         },                                      \
         {{                                      \
@@ -1264,11 +1368,13 @@ typedef struct {
                 { r1, g1, b1 }, 0,              \
                 { r1, g1, b1 }, 0,              \
                 { x1, y1, z1 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r2, g2, b2 }, 0,              \
                 { r2, g2, b2 }, 0,              \
                 { x2, y2, z2 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }}                                  \
         },                                      \
         {{                                      \
@@ -1287,16 +1393,19 @@ typedef struct {
                 { r1, g1, b1 }, 0,              \
                 { r1, g1, b1 }, 0,              \
                 { x1, y1, z1 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r2, g2, b2 }, 0,              \
                 { r2, g2, b2 }, 0,              \
                 { x2, y2, z2 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r3, g3, b3 }, 0,              \
                 { r3, g3, b3 }, 0,              \
                 { x3, y3, z3 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }}                                  \
         },                                      \
         {{                                      \
@@ -1316,21 +1425,25 @@ typedef struct {
                 { r1, g1, b1 }, 0,              \
                 { r1, g1, b1 }, 0,              \
                 { x1, y1, z1 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r2, g2, b2 }, 0,              \
                 { r2, g2, b2 }, 0,              \
                 { x2, y2, z2 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r3, g3, b3 }, 0,              \
                 { r3, g3, b3 }, 0,              \
                 { x3, y3, z3 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r4, g4, b4 }, 0,              \
                 { r4, g4, b4 }, 0,              \
                 { x4, y4, z4 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }}                                  \
         },                                      \
         {{                                      \
@@ -1351,26 +1464,31 @@ typedef struct {
                 { r1, g1, b1 }, 0,              \
                 { r1, g1, b1 }, 0,              \
                 { x1, y1, z1 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r2, g2, b2 }, 0,              \
                 { r2, g2, b2 }, 0,              \
                 { x2, y2, z2 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r3, g3, b3 }, 0,              \
                 { r3, g3, b3 }, 0,              \
                 { x3, y3, z3 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r4, g4, b4 }, 0,              \
                 { r4, g4, b4 }, 0,              \
                 { x4, y4, z4 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r5, g5, b5 }, 0,              \
                 { r5, g5, b5 }, 0,              \
                 { x5, y5, z5 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }}                                  \
         },                                      \
         {{                                      \
@@ -1392,31 +1510,37 @@ typedef struct {
                 { r1, g1, b1 }, 0,              \
                 { x1, y1, z1 }, 0,              \
                 { r1, g1, b1 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r2, g2, b2 }, 0,              \
                 { r2, g2, b2 }, 0,              \
                 { x2, y2, z2 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r3, g3, b3 }, 0,              \
                 { r3, g3, b3 }, 0,              \
                 { x3, y3, z3 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r4, g4, b4 }, 0,              \
                 { r4, g4, b4 }, 0,              \
                 { x4, y4, z4 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r5, g5, b5 }, 0,              \
                 { r5, g5, b5 }, 0,              \
                 { x5, y5, z5 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r6, g6, b6 }, 0,              \
                 { r6, g6, b6 }, 0,              \
                 { x6, y6, z6 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }}                                  \
         },                                      \
         {{                                      \
@@ -1439,36 +1563,43 @@ typedef struct {
                 { r1, g1, b1 }, 0,              \
                 { r1, g1, b1 }, 0,              \
                 { x1, y1, z1 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r2, g2, b2 }, 0,              \
                 { r2, g2, b2 }, 0,              \
                 { x2, y2, z2 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r3, g3, b3 }, 0,              \
                 { r3, g3, b3 }, 0,              \
                 { x3, y3, z3 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r4, g4, b4 }, 0,              \
                 { r4, g4, b4 }, 0,              \
                 { x4, y4, z4 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r5, g5, b5 }, 0,              \
                 { r5, g5, b5 }, 0,              \
                 { x5, y5, z5 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r6, g6, b6 }, 0,              \
                 { r6, g6, b6 }, 0,              \
                 { x6, y6, z6 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r7, g7, b7 }, 0,              \
                 { r7, g7, b7 }, 0,              \
                 { x7, y7, z7 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }}                                  \
         },                                      \
         {{                                      \
@@ -1492,41 +1623,49 @@ typedef struct {
                 { r1, g1, b1 }, 0,              \
                 { r1, g1, b1 }, 0,              \
                 { x1, y1, z1 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r2, g2, b2 }, 0,              \
                 { r2, g2, b2 }, 0,              \
                 { x2, y2, z2 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r3, g3, b3 }, 0,              \
                 { r3, g3, b3 }, 0,              \
                 { x3, y3, z3 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r4, g4, b4 }, 0,              \
                 { r4, g4, b4 }, 0,              \
                 { x4, y4, z4 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r5, g5, b5 }, 0,              \
                 { r5, g5, b5 }, 0,              \
                 { x5, y5, z5 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r6, g6, b6 }, 0,              \
                 { r6, g6, b6 }, 0,              \
                 { x6, y6, z6 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r7, g7, b7 }, 0,              \
                 { r7, g7, b7 }, 0,              \
                 { x7, y7, z7 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r8, g8, b8 }, 0,              \
                 { r8, g8, b8 }, 0,              \
                 { x8, y8, z8 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }}                                  \
         },                                      \
         {{                                      \
@@ -1551,46 +1690,55 @@ typedef struct {
                 { r1, g1, b1 }, 0,              \
                 { r1, g1, b1 }, 0,              \
                 { x1, y1, z1 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r2, g2, b2 }, 0,              \
                 { r2, g2, b2 }, 0,              \
                 { x2, y2, z2 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r3, g3, b3 }, 0,              \
                 { r3, g3, b3 }, 0,              \
                 { x3, y3, z3 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r4, g4, b4 }, 0,              \
                 { r4, g4, b4 }, 0,              \
                 { x4, y4, z4 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r5, g5, b5 }, 0,              \
                 { r5, g5, b5 }, 0,              \
                 { x5, y5, z5 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r6, g6, b6 }, 0,              \
                 { r6, g6, b6 }, 0,              \
                 { x6, y6, z6 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r7, g7, b7 }, 0,              \
                 { r7, g7, b7 }, 0,              \
                 { x7, y7, z7 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r8, g8, b8 }, 0,              \
                 { r8, g8, b8 }, 0,              \
                 { x8, y8, z8 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }},                                 \
             {{                                  \
                 { r9, g9, b9 }, 0,              \
                 { r9, g9, b9 }, 0,              \
                 { x9, y9, z9 }, 0,              \
+                { 0, 0, 0 }, 0                  \
             }}                                  \
         },                                      \
         {{                                      \
@@ -2307,10 +2455,15 @@ _DW({                                       \
     (unsigned int) (dat)            \
 }
 
-#define gMoveWd(pkt, index, offset, data)           \
-    gDma1p((pkt), G_MOVEWORD, data, offset, index)
-#define gsMoveWd(    index, offset, data)           \
-    gsDma1p(      G_MOVEWORD, data, offset, index)
+#define gMoveWd(pkt, index, offset, data) \
+    gDma1p((pkt), G_MOVEWORD, data, (offset & 0xFFF), index)
+#define gsMoveWd(    index, offset, data) \
+    gsDma1p(      G_MOVEWORD, data, (offset & 0xFFF), index)
+    
+#define gMoveHalfwd(pkt, index, offset, data) \
+    gDma1p((pkt), G_MOVEWORD, data, (offset & 0xFFF) | G_MW_HALFWORD_FLAG, index)
+#define gsMoveHalfwd(    index, offset, data) \
+    gsDma1p(      G_MOVEWORD, data, (offset & 0xFFF) | G_MW_HALFWORD_FLAG, index)
 
 
 /*
@@ -2453,8 +2606,8 @@ _DW({                                                        \
 #define gsSPSegment(segment, base)                  \
     gsMoveWd(    G_MW_SEGMENT, (segment) * 4, (base))
 
-#define gSPPerspNormalize(pkt, s)   gMoveWd(pkt, G_MW_PERSPNORM, 0, (s))
-#define gsSPPerspNormalize(s)       gsMoveWd(    G_MW_PERSPNORM, 0, (s))
+#define gSPPerspNormalize(pkt, s)   gMoveHalfwd(pkt, G_MW_FX, G_MWO_PERSPNORM, (s))
+#define gsSPPerspNormalize(s)       gsMoveHalfwd(    G_MW_FX, G_MWO_PERSPNORM, (s))
 
 /*
  * Clipping Macros - Deprecated, encodes SP no-ops
@@ -2474,7 +2627,9 @@ _DW({                                                        \
  * Ambient occlusion
  * Enabled with the G_AMBOCCLUSION bit in geometry mode.
  * Each of these factors sets how much ambient occlusion affects lights of
- * the given type (ambient, directional). They are u16s.
+ * the given type (ambient, directional, point). They are u16s.
+ * You can set each independently or two adjacent values with one moveword.
+ * A two-command macro is also provided to set all three values.
  * 
  * When building the model, you must encode the amount of ambient occlusion at
  * each vertex--effectively the shadow map for the model--in vertex alpha, where
@@ -2485,26 +2640,53 @@ _DW({                                                        \
  * will be reduced by 50%, and in the lightest parts of the model, the ambient
  * light intensity won't be reduced at all.
  * 
- * The default is amb = 0xFFFF (ambient light fully affected by vertex alpha)
- * and dir = 0xA000 (directional lights 62% affected by vertex alpha).
+ * The default is:
+ * amb = 0xFFFF (ambient light fully affected by vertex alpha)
+ * dir = 0xA000 (directional lights 62% affected by vertex alpha)
+ * point = 0    (point lights not at all affected by vertex alpha)
  * 
- * The reason you'd want to use ambient occlusion rather than just darkening
- * the vertex colors is that with ambient occlusion, the geometry can still be
- * fully lit up by point lights (or directional lights if you set the dir factor
- * to zero here). In contrast, if you darken the vertex colors, the geometry
- * will always be that much darker. The reason you'd want to use these factors
- * to modify ambient occlusion rather than just manually scaling and offsetting
- * all the vertex alpha values is to allow the behavior to differ between
- * ambient and directional lights, and to allow the lighting to be adjusted on
- * the fly or after the model is made.
+ * Two reasons to use ambient occlusion rather than darkening the vertex colors:
+ * - With ambient occlusion, the geometry can be fully lit up with point and/or
+ *   directional lights, depending on your settings here.
+ * - Ambient occlusion can be used with cel shading to create areas which are
+ *   "darker" for the cel shading thresholds, but still have bright / white
+ *   vertex colors.
+ * 
+ * Two reasons to use these factors to modify ambient occlusion rather than
+ * just manually scaling and offsetting all the vertex alpha values:
+ * - To allow the behavior to differ between ambient, directional, and point
+ *   lights
+ * - To allow the lighting to be adjusted at the scene level on-the-fly
  */
-#define gSPAmbOcclusion(pkt, amb, dir) \
-    gMoveWd(pkt, G_MW_FX, G_MWO_AMB_OCCLUSION, \
-        (_SHIFTL((amb), 16, 16) | _SHIFTL((dir), 0, 16)))
+ 
+#define gSPAmbOcclusionAmb(pkt, amb)     gMoveHalfwd(pkt, G_MW_FX, G_MWO_AO_AMBIENT, amb)
+#define gsSPAmbOcclusionAmb(amb)        gsMoveHalfwd(     G_MW_FX, G_MWO_AO_AMBIENT, amb)
+#define gSPAmbOcclusionDir(pkt, dir)     gMoveHalfwd(pkt, G_MW_FX, G_MWO_AO_DIRECTIONAL, dir)
+#define gsSPAmbOcclusionDir(dir)        gsMoveHalfwd(     G_MW_FX, G_MWO_AO_DIRECTIONAL, dir)
+#define gSPAmbOcclusionPoint(pkt, point) gMoveHalfwd(pkt, G_MW_FX, G_MWO_AO_POINT, point)
+#define gsSPAmbOcclusionPoint(point)    gsMoveHalfwd(     G_MW_FX, G_MWO_AO_POINT, point)
 
-#define gsSPAmbOcclusion(amb, dir) \
-    gsMoveWd(G_MW_FX, G_MWO_AMB_OCCLUSION, \
+#define gSPAmbOcclusionAmbDir(pkt, amb, dir) \
+    gMoveWd(pkt, G_MW_FX, G_MWO_AO_AMBIENT,  \
         (_SHIFTL((amb), 16, 16) | _SHIFTL((dir), 0, 16)))
+#define gsSPAmbOcclusionAmbDir(amb, dir)     \
+    gsMoveWd(G_MW_FX, G_MWO_AO_AMBIENT,      \
+        (_SHIFTL((amb), 16, 16) | _SHIFTL((dir), 0, 16)))
+#define gSPAmbOcclusionDirPoint(pkt, dir, point) \
+    gMoveWd(pkt, G_MW_FX, G_MWO_AO_DIRECTIONAL,  \
+        (_SHIFTL((dir), 16, 16) | _SHIFTL((point), 0, 16)))
+#define gsSPAmbOcclusionDirPoint(dir, point)     \
+    gsMoveWd(G_MW_FX, G_MWO_AO_DIRECTIONAL,      \
+        (_SHIFTL((dir), 16, 16) | _SHIFTL((point), 0, 16)))
+
+#define gSPAmbOcclusion(pkt, amb, dir, point) \
+_DW({                                         \
+    gSPAmbOcclusionAmbDir(pkt, amb, dir);     \
+    gSPAmbOcclusionPoint(pkt, point);         \
+})
+#define gsSPAmbOcclusion(amb, dir, point)     \
+    gsSPAmbOcclusionAmbDir(amb, dir),         \
+    gsSPAmbOcclusionPoint(point)
 
 /*
  * Fresnel - Feature suggested by thecozies
@@ -2518,26 +2700,41 @@ _DW({                                                        \
  * If using Fresnel, you need to set the camera world position whenever you set
  * the VP matrix, viewport, etc. See SPCameraWorld.
  * 
- * offset = Dot product value, in 0000 - 7FFF, which gives shade alpha = 0
- * Let k = dot product value, in 0000 - 7FFF, which gives shade alpha = FF.
- * Then scale = 0.7FFF / (k - offset) as s7.8 fixed point.
- * Alternatively, shade alpha [0000 - 7FFF] =
- * scale [-80.00 - 7F.FF] * (dot product [0000 - 7FFF] - offset)
- * Examples:
- * 1. Grazing -> 00; normal -> FF
- *    Then set offset = 0000, scale = 0100 = 01.00
- * 2. Grazing -> FF; normal -> 00
- *    Then set offset = 7FFF, scale = FF00 = FF.00 = -01.00
- * 3. 30 degrees (0.5f or 4000) -> FF; 60 degrees (0.86f or 6ED9) -> 00
- *    Then set offset = 6ED9, scale = FD45 = FD.45 = -02.BB = 1 / (0.5f - 0.86f)
+ * The RSP does:
+ * s16 dotProduct = dot(vertex normal, camera pos - vertex pos);
+ * dotProduct = abs(dotProduct); // 0 = points to side, 7FFF = points at or away
+ * s32 factor = ((scale * dotProduct) >> 15) + offset;
+ * s16 result = clamp(factor << 8, 0, 7FFF);
+ * color_or_alpha = result >> 7;
+ * 
+ * At dotMax, color_or_alpha = FF, result = 7F80, factor = 7F
+ * At dotMin, color_or_alpha = 00, result = 0, factor = 0
+ * 7F = ((scale * dotMax) >> 15) + offset
+ * 00 = ((scale * dotMin) >> 15) + offset
+ * Subtract: 7F = (scale * (dotMax - dotMin)) >> 15
+ *           3F8000 = scale * (dotMax - dotMin)
+ *           scale = 3F8000 / (dotMax - dotMin)                <--
+ * offset = -(((3F8000 / (dotMax - dotMin)) * dotMin) >> 15)
+ * offset = -((7F * dotMin) / (dotMax - dotMin))               <--
+ * 
+ * To convert in the opposite direction:
+ * ((7F - offset) << 15) / scale = dotMax
+ * ((00 - offset) << 15) / scale = dotMin
  */
-#define gSPFresnel(pkt, offset, scale) \
-    gMoveWd(pkt, G_MW_FX, G_MWO_FRESNEL, \
-        (_SHIFTL((offset), 16, 16) | _SHIFTL((scale), 0, 16)))
-
-#define gsSPFresnel(offset, scale) \
-    gsMoveWd(G_MW_FX, G_MWO_FRESNEL, \
-        (_SHIFTL((offset), 16, 16) | _SHIFTL((scale), 0, 16)))
+#define gSPFresnelScale(pkt, scale) \
+    gMoveHalfwd(pkt, G_MW_FX, G_MWO_FRESNEL_SCALE, scale)
+#define gsSPFresnelScale(scale) \
+    gsMoveHalfwd(G_MW_FX, G_MWO_FRESNEL_SCALE, scale)
+#define gSPFresnelOffset(pkt, offset) \
+    gMoveHalfwd(pkt, G_MW_FX, G_MWO_FRESNEL_OFFSET, offset)
+#define gsSPFresnelOffset(offset) \
+    gsMoveHalfwd(G_MW_FX, G_MWO_FRESNEL_OFFSET, offset)
+#define gSPFresnel(pkt, scale, offset) \
+    gMoveWd(pkt, G_MW_FX, G_MWO_FRESNEL_SCALE, \
+        (_SHIFTL((scale), 16, 16) | _SHIFTL((offset), 0, 16)))
+#define gsSPFresnel(scale, offset) \
+    gsMoveWd(G_MW_FX, G_MWO_FRESNEL_SCALE, \
+        (_SHIFTL((scale), 16, 16) | _SHIFTL((offset), 0, 16)))
 
 /*
  * Attribute offsets
@@ -2553,20 +2750,58 @@ _DW({                                                        \
  * latter, enable the Z offset and set the Z mode to opaque.
  */
 #define gSPAttrOffsetST(pkt, s, t) \
-    gMoveWd(pkt, G_MW_FX, G_MWO_ATTR_OFFSET_ST, \
+    gMoveWd(pkt, G_MW_FX, G_MWO_ATTR_OFFSET_S, \
         (_SHIFTL((s), 16, 16) | _SHIFTL((t), 0, 16)))
-
 #define gsSPAttrOffsetST(s, t) \
-    gsMoveWd(G_MW_FX, G_MWO_ATTR_OFFSET_ST, \
+    gsMoveWd(G_MW_FX, G_MWO_ATTR_OFFSET_S, \
         (_SHIFTL((s), 16, 16) | _SHIFTL((t), 0, 16)))
-       
 #define gSPAttrOffsetZ(pkt, z) \
-    gMoveWd(pkt, G_MW_FX, G_MWO_ATTR_OFFSET_Z, \
-        (_SHIFTL((z), 16, 16)))
-
+    gMoveHalfwd(pkt, G_MW_FX, G_MWO_ATTR_OFFSET_Z, z)
 #define gsSPAttrOffsetZ(z) \
-    gsMoveWd(G_MW_FX, G_MWO_ATTR_OFFSET_Z, \
-        (_SHIFTL((z), 16, 16)))
+    gsMoveHalfwd(G_MW_FX, G_MWO_ATTR_OFFSET_Z, z)
+    
+/*
+ * Alpha compare culling. Optimization for cel shading, could also be used for
+ * other scenarios where lots of tris are being drawn with alpha compare.
+ * 
+ * If mode == G_ALPHA_COMPARE_CULL_DISABLE, tris are drawn normally.
+ * 
+ * Otherwise:
+ * - "vertex alpha" means the post-transform alpha value at each vertex being
+ *   sent to the RDP. This may be the original model vertex alpha, fog, light
+ *   level (for cel shading), or Fresnel.
+ * - Assuming a cel shading context: you have a threshold value thresh, you draw
+ *   tris once and want to write all pixels where shade alpha >= thresh. Then
+ *   you change color settings and draw tris again, and want to write all other
+ *   pixels, i.e. where shade alpha < thresh.
+ * 
+ * For the light pass:
+ * - Set blend color alpha to thresh
+ * - Set CC alpha cycle 1 (or only cycle) to (shade alpha - 0) * tex alpha + 0
+ * - The RDP will draw pixels whenever shade alpha >= thresh (with binary alpha
+ *   from the texture)
+ * - Set mode = G_ALPHA_COMPARE_CULL_BELOW in SPAlphaCompareCull, and thresh
+ * - The RSP will cull any tris where all three vertex alpha values (i.e. light
+ *   level) are < thresh
+ * 
+ * For the dark pass:
+ * - Set blend color alpha to 0x100 - thresh (yes, not 0xFF - thresh).
+ * - Set CC alpha cycle 1 (or only cycle) to (1 - shade alpha) * tex alpha + 0
+ * - The RDP will draw pixels whenever shade alpha < thresh (with binary alpha
+ *   from the texture)
+ * - Set mode = G_ALPHA_COMPARE_CULL_ABOVE in SPAlphaCompareCull, and thresh
+ * - The RSP will cull any tris where all three vertex alpha values (i.e. light
+ *   level) are >= thresh
+ * 
+ * The idea is to cull tris early on the RSP which won't have any of their
+ * fragments drawn on the RDP, to save RDP time and memory bandwidth.
+ */
+#define gSPAlphaCompareCull(pkt, mode, thresh) \
+    gMoveHalfwd(pkt, G_MW_FX, G_MWO_ALPHA_COMPARE_CULL, \
+        (_SHIFTL((mode), 8, 8) | _SHIFTL((thresh), 0, 8)))
+#define gsSPAlphaCompareCull(mode, thresh) \
+    gsMoveHalfwd(G_MW_FX, G_MWO_ALPHA_COMPARE_CULL, \
+        (_SHIFTL((mode), 8, 8) | _SHIFTL((thresh), 0, 8)))
 
 /*
  * Normals mode: How to handle transformation of vertex normals from model to
@@ -2576,7 +2811,8 @@ _DW({                                                        \
  * space with the M matrix. This is correct if the object's transformation
  * matrix stack only included translations, rotations, and uniform scale (i.e.
  * same scale in X, Y, and Z); otherwise, if the transformation matrix has
- * nonuniform scale or shear, the lighting on the object will be subtly wrong.
+ * nonuniform scale or shear, the lighting on the object will be somewhat
+ * distorted.
  * 
  * If mode = G_NORMALS_MODE_AUTO, transforms normals from model space to world
  * space with M inverse transpose, which renders lighting correctly for the
@@ -2603,10 +2839,9 @@ _DW({                                                        \
  * generally, but G_NORMALS_MODE_AUTO temporarily while he is squashed.
  */
 #define gSPNormalsMode(pkt, mode) \
-    gMoveWd(pkt, G_MW_FX, G_MWO_NORMALS_MODE, (mode))
-
+    gMoveHalfwd(pkt, G_MW_FX, G_MWO_NORMALS_MODE, (mode) & 0xFF)
 #define gsSPNormalsMode(mode) \
-    gsMoveWd(G_MW_FX, G_MWO_NORMALS_MODE, (mode))
+    gsMoveHalfwd(G_MW_FX, G_MWO_NORMALS_MODE, (mode) & 0xFF)
 
 typedef union {
     struct {
@@ -2633,49 +2868,6 @@ typedef union {
         gDma2p((pkt), G_MOVEMEM, (mit), sizeof(MITMtx), G_MV_MMTX, 0x80)
 #define gsSPMITMatrix(mtx) \
         gsDma2p(      G_MOVEMEM, (mit), sizeof(MITMtx), G_MV_MMTX, 0x80)
-
-/*
- * Alpha compare culling. Optimization for cel shading, could also be used for
- * other scenarios where lots of tris are being drawn with alpha compare.
- * 
- * If mode == G_ALPHA_COMPARE_CULL_DISABLED, tris are drawn normally.
- * 
- * Otherwise:
- * - "vertex alpha" means the post-transform alpha value at each vertex being
- *   sent to the RDP. This may be the original model vertex alpha, fog, light
- *   level (for cel shading), or Fresnel.
- * - Assuming a cel shading context: you have a threshold value thresh, you draw
- *   tris once and want to write all pixels where shade alpha >= thresh. Then
- *   you change color settings and draw tris again, and want to write all other
- *   pixels, i.e. where shade alpha < thresh.
- * 
- * For the light pass:
- * - Set blend color alpha to thresh
- * - Set CC alpha cycle 1 (or only cycle) to (shade alpha - 0) * tex alpha + 0
- * - The RDP will draw pixels whenever shade alpha >= thresh (with binary alpha
- *   from the texture)
- * - Set mode = G_ALPHA_COMPARE_CULL_BELOW in SPAlphaCompareCull, and thresh
- * - The RSP will cull any tris where all three vertex alpha values (i.e. light
- *   level) are < thresh
- * 
- * For the dark pass:
- * - Set blend color alpha to 0x101 - thresh (yes, not 0xFF - thresh).
- * - Set CC alpha cycle 1 (or only cycle) to (1 - shade alpha) * tex alpha + 0
- * - The RDP will draw pixels whenever shade alpha < thresh (with binary alpha
- *   from the texture)
- * - Set mode = G_ALPHA_COMPARE_CULL_ABOVE in SPAlphaCompareCull, and thresh
- * - The RSP will cull any tris where all three vertex alpha values (i.e. light
- *   level) are >= thresh
- * 
- * The idea is to cull tris early on the RSP which won't have any of their
- * fragments drawn on the RDP, to save RDP time and memory bandwidth.
- */
-#define _ALPHACOMPWORD(mode, thresh) \
-    (_SHIFTL((mode), 24, 8) | _SHIFTL((thresh), 16, 8))
-#define gSPAlphaCompareCull(pkt, mode, thresh) \
-    gMoveWd(pkt, G_MW_FX, G_MWO_ALPHA_COMPARE_CULL, _ALPHACOMPWORD(mode, thresh))
-#define gsSPAlphaCompareCull(mode, thresh) \
-    gsMoveWd(G_MW_FX, G_MWO_ALPHA_COMPARE_CULL, _ALPHACOMPWORD(mode, thresh))
 
 
 /*
@@ -2707,10 +2899,9 @@ _DW({                                               \
  */
 
 /*
- * Vanilla F3D* display list culling based on screen clip flags of range of
- * loaded verts. Executes SPEndDisplayList if the convex hull formed by the
- * specified range of already-loaded vertices is offscreen. Prefer
- * SPBoundingVerts and related cmds in new code.
+ * Cull the display list based on screen clip flags of range of loaded verts.
+ * Executes SPEndDisplayList if the convex hull formed by the specified range of
+ * already-loaded vertices is offscreen.
  */
 #define gSPCullDisplayList(pkt,vstart,vend)             \
 _DW({                                                   \
@@ -2730,8 +2921,7 @@ _DW({                                                   \
 
 /*
  * gSPBranchLessZ   Branch DL if (vtx.z) less than or equal (zval).
- * Prefer SPBoundingVerts and related cmds in new code.
- * Also note that this uses W in F3DZEX / CFG_G_BRANCH_W, in which case all the
+ * Note that this uses W in F3DZEX / CFG_G_BRANCH_W, in which case all the
  * Z calculations below are wrong and raw values must be used.
  *
  *  dl   = DL branch to
@@ -2827,164 +3017,6 @@ _DW({                                               \
     (unsigned int)(zval),                   \
 }
 
-/*
- * Sets the W value to compare vertices to in SPBoundingVerts. This is a 32-bit
- * value in s15.16 format. Vertices whose transformed W value is greater than
- * or equal to this value will be considered "not visible".
- * 
- * This uses the generic RDP word (a 32-bit variable in RSP DMEM). The other
- * commands which overwrite the value stored in this word are:
- * - SPBranchLess*
- * - All TextureRectangle commands
- * - SPPerspNormalize
- * - SPLoadUcode*
- * - DPWord
- */
-#define gSPWFarThreshold(pkt, w) gImmp1(pkt, G_RDPHALF_1, (w))
-#define gsSPWFarThreshold(w)     gsImmp1(    G_RDPHALF_1, (w))
-
-/*
- * Load a set of vertices defining a bounding convex shape around a sub-object,
- * compute whether it is visible, and store the result to the bounding flags
- * word.
- * 
- * There are two components to visibility:
- * 1. If there is any screen clipping plane (four sides of the screen or
- *    behind-the-camera) which all verts are on the far side of (i.e. offscreen
- *    or behind the camera), the sub-object is invisible.
- * 2. If all verts have a transformed (clip space) W value greater than or equal
- *    to the threshold set with SPWFarThreshold, the sub-object is invisible.
- * 
- * The flag in the bounding flags word is set if the object is visible or
- * cleared if the object is invisible. The flag is always written to the MSB of
- * the word; for what happens to the other bits, see mode below.
- * 
- * The processing uses an early return, so as soon as at least one vertex is
- * close enough and at least one vertex is on the screen side of each clip
- * plane, the object is visible and the result is written. 
- * 
- * v: Address / name of an array containing a set of PlainVtx values (positions
- * only, no ST or RGBA). These vertices define a convex hull around a sub-
- * object. This may be, but is not required to be, an axis-aligned bounding box.
- * For example, for a flat object, you could provide the four corners of the
- * plane containing the object. If your object is a sphere, a bounding
- * octahedron containing the sphere has less wasted space than a cube, and it is
- * only six vertices rather than eight.
- * 
- * n: Number of vertices, between 1 and 32. These vertices are loaded into
- * temporary memory and do not affect or overwrite the vertex buffer.
- * 
- * mode:
- * - G_BOUNDINGVERTS_REPLACE: The bounding flags word is cleared before the
- *   result of this operation is written. For if this is the first or only
- *   sub-object within the larger object.
- * - G_BOUNDINGVERTS_PUSH: The bounding flags word is shifted right one bit,
- *   forming a stack with the new result pushed onto it. The word is 32 bits so
- *   you can load up to 32 sets of bounding vertices at a time, i.e. have up to
- *   32 sub-objects within one larger object.
- */
-#define _BOUNDINGVERTS_W0(n, mode)                                            \
-    (_SHIFTL(G_BOUNDINGVERTS, 24, 8) |                                        \
-     _SHIFTL((n),             11, 6) | /* Bytes 1-2, size in bytes, max 32 */ \
-     _SHIFTL((mode),           0, 8))
-#define gSPBoundingVerts(pkt, v, n, mode)      \
-_DW({                                          \
-    Gfx *_g = (Gfx *)(pkt);                    \
-    _g->words.w0 = _BOUNDINGVERTS_W0(n, mode); \
-    _g->words.w1 = (unsigned int)(v);          \
-})
-#define gsSPBoundingVerts(v, n, mode) \
-{                                     \
-   _BOUNDINGVERTS_W0(n, mode),        \
-    (unsigned int)(v)                 \
-}
-
-/*
- * Return from the current display list if none of the previous SPBoundingVerts
- * commands set their flags, i.e. if the WHOLE 32-bit bounding flags word is
- * zero.
- */
-#define _gSPReturnNoneVisibleRaw(pkt,hint)  gDma0p(pkt, G_RETURNNONEVISIBLE, 0, hint)
-#define _gsSPReturnNoneVisibleRaw(hint)     gsDma0p(    G_RETURNNONEVISIBLE, 0, hint)
-/* Hint version -- use whenever possible. See SPEndDisplayListHint. */
-#define gSPReturnNoneVisibleHint(pkt, count) _gSPReturnNoneVisibleRaw( pkt, _DLHINTVALUE(count))
-#define gsSPReturnNoneVisibleHint(    count) _gsSPReturnNoneVisibleRaw(     _DLHINTVALUE(count))
-/* Non-hint version. */
-#define gSPReturnNoneVisible(pkt)  _gSPReturnNoneVisibleRaw( pkt, 0)
-#define gsSPReturnNoneVisible(  )  _gsSPReturnNoneVisibleRaw(     0)
-
-/*
- * Pop the highest flag from the 32-bit bounding flags word, and branch if
- * it is clear, i.e. bounding verts were not visible. This can branch past
- * drawing the sub-object to cull it, or branch to a low-poly version of it.
- */
-#define _gSPPopBranchNotVisibleRaw(pkt,dl,hint) \
-    gDma1p(pkt, G_POPBRANCHCALL, dl, hint, G_DL_NOPUSH)
-#define _gsSPPopBranchNotVisibleRaw(   dl,hint) \
-    gsDma1p(    G_POPBRANCHCALL, dl, hint, G_DL_NOPUSH)
-/*
- * Hint version -- use whenever possible. See SPBranchListHint.
- * 
- * There is an additional clever optimization here. The hint is for if the
- * branch is taken, so in the case of offscreen objects, normally the next
- * command being jumped to is another SPPopBranchNotVisibleHint. So, normally
- * the hint is 1. However, the microcode also looks at the *next* flag--the one
- * which that future SPPopBranchNotVisibleHint command will look at. If that
- * flag is set, that next command won't branch but will continue to draw
- * something. So if the next flag is set, the microcode clears the current
- * SPPopBranchNotVisibleHint command's hint value, so that a full buffer of DL
- * commands is loaded rather than just one.
- */
-#define gSPPopBranchNotVisibleHint(pkt, dl, count) \
-    _gSPPopBranchNotVisibleRaw( pkt, dl, _DLHINTVALUE(count))
-#define gsSPPopBranchNotVisibleHint(    dl, count) \
-    _gsSPPopBranchNotVisibleRaw(     dl, _DLHINTVALUE(count))
-/* Non-hint version. */
-#define gSPPopBranchNotVisible(pkt, dl)  \
-    _gSPPopBranchNotVisibleRaw( pkt, dl, 0)
-#define gsSPPopBranchNotVisible(    dl)  \
-    _gsSPPopBranchNotVisibleRaw(     dl, 0)
-
-/*
- * Pop the highest flag from the 32-bit bounding flags word, and call another
- * display list if it is set, i.e. bounding verts were visible. Note that if
- * you are just trying to draw or not draw objects based on whether they are
- * onscreen, it is recommended to put the drawing DL inline and use
- * SPPopBranchNotVisibleHint to branch past it. If you are only checking a
- * single set of bounding verts, use SPReturnNoneVisibleHint instead.
- */
-#define _gSPPopCallVisibleRaw(pkt,dl,hint) \
-    gDma1p(pkt, G_POPBRANCHCALL, dl, hint, G_DL_PUSH)
-#define _gsSPPopCallVisibleRaw(   dl,hint) \
-    gsDma1p(    G_POPBRANCHCALL, dl, hint, G_DL_PUSH)
-/* Hint version -- use whenever possible. See SPDisplayListHint. */
-#define gSPPopCallVisibleHint(pkt, dl, count) \
-    _gSPPopCallVisibleRaw( pkt, dl, _DLHINTVALUE(count))
-#define gsSPPopCallVisibleHint(    dl, count) \
-    _gsSPPopCallVisibleRaw(     dl, _DLHINTVALUE(count))
-/* Non-hint version. */
-#define gSPPopCallVisible(pkt, dl)  \
-    _gSPPopCallVisibleRaw( pkt, dl, 0)
-#define gsSPPopCallVisible(    dl)  \
-    _gsSPPopCallVisibleRaw(     dl, 0)
-
-/*
- * Loads the bounding flags value used by SPBoundingVerts,
- * SPPopBranchNotVisibleHint, etc. This can be used to programmatically enable /
- * disable parts of a DL.
- * 
- * The bounding flags value is a 32-bit word where flags are pushed / popped to
- * the MSB. So for example, to set a single flag to 1 which will be checked with
- * SPPopBranchNotVisibleHint or SPPopCallVisibleHint, write the value
- * 0x80000000. Or, to set a value which will branch-notbranch-branch-notbranch
- * on the next four SPPopBranchNotVisibleHint commands, write the value
- * 0x50000000.
- */
-#define gSPLoadBoundingFlags(pkt, flags) \
-    gMoveWd(pkt, G_MW_FX, G_MWO_BOUNDING_FLAGS, (flags))
-#define gsSPLoadBoundingFlags(amb, flags) \
-    gsMoveWd(G_MW_FX, G_MWO_BOUNDING_FLAGS, (flags))
-
 
 /*
  * Lighting Commands
@@ -3054,22 +3086,27 @@ _DW({                                          \
     gsDma2p(      G_MOVEMEM, (l), sizeof(Ambient), G_MV_LIGHT, _LIGHT_TO_OFFSET(n))
 
 /*
- * gSPLightColor changes color of light without recalculating light direction
- * col is a 32 bit word with r,g,b,a. For directional lights, a must be zero.
- * For point lights, a becomes both the constant and linear factors, which is
- * rarely desired. You can use the hidden _g*SPLightColor2 to specify a
- * different factor for each.
+ * gSPLightColor changes the color of a directional light without an additional
+ * DMA transfer.
+ * col is a 32 bit word where (col >> 24) & 0xFF is red, (col >> 16) & 0xFF is
+ * green, and (col >> 8) & 0xFF is blue. (col & 0xFF) is ignored and masked to
+ * zero.
  * n should be an integer 1-10 to apply to light 0-9.
  */
 #define gSPLightColor(pkt, n, col)                  \
 _DW({                                               \
-    gMoveWd(pkt, G_MW_LIGHTCOL, (((n) - 1) * 0x10) + 0, col);   \
-    gMoveWd(pkt, G_MW_LIGHTCOL, (((n) - 1) * 0x10) + 4, col);   \
+    gMoveWd(pkt, G_MW_LIGHTCOL, (((n) - 1) * 0x10) + 0, ((col) & 0xFFFFFF00));   \
+    gMoveWd(pkt, G_MW_LIGHTCOL, (((n) - 1) * 0x10) + 4, ((col) & 0xFFFFFF00));   \
 })
 #define gsSPLightColor(n, col)                      \
-    gsMoveWd(G_MW_LIGHTCOL, (((n) - 1) * 0x10) + 0, col),       \
-    gsMoveWd(G_MW_LIGHTCOL, (((n) - 1) * 0x10) + 4, col)
-
+    gsMoveWd(G_MW_LIGHTCOL, (((n) - 1) * 0x10) + 0, ((col) & 0xFFFFFF00)),       \
+    gsMoveWd(G_MW_LIGHTCOL, (((n) - 1) * 0x10) + 4, ((col) & 0xFFFFFF00))
+/*
+ * Version for point lights. (col1 & 0xFF) must be set to the point light constant
+ * factor (must be nonzero), and (col2 & 0xFF) must be set to the point light
+ * linear factor.
+ * n should be an integer 1-10 to apply to light 0-9.
+ */
 #define _gSPLightColor2(pkt, n, col1, col2) \
 _DW({\
   gMoveWd(pkt, G_MW_LIGHTCOL, (((n) - 1) * 0x10) + 0, col1); \
@@ -3085,21 +3122,33 @@ _DW({\
  * transaction.
  * n is the number of directional / point lights, from 0 to 9. There is also
  * always an ambient light.
- * name should be the name of a Lights* or PosLights* struct filled in with all
- * the lighting data. You can use the gdSPDef* macros to fill in the struct or
- * just do it manually. Example:
+ * name should be the NAME of a Lights or PosLights struct (NOT A POINTER)
+ * filled in with all the lighting data. You can use the gdSPDef* macros to fill
+ * in the struct or just do it manually. Example:
  * PosLights2 myLights; // 2 pos + 1 ambient
  * <code to fill in the fields of myLights>
  * gSPSetLights(POLY_OPA_DISP++, 2, myLights);
+ * 
+ * If you need to use a pointer, e.g. if the number of lights is variable at
+ * runtime:
+ * PosLight *lights = memory_allocate((numLights + 1) * sizeof(PosLight));
+ * lights[0].p.pos = ...;
+ * lights[1].l.dir = ...;
+ * ...
+ * lights[numLights].l.col = ambient_color();
+ * gSPSetLights(POLY_OPA_DISP++, numLights, *lights); // <- NOTE DEREFERENCE
+ * 
+ * If you're wondering why this macro takes a name / dereference instead of a
+ * pointer, it's for backwards compatibility.
  */
 #define gSPSetLights(pkt, n, name) \
 _DW({ \
     gSPNumLights(pkt, n); \
-    gDma2p((pkt),  G_MOVEMEM, &name, (n) * 0x10 + 8, G_MV_LIGHT, 0x10); \
+    gDma2p((pkt),  G_MOVEMEM, &(name), (n) * 0x10 + 8, G_MV_LIGHT, 0x10); \
 })
 #define gsSPSetLights(n, name) \
     gsSPNumLights(n), \
-    gsDma2p(G_MOVEMEM, &name, (n) * 0x10 + 8, G_MV_LIGHT, 0x10)
+    gsDma2p(G_MOVEMEM, &(name), (n) * 0x10 + 8, G_MV_LIGHT, 0x10)
 
 #define  gSPSetLights0(pkt, name)  gSPSetLights(pkt, 0, name)
 #define gsSPSetLights0(name)      gsSPSetLights(     0, name)
@@ -3124,8 +3173,8 @@ _DW({ \
 
 
 /*
- * Camera world position for Fresnel. Set this whenever you set the VP matrix,
- * viewport, etc. cam is the name/address of a PlainVtx struct.
+ * Camera world position for Fresnel and specular lighting. Set this whenever
+ * you set the VP matrix, viewport, etc. cam is the address of a PlainVtx struct.
  */
 #define gSPCameraWorld(pkt, cam) \
     gDma2p((pkt), G_MOVEMEM, (cam), sizeof(PlainVtx), G_MV_LIGHT, 0)
@@ -3135,7 +3184,7 @@ _DW({ \
 
 /*
  * Reflection/Hiliting Macros.
- * la is the name/address of a LookAt struct.
+ * la is the address of a LookAt struct.
  */
 #define gSPLookAt(pkt, la) \
     gDma2p((pkt), G_MOVEMEM, (la), sizeof(LookAt), G_MV_LIGHT, 8)
@@ -3181,6 +3230,27 @@ _DW({ \
         (hilite)->h.y2 & 0xFFF,                             \
         ((((width)  - 1) * 4) + (hilite)->h.x2) & 0xFFF,    \
         ((((height) - 1) * 4) + (hilite)->h.y2) & 0xFFF)
+
+
+/*
+ * Set the occlusion plane. This is a quadrilateral in 3D space where all
+ * geometry behind it is culled. You should create occlusion plane candidates
+ * just behind walls and other large objects, and have your game engine pick
+ * the most optimal one every frame to send to the RSP.
+ * 
+ * Computing the coefficients for the occlusion plane is far too complicated to
+ * explain here. The reference implementation `guOcclusionPlane` is provided
+ * separately.
+ * 
+ * o is the address of an OcclusionPlane struct
+ */
+#define gSPOcclusionPlane(pkt, o) \
+    gDma2p((pkt), G_MOVEMEM, (o), sizeof(OcclusionPlane), G_MV_LIGHT, \
+        (G_MAX_LIGHTS * 0x10) + 0x18)
+#define gsSPOcclusionPlane(o) \
+    gsDma2p(      G_MOVEMEM, (o), sizeof(OcclusionPlane), G_MV_LIGHT, \
+        (G_MAX_LIGHTS * 0x10) + 0x18)
+
 
 /*
  * FOG macros
@@ -3239,31 +3309,13 @@ _DW({                                                           \
 }
 
 /*
- * Different version of SPTexture macro, has an additional parameter
- * which is currently reserved in the microcode.
+ * The bowtie value is a workaround for a bug in HW V1, and is not supported
+ * by F3DEX2, let alone F3DEX3.
  */
-#define gSPTextureL(pkt, s, t, level, xparam, tile, on)    \
-_DW({                                                       \
-    Gfx *_g = (Gfx *)(pkt);                                 \
-                                                            \
-    _g->words.w0 = (_SHIFTL(G_TEXTURE, 24, 8) |             \
-                    _SHIFTL((xparam),  16, 8) |             \
-                    _SHIFTL((level),   11, 3) |             \
-                    _SHIFTL((tile),     8, 3) |             \
-                    _SHIFTL((on),       1, 7));             \
-    _g->words.w1 = (_SHIFTL((s), 16, 16) |                  \
-                    _SHIFTL((t),  0, 16));                  \
-})
-#define gsSPTextureL(s, t, level, xparam, tile, on)    \
-{                                                       \
-   (_SHIFTL(G_TEXTURE, 24, 8) |                         \
-    _SHIFTL((xparam),  16, 8) |                         \
-    _SHIFTL((level),   11, 3) |                         \
-    _SHIFTL((tile),     8, 3) |                         \
-    _SHIFTL((on),       1, 7)),                         \
-   (_SHIFTL((s), 16, 16) |                              \
-    _SHIFTL((t),  0, 16))                               \
-}
+#define gSPTextureL(pkt, s, t, level, bowtie, tile, on) \
+    gSPTexture(pkt, s, t, level, tile, on)
+#define gsSPTextureL(s, t, level, bowtie, tile, on) \
+    gsSPTexture(s, t, level, tile, on)
 
 /*
  *  One gSPGeometryMode(pkt,c,s) GBI is equal to these two GBIs.
@@ -3296,6 +3348,7 @@ _DW({                                                   \
 #define gSPLoadGeometryMode(pkt, word)  gSPGeometryMode((pkt), -1, (word))
 #define gsSPLoadGeometryMode(word)      gsSPGeometryMode(      -1, (word))
 
+#define gsSPGeometryModeSetFirst(c, s)	gsSPGeometryMode(c, s)
 
 #define gSPSetOtherMode(pkt, cmd, sft, len, data)           \
 _DW({                                                       \
@@ -3608,8 +3661,9 @@ _DW({                                                   \
  * the ambient light, 1 is the last directional / point light, etc. The RGB
  * color of the selected light is combined with the alpha specified in this
  * command as word 1 of a RDP command, and word 0 is specified in this command.
- * Specialized versions are provided below for prim color and env color, but
- * any RDP color command could be specified this way.
+ * Specialized versions are provided below for prim color and fog color, 
+ * because these are the two versions needed for cel shading, but any RDP color
+ * command could be specified this way.
  */
 #define gSPLightToRDP(pkt, light, alpha, word0)    \
 _DW({                                              \
@@ -3619,12 +3673,12 @@ _DW({                                              \
                     _SHIFTL(alpha,         0, 8)); \
     _g->words.w1 = (word0);                        \
 })
-#define gsDPLightToRDP(m, light, alpha, word0) \
-{                                              \
-   (_SHIFTL(G_LIGHTTORDP, 24, 8) |             \
-    _SHIFTL(light * 0x10,  8, 8) |             \
-    _SHIFTL(alpha,         0, 8)),             \
-   (word0)                                     \
+#define gsSPLightToRDP(light, alpha, word0) \
+{                                           \
+   (_SHIFTL(G_LIGHTTORDP, 24, 8) |          \
+    _SHIFTL(light * 0x10,  8, 8) |          \
+    _SHIFTL(alpha,         0, 8)),          \
+   (word0)                                  \
 }
 #define gSPLightToPrimColor(pkt, light, alpha, m, l) \
     gSPLightToRDP(pkt, light, alpha,                 \
@@ -3632,10 +3686,10 @@ _DW({                                              \
 #define gsSPLightToPrimColor(light, alpha, m, l) \
     gsSPLightToRDP(light, alpha,                 \
         (_SHIFTL(G_SETPRIMCOLOR, 24, 8) | _SHIFTL(m, 8, 8) | _SHIFTL(l, 0, 8)))
-#define gSPLightToEnvColor(pkt, light, alpha) \
-    gSPLightToRDP(pkt, light, alpha, _SHIFTL(G_SETENVCOLOR, 24, 8))
-#define gsSPLightToEnvColor(light, alpha) \
-    gsSPLightToRDP(light, alpha, _SHIFTL(G_SETENVCOLOR, 24, 8))
+#define gSPLightToFogColor(pkt, light, alpha) \
+    gSPLightToRDP(pkt, light, alpha, _SHIFTL(G_SETFOGCOLOR, 24, 8))
+#define gsSPLightToFogColor(light, alpha) \
+    gsSPLightToRDP(light, alpha, _SHIFTL(G_SETFOGCOLOR, 24, 8))
 
 /*
  * gDPSetOtherMode (This is for expert user.)
@@ -3907,60 +3961,26 @@ _DW({                                                               \
     _SHIFTL(shifts,   0, 4))                                    \
 }
 
-/*
- * A new optimization in F3DEX3 discards a DPLoadBlock command if it is
- * identical to the last DPLoadBlock command sent to the RDP. It also tracks
- * the last DPSet*Img command sent and if a different image is set, the "last
- * DPLoadBlock" value is reset so the next DPLoadBlock will not be discarded.
- * This of course saves RDP time if the same material is run repeatedly for
- * many instances of the same object, assuming the object only has one texture
- * and it is not CI.
- * 
- * The only way this can fail is when loading the same image to two addresses
- * in TMEM but with the same tile (e.g. G_TX_LOADTILE) for multitexture (or for
- * strange custom texture setups). This is not an issue for fast64 exports as if
- * you create multitexture with the same texture twice, it only loads it once
- * and points both render tiles to the same TMEM. Vanilla OoT does the same
- * thing for the water. However, it is possible to write a DL which this
- * optimization breaks.
- * 
- * This command `DPLoadBlockTag` can solve that problem: put a different
- * arbitrary value in the tag field of each command, for example an incrementing
- * counter. Then the commands will compare as different in the RSP and the
- * second will not be discarded. The bits used for the tag are ignored by the
- * RDP.
- */
-#define gDPLoadBlockTag(pkt, tag, tile, uls, ult, lrs, dxt)         \
+#define gDPLoadBlock(pkt, tile, uls, ult, lrs, dxt)         \
 _DW({                                                               \
     Gfx *_g = (Gfx *)(pkt);                                         \
     _g->words.w0 = (_SHIFTL(G_LOADBLOCK, 24,  8) |                  \
                     _SHIFTL(uls,         12, 12) |                  \
                     _SHIFTL(ult,          0, 12));                  \
-    _g->words.w1 = (_SHIFTL(tag,                          27,  5) | \
-                    _SHIFTL(tile,                         24,  3) | \
+    _g->words.w1 = (_SHIFTL(tile,                         24,  3) | \
                     _SHIFTL(MIN(lrs, G_TX_LDBLK_MAX_TXL), 12, 12) | \
                     _SHIFTL(dxt,                           0, 12)); \
 })
-#define gsDPLoadBlockTag(tag, tile, uls, ult, lrs, dxt) \
+
+#define gsDPLoadBlock(tile, uls, ult, lrs, dxt) \
 {                                                       \
    (_SHIFTL(G_LOADBLOCK, 24,  8) |                      \
     _SHIFTL(uls,         12, 12) |                      \
     _SHIFTL(ult,          0, 12)),                      \
-   (_SHIFTL(tag,                            27,  5) |   \
-    _SHIFTL(tile,                           24,  3) |   \
+   (_SHIFTL(tile,                           24,  3) |   \
     _SHIFTL((MIN(lrs, G_TX_LDBLK_MAX_TXL)), 12, 12) |   \
     _SHIFTL(dxt,                             0, 12))    \
 }
-
-/*
- * Use __LINE__ as the tag to get different commands. Repeats every 32 lines.
- * See DPLoadBlockTag above.
- */
-#define gDPLoadBlock(pkt, tile, uls, ult, lrs, dxt) \
-    gDPLoadBlockTag(pkt, __LINE__, tile, uls, ult, lrs, dxt)
-#define gsDPLoadBlock(tile, uls, ult, lrs, dxt) \
-    gsDPLoadBlockTag(__LINE__, tile, uls, ult, lrs, dxt)
-
 
 #define gDPLoadTLUTCmd(pkt, tile, count)        \
 _DW({                                           \
