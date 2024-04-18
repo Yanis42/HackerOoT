@@ -267,7 +267,7 @@ endif
 
 #### Main Targets ###
 
-all: rom compress
+all: rom
 
 rom: $(ROM)
 
@@ -339,7 +339,9 @@ f3dex3:
 
 #### Various Recipes ####
 
-$(ROM): $(ELF)
+$(ROM):
+	python3 script.py
+	$(MAKE) $(ELF)
 	$(ELF2ROM) -cic 6105 $< $@
 
 $(ROMC): $(ROM) $(ELF) $(BUILD_DIR)/compress_ranges.txt
