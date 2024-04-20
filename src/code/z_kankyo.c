@@ -951,10 +951,11 @@ void Environment_Update(PlayState* play, EnvironmentContext* envCtx, LightContex
             }
         }
 
-        //! @bug `gTimeSpeed` is unsigned, it can't be negative
+        //! @bug the original code has ``|| gTimeSpeed < 0``,
+        //! `gTimeSpeed` is unsigned, it can't be negative
         if (((((void)0, gSaveContext.sceneLayer) >= 5 || gTimeSpeed != 0) &&
              ((void)0, gSaveContext.save.dayTime) > gSaveContext.skyboxTime) ||
-            (((void)0, gSaveContext.save.dayTime) < CLOCK_TIME(1, 0) || gTimeSpeed < 0)) {
+            (((void)0, gSaveContext.save.dayTime) < CLOCK_TIME(1, 0))) {
 
             gSaveContext.skyboxTime = ((void)0, gSaveContext.save.dayTime);
         }
