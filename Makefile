@@ -10,11 +10,12 @@ SHELL = /bin/bash
 COMPILER := gcc
 
 # Target game version. Currently only the following version is supported:
+#   gc-eu-mq       GameCube Europe/PAL Master Quest
 #   gc-eu-mq-dbg   GameCube Europe/PAL Master Quest Debug
 #   hackeroot-mq   HackerOoT, based on gc-eu-mq-dbg (default)
 #
 # The following versions are work-in-progress and not yet matching:
-#   gc-eu-mq       GameCube Europe/PAL Master Quest
+#   gc-eu          GameCube Europe/PAL
 #
 # Note: choosing hackeroot-mq will enable HackerOoT features,
 #       if another version is chosen, this repo will be like
@@ -71,14 +72,23 @@ else
 endif
 
 # Version-specific settings
-ifeq ($(VERSION),gc-eu-mq)
+ifeq ($(VERSION),gc-eu)
   DEBUG := 0
   HACKEROOT := 0
+else ifeq ($(VERSION),gc-eu-mq)
+  DEBUG := 0
+  HACKEROOT := 0
+  CFLAGS += -DOOT_MQ
+  CPPFLAGS += -DOOT_MQ
 else ifeq ($(VERSION),gc-eu-mq-dbg)
   DEBUG := 1
   HACKEROOT := 0
+  CFLAGS += -DOOT_MQ
+  CPPFLAGS += -DOOT_MQ
 else ifeq ($(VERSION),hackeroot-mq)
   HACKEROOT := 1
+  CFLAGS += -DOOT_MQ
+  CPPFLAGS += -DOOT_MQ
 else
 $(error Unsupported version $(VERSION))
 endif
