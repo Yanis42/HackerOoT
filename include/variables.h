@@ -62,7 +62,7 @@ extern GameStateOverlay gGameStateOverlayTable[GAMESTATE_ID_MAX];
 extern u8 gWeatherMode;
 extern u8 gLightConfigAfterUnderwater;
 extern u8 gInterruptSongOfStorms;
-extern u16 gTimeSpeed;
+extern s16 gTimeSpeed;
 extern s32 gZeldaArenaLogSeverity;
 extern MapData gMapDataTable;
 extern s16 gSpoilingItems[3];

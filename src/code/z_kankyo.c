@@ -32,7 +32,7 @@ u8 gInterruptSongOfStorms = false;
 u8 gSkyboxIsChanging = false;
 
 // how many units of time that pass every update
-u16 gTimeSpeed = 0;
+s16 gTimeSpeed = 0;
 
 u16 sSunScreenDepth = GPACK_ZDZ(G_MAXFBZ, 0);
 
@@ -951,11 +951,10 @@ void Environment_Update(PlayState* play, EnvironmentContext* envCtx, LightContex
             }
         }
 
-        //! @bug the original code has ``|| gTimeSpeed < 0``,
-        //! `gTimeSpeed` is unsigned, it can't be negative
+        //! @bug `gTimeSpeed` is unsigned on the original code, it can't be negative
         if (((((void)0, gSaveContext.sceneLayer) >= 5 || gTimeSpeed != 0) &&
              ((void)0, gSaveContext.save.dayTime) > gSaveContext.skyboxTime) ||
-            (((void)0, gSaveContext.save.dayTime) < CLOCK_TIME(1, 0))) {
+            (((void)0, gSaveContext.save.dayTime) < CLOCK_TIME(1, 0) || gTimeSpeed < 0)) {
 
             gSaveContext.skyboxTime = ((void)0, gSaveContext.save.dayTime);
         }
