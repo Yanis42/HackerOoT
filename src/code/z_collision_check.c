@@ -3558,8 +3558,8 @@ s32 CollisionCheck_CylSideVsLineSeg(f32 radius, f32 height, f32 offset, Vec3f* a
     Vec3f actorToItem;
     Vec3f actorToItemProj;
     Vec3f itemStep;
-    f32 frac1;
-    f32 frac2;
+    f32 frac1 = 1.0f;
+    f32 frac2 = 1.0f;
     u32 intersect2;
     u32 intersect1;
     u32 test1;

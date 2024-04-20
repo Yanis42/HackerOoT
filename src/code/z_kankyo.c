@@ -967,7 +967,7 @@ void Environment_Update(PlayState* play, EnvironmentContext* envCtx, LightContex
             gSaveContext.save.nightFlag = 0;
         }
 
-        if (CAN_SHOW_TIME_INFOS && (R_ENABLE_ARENA_DBG != 0) || (CREG(2) != 0)) {
+        if (CAN_SHOW_TIME_INFOS && ((R_ENABLE_ARENA_DBG != 0) || (CREG(2) != 0))) {
             Gfx* displayList;
             Gfx* prevDisplayList;
 
@@ -2370,8 +2370,8 @@ Color_RGB8 sSandstormEnvColors[] = {
 };
 
 void Environment_DrawSandstorm(PlayState* play, u8 sandstormState) {
-    s32 primA1;
-    s32 envA1;
+    s32 primA1 = 0;
+    s32 envA1 = 0;
     s32 primA = play->envCtx.sandstormPrimA;
     s32 envA = play->envCtx.sandstormEnvA;
     Color_RGBA8 primColor;

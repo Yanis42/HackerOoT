@@ -454,8 +454,8 @@ void Skybox_Calculate128(SkyboxContext* skyboxCtx, s32 nFaces) {
 void Skybox_Setup(PlayState* play, SkyboxContext* skyboxCtx, s16 skyboxId) {
     u32 size;
     s16 i;
-    u8 skybox1Index;
-    u8 skybox2Index;
+    u8 skybox1Index = 0;
+    u8 skybox2Index = 0;
     s32 pad;
     s32 skyboxConfig;
 

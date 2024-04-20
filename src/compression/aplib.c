@@ -11,6 +11,7 @@
  * http://www.ibsensoftware.com/
  */
 #include "compression.h"
+#include "functions.h"
 
 static struct decoder dec;
 

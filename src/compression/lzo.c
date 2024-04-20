@@ -1,4 +1,5 @@
 #include "compression.h"
+#include "functions.h"
 
 /* <z64.me> adapted from lzo1x_d.ch */
 

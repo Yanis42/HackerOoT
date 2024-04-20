@@ -409,6 +409,7 @@ s32 AudioLoad_SyncLoadSample(Sample* sample, s32 fontId) {
             sample->sampleAddr = sampleAddr;
         }
     }
+    return 1;
 }
 
 s32 AudioLoad_SyncLoadInstrument(s32 fontId, s32 instId, s32 drumId) {
@@ -434,6 +435,7 @@ s32 AudioLoad_SyncLoadInstrument(s32 fontId, s32 instId, s32 drumId) {
         AudioLoad_SyncLoadSample(drum->tunedSample.sample, fontId);
         return 0;
     }
+    return 1;
 }
 
 void AudioLoad_AsyncLoad(s32 tableType, s32 id, s32 nChunks, s32 retData, OSMesgQueue* retQueue) {
@@ -506,8 +508,8 @@ s32 AudioLoad_SyncInitSeqPlayer(s32 playerIdx, s32 seqId, s32 arg2) {
     }
 
     gAudioCtx.seqPlayers[playerIdx].skipTicks = 0;
-    AudioLoad_SyncInitSeqPlayerInternal(playerIdx, seqId, arg2);
-    // Intentionally missing return. Returning the result of the above function
+    return AudioLoad_SyncInitSeqPlayerInternal(playerIdx, seqId, arg2);
+    // The original code is intentionally missing return. Returning the result of the above function
     // call matches but is UB because it too is missing a return, and using the
     // result of a non-void function that has failed to return a value is UB.
     // The callers of this function do not use the return value, so it's fine.
@@ -519,8 +521,8 @@ s32 AudioLoad_SyncInitSeqPlayerSkipTicks(s32 playerIdx, s32 seqId, s32 skipTicks
     }
 
     gAudioCtx.seqPlayers[playerIdx].skipTicks = skipTicks;
-    AudioLoad_SyncInitSeqPlayerInternal(playerIdx, seqId, 0);
-    // Missing return, see above.
+    return AudioLoad_SyncInitSeqPlayerInternal(playerIdx, seqId, 0);
+    // the original code is missing a return, see above.
 }
 
 s32 AudioLoad_SyncInitSeqPlayerInternal(s32 playerIdx, s32 seqId, s32 arg2) {
@@ -562,7 +564,8 @@ s32 AudioLoad_SyncInitSeqPlayerInternal(s32 playerIdx, s32 seqId, s32 arg2) {
     seqPlayer->finished = false;
     seqPlayer->playerIdx = playerIdx;
     AudioSeq_SkipForwardSequence(seqPlayer);
-    //! @bug missing return (but the return value is not used so it's not UB)
+    //! @bug the original code is missing a return (but the return value is not used so it's not UB)
+    return 1;
 }
 
 u8* AudioLoad_SyncLoadSeq(s32 seqId) {

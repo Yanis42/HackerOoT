@@ -3120,7 +3120,7 @@ void Message_Update(PlayState* play) {
     Input* input = &play->state.input[0];
     s16 var;
     s16 focusScreenPosX;
-    s16 averageY;
+    s16 averageY = 0;
     s16 playerFocusScreenPosY;
     s16 actorFocusScreenPosY;
 
