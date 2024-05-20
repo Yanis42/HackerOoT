@@ -329,9 +329,17 @@ static int pack_gcm(FILE *f, const char *dirname, bool is_tgc, uint32_t start_of
         fwrite(buffer, 1, sizeof(buffer), f);
     }
     fwrite(fst.string_table, 1, fst.string_table_size, f);
+    fst_destroy(&fst);
+
+    // Pad with zeroes if necessary
+    uint32_t prev_file_offset = file_offset;
+    file_offset = align(file_offset, 0x8000);
+    if (file_offset != prev_file_offset) {
+        fseek(f, file_offset - 1, SEEK_SET);
+        fputc(0, f);
+    }
 
     *end_offset = file_offset;
-    fst_destroy(&fst);
     return 1;
 }
 
