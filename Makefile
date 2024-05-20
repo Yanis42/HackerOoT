@@ -391,10 +391,14 @@ iso:
 	$(V)$(GZINJECT) -a extract -s baseroms/$(VERSION)/baseiso.iso
 	$(V)cp $(BUILD_DIR)/$(DMA_CONFIG_FILE) isoextract/zlj_f.tgc/$(DMA_CONFIG_FILE)
 	$(V)cp $(ROMC) isoextract/zlj_f.tgc/zlj_f.n64
-	$(V)$(RM) -r isoextract/S_*.tgc/ isoextract/zlj_f.tgc/*.thp
+	$(V)$(RM) -r isoextract/zlj_f.tgc/*.thp isoextract/zlj_f.tgc/urazlj_f.n64
 	$(V)$(FLIPS) --apply tools/gamecube.bps isoextract/zlj_f.tgc/main.dol isoextract/zlj_f.tgc/main.dol
+	$(V)mkdir temp/
+	$(V)cp -r isoextract/zlj_f.tgc/* temp/
+	$(V)$(RM) -r isoextract/*
+	$(V)cp -r temp/* isoextract/
 	$(V)$(GZINJECT) -a pack -s $(ISO)
-	$(V)$(RM) -r isoextract/
+	$(V)$(RM) -r isoextract/ temp/
 	$(call print,Success!)
 
 clean:
