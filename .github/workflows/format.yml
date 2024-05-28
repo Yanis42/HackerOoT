@@ -9,11 +9,7 @@ on:
 jobs:
   setup:
     name: Setup Python
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
       with:
@@ -30,7 +26,7 @@ jobs:
   check-main:
     name: Check all files
     needs: setup
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     if: ${{ github.event.action }} == 'push'
     steps:
     - name: Check file's formatting
@@ -39,7 +35,7 @@ jobs:
   check-pr:
     name: Check modified files
     needs: setup
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     if: ${{ github.event.action }} == 'pull_request'
     steps:
     - name: Check file's formatting
