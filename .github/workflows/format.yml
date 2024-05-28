@@ -30,6 +30,7 @@ jobs:
   check-main:
     name: Check all files
     needs: setup
+    runs-on: ${{ matrix.os }}
     if: ${{ github.event.action }} == 'push'
     steps:
     - name: Check file's formatting
@@ -38,6 +39,7 @@ jobs:
   check-pr:
     name: Check modified files
     needs: setup
+    runs-on: ${{ matrix.os }}
     if: ${{ github.event.action }} == 'pull_request'
     steps:
     - name: Check file's formatting
