@@ -2,9 +2,9 @@ name: Format check
 
 on:
   push:
-    branches: [ develop/2.1.0 ]
+    branches: [ '*' ]
   pull_request:
-    branches: [ develop/2.1.0 ]
+    branches: [ '*' ]
 
 jobs:
   setup:
