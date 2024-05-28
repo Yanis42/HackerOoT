@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Print
-      run: echo ${{ github.event.action }}
+      run: echo ${{ github.event_name }}
 
   check-main:
-    if: ${{ github.event.action }} == 'push'
+    if: ${{ github.event_name == 'push' }}
     name: Check all files
     runs-on: ubuntu-latest
     steps:
@@ -34,7 +34,7 @@ jobs:
       run: ./tools/check_format.py
 
   check-pr:
-    if: ${{ github.event.action }} == 'pull_request'
+    if: ${{ github.event_name == 'pull_request' }}
     name: Check modified files
     runs-on: ubuntu-latest
     steps:
