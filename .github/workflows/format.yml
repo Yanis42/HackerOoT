@@ -7,13 +7,6 @@ on:
     branches: [ '*' ]
 
 jobs:
-  get-event:
-    name: Prints event
-    runs-on: ubuntu-latest
-    steps:
-    - name: Print
-      run: echo ${{ github.event_name }}
-
   check-main:
     if: ${{ github.event_name == 'push' }}
     name: Check all files
