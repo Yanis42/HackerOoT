@@ -397,7 +397,7 @@ iso:
 	$(V)cp -r isoextract/zlj_f.tgc/* temp/
 	$(V)$(RM) -r isoextract/*
 	$(V)cp -r temp/* isoextract/
-	$(V)$(GZINJECT) -a pack -s $(ISO)
+	$(V)$(GZINJECT) -a pack -t DHKO01 -s $(ISO)
 	$(V)$(RM) -r isoextract/ temp/
 	$(call print,Success!)
 
