@@ -9,6 +9,8 @@
 #include "assets/objects/object_bwall/object_bwall.h"
 #include "assets/objects/object_kingdodongo/object_kingdodongo.h"
 
+#include "config.h"
+
 #define FLAGS ACTOR_FLAG_4
 
 typedef struct {
@@ -50,7 +52,11 @@ static ColliderQuadInit sQuadInit = {
     {
         ELEMTYPE_UNK0,
         { 0x00000048, 0x00, 0x00 },
+#if ENABLE_BLUE_FIRE_ARROWS
+        { 0x00001048, 0x00, 0x00 },
+#else
         { 0x00000048, 0x00, 0x00 },
+#endif
         ATELEM_NONE,
         ACELEM_ON,
         OCELEM_NONE,

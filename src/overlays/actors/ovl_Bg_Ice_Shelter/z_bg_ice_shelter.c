@@ -7,6 +7,15 @@
 #include "z_bg_ice_shelter.h"
 #include "assets/objects/object_ice_objects/object_ice_objects.h"
 
+#include "config.h"
+#include "overlays/actors/ovl_En_Arrow/z_en_arrow.h"
+
+#if ENABLE_BLUE_FIRE_ARROWS
+#define AC_TYPES (AC_TYPE_PLAYER | AC_HARD | AC_TYPE_OTHER)
+#else
+#define AC_TYPES (AC_TYPE_PLAYER | AC_HARD)
+#endif
+
 #define FLAGS 0
 
 #define BGICESHELTER_GET_TYPE(thisx) (((thisx)->params >> 8) & 7)
@@ -64,7 +73,7 @@ static ColliderCylinderInit sCylinderInit2 = {
     {
         COLTYPE_HARD,
         AT_NONE,
-        AC_ON | AC_HARD | AC_TYPE_PLAYER,
+        AC_ON | AC_TYPES,
         OC1_NONE,
         OC2_TYPE_2,
         COLSHAPE_CYLINDER,
@@ -72,7 +81,11 @@ static ColliderCylinderInit sCylinderInit2 = {
     {
         ELEMTYPE_UNK0,
         { 0x00000000, 0x00, 0x00 },
+#if ENABLE_BLUE_FIRE_ARROWS
+        { 0x4FC1EFF6, 0x00, 0x00 },
+#else
         { 0x4FC1FFF6, 0x00, 0x00 },
+#endif
         ATELEM_NONE,
         ACELEM_ON,
         OCELEM_NONE,
@@ -110,6 +123,11 @@ void BgIceShelter_InitColliders(BgIceShelter* this, PlayState* play) {
         this->cylinder1.dim.pos.z += 30;
         this->cylinder2.dim.pos.z += 30;
     }
+
+#if ENABLE_BLUE_FIRE_ARROWS
+    this->cylinder1.dim.radius += 9;
+    this->cylinder1.dim.height += 30;
+#endif
 }
 
 void BgIceShelter_InitDynaPoly(BgIceShelter* this, PlayState* play, CollisionHeader* collision, s32 moveFlag) {
@@ -327,6 +345,15 @@ void BgIceShelter_SetupIdle(BgIceShelter* this) {
     this->alpha = 255;
 }
 
+#if ENABLE_BLUE_FIRE_ARROWS
+#define SHOULD_MELT                                                                             \
+    ((this->cylinder1.base.ac != NULL) && (this->cylinder1.base.ac->id == ACTOR_EN_ICE_HONO) || \
+     ((this->cylinder1.base.ac->id == ACTOR_EN_ARROW) &&                                        \
+      ((this->cylinder1.base.ac->params & ARROW_ICE) || (this->cylinder1.base.ac->params == ARROW_BLUE_FIRE_LIT))))
+#else
+#define SHOULD_MELT ((this->cylinder1.base.ac != NULL) && (this->cylinder1.base.ac->id == ACTOR_EN_ICE_HONO))
+#endif
+
 /**
  * Checks for collision with blue fire. Also used to freeze King Zora's actor.
  */
@@ -345,7 +372,7 @@ void BgIceShelter_Idle(BgIceShelter* this, PlayState* play) {
     if (this->cylinder1.base.acFlags & AC_HIT) {
         this->cylinder1.base.acFlags &= ~AC_HIT;
 
-        if ((this->cylinder1.base.ac != NULL) && (this->cylinder1.base.ac->id == ACTOR_EN_ICE_HONO)) {
+        if (SHOULD_MELT) {
             if (type == RED_ICE_KING_ZORA) {
                 if (this->dyna.actor.parent != NULL) {
                     this->dyna.actor.parent->freezeTimer = 50;

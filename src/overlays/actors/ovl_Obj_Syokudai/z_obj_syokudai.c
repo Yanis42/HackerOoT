@@ -9,6 +9,14 @@
 #include "assets/objects/gameplay_keep/gameplay_keep.h"
 #include "assets/objects/object_syokudai/object_syokudai.h"
 
+#include "config.h"
+
+#if ENABLE_BLUE_FIRE_ARROWS
+#define AT_TYPES (AC_TYPE_PLAYER | AC_TYPE_OTHER)
+#else
+#define AT_TYPES (AC_TYPE_PLAYER)
+#endif
+
 #define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_10)
 
 void ObjSyokudai_Init(Actor* thisx, PlayState* play);
@@ -52,7 +60,7 @@ static ColliderCylinderInit sCylInitFlame = {
     {
         COLTYPE_NONE,
         AT_NONE,
-        AC_ON | AC_TYPE_PLAYER,
+        AC_ON | AT_TYPES,
         OC1_NONE,
         OC2_NONE,
         COLSHAPE_CYLINDER,
@@ -60,7 +68,11 @@ static ColliderCylinderInit sCylInitFlame = {
     {
         ELEMTYPE_UNK2,
         { 0x00000000, 0x00, 0x00 },
+#if ENABLE_BLUE_FIRE_TORCHES
+        { 0x00061820, 0x00, 0x00 },
+#else
         { 0x00020820, 0x00, 0x00 },
+#endif
         ATELEM_NONE,
         ACELEM_ON,
         OCELEM_NONE,
@@ -117,6 +129,18 @@ void ObjSyokudai_Destroy(Actor* thisx, PlayState* play) {
     LightContext_RemoveLight(play, &play->lightCtx, this->lightNode);
 }
 
+#if ENABLE_BLUE_FIRE_TORCHES
+#define ARROW_DMG_FLAGS (DMG_FIRE | DMG_ICE | DMG_ARROW_NORMAL)
+#define UNK_COND                                                                          \
+    ((torchType != 0) && (((interactionType > 0) && (dmgFlags & (DMG_FIRE | DMG_ICE))) || \
+                          ((interactionType < 0) && (player->unk_860 != 0))))
+#else
+#define ARROW_DMG_FLAGS (DMG_FIRE | DMG_ARROW_NORMAL)
+#define UNK_COND         \
+    ((torchType != 0) && \
+     (((interactionType > 0) && (dmgFlags & DMG_FIRE)) || ((interactionType < 0) && (player->unk_860 != 0))))
+#endif
+
 void ObjSyokudai_Update(Actor* thisx, PlayState* play2) {
     PlayState* play = play2;
     ObjSyokudai* this = (ObjSyokudai*)thisx;
@@ -133,8 +157,6 @@ void ObjSyokudai_Update(Actor* thisx, PlayState* play2) {
     s32 interactionType;
     u32 dmgFlags;
     Vec3f tipToFlame;
-    s32 pad;
-    s32 pad2;
 
     litTimeScale = torchCount;
     if (torchCount == 10) {
@@ -172,9 +194,20 @@ void ObjSyokudai_Update(Actor* thisx, PlayState* play2) {
         }
         if (this->colliderFlame.base.acFlags & AC_HIT) {
             dmgFlags = this->colliderFlame.elem.acHitElem->atDmgInfo.dmgFlags;
-            if (dmgFlags & (DMG_FIRE | DMG_ARROW_NORMAL)) {
+            if (dmgFlags & ARROW_DMG_FLAGS) {
                 interactionType = 1;
             }
+
+#if ENABLE_BLUE_FIRE_TORCHES
+            if (dmgFlags & DMG_FIRE) {
+                this->torchMode = TORCH_MODE_NORMAL_FIRE;
+            }
+
+            if (dmgFlags & DMG_ICE) {
+                this->torchMode = TORCH_MODE_BLUE_FIRE;
+            }
+#endif
+
         } else if (player->heldItemAction == PLAYER_IA_DEKU_STICK) {
             Math_Vec3f_Diff(&player->meleeWeaponInfo[0].tip, &this->actor.world.pos, &tipToFlame);
             tipToFlame.y -= 67.0f;
@@ -182,6 +215,7 @@ void ObjSyokudai_Update(Actor* thisx, PlayState* play2) {
                 interactionType = -1;
             }
         }
+
         if (interactionType != 0) {
             if (this->litTimer != 0) {
                 if (interactionType < 0) {
@@ -196,19 +230,42 @@ void ObjSyokudai_Update(Actor* thisx, PlayState* play2) {
                 } else if (dmgFlags & DMG_ARROW_NORMAL) {
                     arrow = (EnArrow*)this->colliderFlame.base.ac;
                     if ((arrow->actor.update != NULL) && (arrow->actor.id == ACTOR_EN_ARROW)) {
+
+#ifdef ENABLE_BLUE_FIRE_TORCHES
+                        s16 arrowParams;
+                        u32 arrowDmgFlags;
+
+                        switch (this->torchMode) {
+                            case TORCH_MODE_NORMAL_FIRE:
+                                arrowParams = 0;
+                                arrowDmgFlags = DMG_ARROW_FIRE;
+                                break;
+                            case TORCH_MODE_BLUE_FIRE:
+                                arrowParams = 11;
+                                arrowDmgFlags = DMG_ARROW_ICE;
+                                break;
+                            default:
+                                arrowParams = 2;
+                                arrowDmgFlags = DMG_ARROW_NORMAL;
+                                break;
+                        }
+
+                        arrow->actor.params = arrowParams;
+                        arrow->collider.elem.atDmgInfo.dmgFlags = arrowDmgFlags;
+#else
                         arrow->actor.params = 0;
                         arrow->collider.elem.atDmgInfo.dmgFlags = DMG_ARROW_FIRE;
+#endif
                     }
                 }
                 if ((0 <= this->litTimer) && (this->litTimer < (50 * litTimeScale + 100)) && (torchType != 0)) {
                     this->litTimer = 50 * litTimeScale + 100;
                 }
-            } else if ((torchType != 0) && (((interactionType > 0) && (dmgFlags & DMG_FIRE)) ||
-                                            ((interactionType < 0) && (player->unk_860 != 0)))) {
-
+            } else if (UNK_COND) {
                 if ((interactionType < 0) && (player->unk_860 < 200)) {
                     player->unk_860 = 200;
                 }
+
                 if (torchCount == 0) {
                     this->litTimer = -1;
                     if (torchType != 2) {
@@ -253,7 +310,20 @@ void ObjSyokudai_Update(Actor* thisx, PlayState* play2) {
         brightness = (u8)(Rand_ZeroOne() * 127.0f) + 128;
         func_8002F974(&this->actor, NA_SE_EV_TORCH - SFX_FLAG);
     }
+
+#if ENABLE_BLUE_FIRE_TORCHES
+    switch (this->torchMode) {
+        case TORCH_MODE_NORMAL_FIRE:
+            Lights_PointSetColorAndRadius(&this->lightInfo, brightness, brightness, 0, lightRadius);
+            break;
+        case TORCH_MODE_BLUE_FIRE:
+            Lights_PointSetColorAndRadius(&this->lightInfo, 0, brightness - 20, brightness, lightRadius);
+            break;
+    }
+#else
     Lights_PointSetColorAndRadius(&this->lightInfo, brightness, brightness, 0, lightRadius);
+#endif
+
     this->flameTexScroll++;
 }
 
@@ -266,6 +336,7 @@ void ObjSyokudai_Draw(Actor* thisx, PlayState* play) {
     timerMax = (((this->actor.params >> 6) & 0xF) * 50) + 100;
 
     OPEN_DISPS(play->state.gfxCtx, "../z_obj_syokudai.c", 707);
+
     Gfx_SetupDL_25Opa(play->state.gfxCtx);
 
     gSPMatrix(POLY_OPA_DISP++, MATRIX_NEW(play->state.gfxCtx, "../z_obj_syokudai.c", 714),
@@ -291,9 +362,37 @@ void ObjSyokudai_Draw(Actor* thisx, PlayState* play) {
                    Gfx_TwoTexScroll(play->state.gfxCtx, G_TX_RENDERTILE, 0, 0, 0x20, 0x40, 1, 0,
                                     (this->flameTexScroll * -20) & 0x1FF, 0x20, 0x80));
 
-        gDPSetPrimColor(POLY_XLU_DISP++, 0x80, 0x80, 255, 255, 0, 255);
+#if ENABLE_BLUE_FIRE_TORCHES
+        Color_RGBA8 flamePrimColor = { 255, 255, 255, 255 };
+        Color_RGBA8 flameEnvColor = { 255, 255, 255, 255 };
 
+        switch (this->torchMode) {
+            case TORCH_MODE_NORMAL_FIRE:
+                flamePrimColor.r = 255;
+                flamePrimColor.g = 255;
+                flamePrimColor.b = 0;
+                flameEnvColor.r = 255;
+                flameEnvColor.g = 0;
+                flameEnvColor.b = 0;
+                break;
+            case TORCH_MODE_BLUE_FIRE:
+                flamePrimColor.r = 170;
+                flamePrimColor.g = 255;
+                flamePrimColor.b = 255;
+                flameEnvColor.r = 0;
+                flameEnvColor.g = 150;
+                flameEnvColor.b = 255;
+                break;
+            default:
+                break;
+        }
+
+        gDPSetPrimColor(POLY_XLU_DISP++, 0x80, 0x80, flamePrimColor.r, flamePrimColor.g, flamePrimColor.b, 255);
+        gDPSetEnvColor(POLY_XLU_DISP++, flameEnvColor.r, flameEnvColor.g, flameEnvColor.b, 0);
+#else
+        gDPSetPrimColor(POLY_XLU_DISP++, 0x80, 0x80, 255, 255, 0, 255);
         gDPSetEnvColor(POLY_XLU_DISP++, 255, 0, 0, 0);
+#endif
 
         Matrix_Translate(0.0f, 52.0f, 0.0f, MTXMODE_APPLY);
         Matrix_RotateY(
@@ -306,5 +405,6 @@ void ObjSyokudai_Draw(Actor* thisx, PlayState* play) {
 
         gSPDisplayList(POLY_XLU_DISP++, gEffFire1DL);
     }
+
     CLOSE_DISPS(play->state.gfxCtx, "../z_obj_syokudai.c", 749);
 }

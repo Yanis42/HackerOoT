@@ -7,6 +7,14 @@
 #include "z_en_arrow.h"
 #include "assets/objects/gameplay_keep/gameplay_keep.h"
 
+#include "config.h"
+
+#if ENABLE_BLUE_FIRE_ARROWS
+#define AT_TYPES (AT_TYPE_PLAYER | AT_TYPE_OTHER)
+#else
+#define AT_TYPES (AT_TYPE_PLAYER)
+#endif
+
 #define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_5)
 
 void EnArrow_Init(Actor* thisx, PlayState* play);
@@ -34,7 +42,7 @@ ActorInit En_Arrow_InitVars = {
 static ColliderQuadInit sColliderInit = {
     {
         COLTYPE_NONE,
-        AT_ON | AT_TYPE_PLAYER,
+        AT_ON | AT_TYPES,
         AC_NONE,
         OC1_NONE,
         OC2_TYPE_PLAYER,
@@ -77,8 +85,19 @@ void EnArrow_Init(Actor* thisx, PlayState* play) {
         0, 1, 0, { 255, 255, 170, 255 }, { 255, 255, 0, 0 },
     };
     static u32 dmgFlags[] = {
-        DMG_ARROW_FIRE,  DMG_ARROW_NORMAL, DMG_ARROW_NORMAL, DMG_ARROW_FIRE, DMG_ARROW_ICE,
-        DMG_ARROW_LIGHT, DMG_ARROW_UNK3,   DMG_ARROW_UNK1,   DMG_ARROW_UNK2, DMG_SLINGSHOT,
+        DMG_ARROW_FIRE,
+        DMG_ARROW_NORMAL,
+        DMG_ARROW_NORMAL,
+        DMG_ARROW_FIRE,
+        DMG_ARROW_ICE,
+        DMG_ARROW_LIGHT,
+        DMG_ARROW_UNK3,
+        DMG_ARROW_UNK1,
+        DMG_ARROW_UNK2,
+        DMG_SLINGSHOT,
+#if ENABLE_BLUE_FIRE_TORCHES
+        DMG_ARROW_ICE,
+#endif
     };
     EnArrow* this = (EnArrow*)thisx;
 
@@ -89,13 +108,12 @@ void EnArrow_Init(Actor* thisx, PlayState* play) {
         this->actor.params = ARROW_NUT;
     }
 
-    if (this->actor.params <= ARROW_SEED) {
-
+    if (this->actor.params <= ARROW_SEED || this->actor.params == ARROW_BLUE_FIRE_LIT) {
         if (this->actor.params <= ARROW_0E) {
             SkelAnime_Init(play, &this->skelAnime, &gArrowSkel, &gArrow2Anim, NULL, NULL, 0);
         }
 
-        if (this->actor.params <= ARROW_NORMAL) {
+        if (this->actor.params <= ARROW_NORMAL || this->actor.params == ARROW_BLUE_FIRE_LIT) {
             if (this->actor.params == ARROW_NORMAL_HORSE) {
                 blureNormal.elemDuration = 4;
             } else {
@@ -120,14 +138,14 @@ void EnArrow_Init(Actor* thisx, PlayState* play) {
         Collider_InitQuad(play, &this->collider);
         Collider_SetQuad(play, &this->collider, &this->actor, &sColliderInit);
 
-        if (this->actor.params <= ARROW_NORMAL) {
+        if (this->actor.params <= ARROW_NORMAL || this->actor.params == ARROW_BLUE_FIRE_LIT) {
             this->collider.elem.atElemFlags &= ~ATELEM_SFX_MASK;
             this->collider.elem.atElemFlags |= ATELEM_SFX_NORMAL;
         }
 
         if (this->actor.params < 0) {
             this->collider.base.atFlags = (AT_ON | AT_TYPE_ENEMY);
-        } else if (this->actor.params <= ARROW_SEED) {
+        } else if (this->actor.params <= ARROW_SEED || this->actor.params == ARROW_BLUE_FIRE_LIT) {
             this->collider.elem.atDmgInfo.dmgFlags = dmgFlags[this->actor.params];
             LOG_HEX("this->at_info.cl_elem.at_btl_info.at_type", this->collider.elem.atDmgInfo.dmgFlags,
                     "../z_en_arrow.c", 707);
@@ -140,7 +158,7 @@ void EnArrow_Init(Actor* thisx, PlayState* play) {
 void EnArrow_Destroy(Actor* thisx, PlayState* play) {
     EnArrow* this = (EnArrow*)thisx;
 
-    if (this->actor.params <= ARROW_LIGHT) {
+    if (this->actor.params <= ARROW_LIGHT || this->actor.params == ARROW_BLUE_FIRE_LIT) {
         Effect_Delete(play, this->effectIndex);
     }
 
@@ -169,6 +187,9 @@ void EnArrow_Shoot(EnArrow* this, PlayState* play) {
             case ARROW_NORMAL_LIT:
             case ARROW_NORMAL_HORSE:
             case ARROW_NORMAL:
+#if ENABLE_BLUE_FIRE_TORCHES
+            case ARROW_BLUE_FIRE_LIT:
+#endif
                 Player_PlaySfx(player, NA_SE_IT_ARROW_SHOT);
                 break;
 
@@ -182,7 +203,7 @@ void EnArrow_Shoot(EnArrow* this, PlayState* play) {
         EnArrow_SetupAction(this, EnArrow_Fly);
         Math_Vec3f_Copy(&this->unk_210, &this->actor.world.pos);
 
-        if (this->actor.params >= ARROW_SEED) {
+        if (this->actor.params >= ARROW_SEED && this->actor.params != ARROW_BLUE_FIRE_LIT) {
             Actor_SetProjectileSpeed(&this->actor, 80.0f);
             this->timer = 15;
             this->actor.shape.rot.x = this->actor.shape.rot.y = this->actor.shape.rot.z = 0;
@@ -259,8 +280,12 @@ void EnArrow_Fly(EnArrow* this, PlayState* play) {
     atTouched = (this->actor.params != ARROW_NORMAL_LIT) && (this->actor.params <= ARROW_SEED) &&
                 (this->collider.base.atFlags & AT_HIT);
 
+#if ENABLE_BLUE_FIRE_TORCHES
+    atTouched = this->actor.params != ARROW_BLUE_FIRE_LIT && atTouched;
+#endif
+
     if (atTouched || this->touchedPoly) {
-        if (this->actor.params >= ARROW_SEED) {
+        if (this->actor.params >= ARROW_SEED && this->actor.params != ARROW_BLUE_FIRE_LIT) {
             if (atTouched) {
                 this->actor.world.pos.x = (this->actor.world.pos.x + this->actor.prevPos.x) * 0.5f;
                 this->actor.world.pos.y = (this->actor.world.pos.y + this->actor.prevPos.y) * 0.5f;
@@ -333,7 +358,7 @@ void EnArrow_Fly(EnArrow* this, PlayState* play) {
             Math_Vec3f_Copy(&this->actor.world.pos, &hitPoint);
         }
 
-        if (this->actor.params <= ARROW_0E) {
+        if (this->actor.params <= ARROW_0E || this->actor.params == ARROW_BLUE_FIRE_LIT) {
             this->actor.shape.rot.x = Math_Atan2S(this->actor.speed, -this->actor.velocity.y);
         }
     }
@@ -403,13 +428,25 @@ void EnArrow_Update(Actor* thisx, PlayState* play) {
             Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, elementalActorIds[this->actor.params - 3],
                                this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z, 0, 0, 0, 0);
         }
-    } else if (this->actor.params == ARROW_NORMAL_LIT) {
+    } else if (this->actor.params == ARROW_NORMAL_LIT || this->actor.params == ARROW_BLUE_FIRE_LIT) {
         static Vec3f velocity = { 0.0f, 0.5f, 0.0f };
         static Vec3f accel = { 0.0f, 0.5f, 0.0f };
-        static Color_RGBA8 primColor = { 255, 255, 100, 255 };
-        static Color_RGBA8 envColor = { 255, 50, 0, 0 };
-        // spawn dust for the flame
-        func_8002836C(play, &this->unk_21C, &velocity, &accel, &primColor, &envColor, 100, 0, 8);
+
+        if (this->actor.params == ARROW_NORMAL_LIT) {
+            static Color_RGBA8 primColor = { 255, 255, 100, 255 };
+            static Color_RGBA8 envColor = { 255, 50, 0, 0 };
+            // spawn dust for the flame
+            func_8002836C(play, &this->unk_21C, &velocity, &accel, &primColor, &envColor, 100, 0, 8);
+        }
+
+#if ENABLE_BLUE_FIRE_TORCHES
+        else {
+            static Color_RGBA8 primColorBlueFire = { 100, 255, 255, 255 };
+            static Color_RGBA8 envColorBlueFire = { 0, 50, 255, 0 };
+            // spawn dust for the flame
+            func_8002836C(play, &this->unk_21C, &velocity, &accel, &primColorBlueFire, &envColorBlueFire, 100, 0, 8);
+        }
+#endif
     }
 }
 
@@ -427,8 +464,12 @@ void func_809B4800(EnArrow* this, PlayState* play) {
         Matrix_MultVec3f(&D_809B4E88, &sp44);
         Matrix_MultVec3f(&D_809B4E94, &sp38);
 
-        if (this->actor.params <= ARROW_SEED) {
+        if (this->actor.params <= ARROW_SEED || this->actor.params == ARROW_BLUE_FIRE_LIT) {
             addBlureVertex = this->actor.params <= ARROW_LIGHT;
+
+#if ENABLE_BLUE_FIRE_TORCHES
+            addBlureVertex = this->actor.params == ARROW_BLUE_FIRE_LIT || addBlureVertex;
+#endif
 
             if (this->hitActor == NULL) {
                 addBlureVertex &= func_80090480(play, &this->collider, &this->weaponInfo, &sp44, &sp38);
@@ -455,7 +496,7 @@ void EnArrow_Draw(Actor* thisx, PlayState* play) {
     u8 alpha;
     f32 scale;
 
-    if (this->actor.params <= ARROW_0E) {
+    if (this->actor.params <= ARROW_0E || this->actor.params == ARROW_BLUE_FIRE_LIT) {
         Gfx_SetupDL_25Opa(play->state.gfxCtx);
         SkelAnime_DrawLod(play, this->skelAnime.skeleton, this->skelAnime.jointTable, NULL, NULL, this,
                           (this->actor.projectedPos.z < MREG(95)) ? 0 : 1);

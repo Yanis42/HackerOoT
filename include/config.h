@@ -14,6 +14,8 @@
 #include "config/config_graphics.h"
 #include "config/config_memory.h"
 
+#include "config/config_mod.h"
+
 /* WARNING: Compatibility safeguards - don't remove this file unless you know what you're doing */
 #include "config/config_safeguards.h"
 
