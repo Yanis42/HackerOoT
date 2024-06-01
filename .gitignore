@@ -56,6 +56,9 @@ graphs/
 # Assets
 *.png
 *.jpg
+*.aiff
+*.aifc
+*.wav
 *.mdli
 *.anmi
 *.obj
@@ -67,7 +70,9 @@ extracted/
 !mod_assets/*
 
 # Docs
-!docs/tutorial/
+!docs/**/*.png
+docs/doxygen/
+!.vscode/extensions.json
 
 # Per-user configuration
 .python-version
