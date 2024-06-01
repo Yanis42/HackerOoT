@@ -130,6 +130,10 @@ def main():
     else:
         xmlFiles = []
         for currentPath, _, files in os.walk(os.path.join("assets", "xml")):
+            # Skip audio
+            if currentPath.startswith("assets/xml/audio"):
+                continue
+
             for file in files:
                 fullPath = os.path.join(currentPath, file)
                 if file.endswith(".xml"):
