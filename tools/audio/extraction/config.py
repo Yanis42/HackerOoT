@@ -128,6 +128,8 @@ VERSION_TABLE = {
                                             0x0D0D0, 0x38E90, 0x88910, 0xB87570, 0xB877E0, 0xB879A0, 0xB88090),
     "oot-gc-eu-mq-dbg"  :   GameVersionInfo(GameVersion.OOT_GC_EU_MQ_DBG, MMLVersion.OOT,
                                             0x19030, 0x44DF0, 0x94870, 0xBCC270, 0xBCC4E0, 0xBCC6A0, 0xBCCD90),
+    "hackeroot-mq"      :   GameVersionInfo(GameVersion.OOT_GC_EU_MQ_DBG, MMLVersion.OOT,
+                                            0x19030, 0x44DF0, 0x94870, 0xBCC270, 0xBCC4E0, 0xBCC6A0, 0xBCCD90),
   # "oot-ique-cn"       :   GameVersionInfo(GameVersion.OOT_IQUE_CN, MMLVersion.OOT,
   # "oot-ique-zh"       :   GameVersionInfo(GameVersion.OOT_IQUE_ZH, MMLVersion.OOT,
     # MM

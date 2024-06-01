@@ -106,6 +106,12 @@ else
 $(error Unsupported version $(VERSION))
 endif
 
+ifeq ($(VERSION),hackeroot-mq)
+  AUDIO_GAME_VERSION := $(VERSION)
+else
+  AUDIO_GAME_VERSION := oot-$(VERSION)
+endif
+
 PROJECT_DIR := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 BUILD_DIR := build/$(VERSION)
 EXPECTED_DIR := expected/$(BUILD_DIR)
@@ -476,7 +482,8 @@ venv:
 	$(call print,Success!)
 
 setup-audio:
-	$(AUDIO_EXTRACT) -r $(BASEROM_DIR)/baserom-decompressed.z64 -v oot-$(VERSION) --read-xml
+	$(call print,Audio Setup in progress...)
+	$(V)$(AUDIO_EXTRACT) -r $(BASEROM_DIR)/baserom-decompressed.z64 -v $(AUDIO_GAME_VERSION) --read-xml
 
 setup: venv
 	$(call print,Setup in progress...)
@@ -495,7 +502,8 @@ ifeq ($(VERSION),hackeroot-mq)
 # TODO: proper fix (for .s files)
 	cp baseroms/hackeroot-mq/baserom-decompressed.z64 baseroms/gc-eu-mq-dbg/baserom-decompressed.z64
 endif
-	$(MAKE) setup-audio
+	$(V)$(MAKE) setup-audio
+	$(call print,Success!)
 
 run: rom
 ifeq ($(N64_EMULATOR),)
@@ -567,7 +575,7 @@ $(ELF): $(TEXTURE_FILES_OUT) $(ASSET_FILES_OUT) $(O_FILES) $(OVL_RELOC_FILES) $(
         $(BUILD_DIR)/assets/audio/soundfont_sizes.h \
         $(BUILD_DIR)/assets/audio/audiobank_padding.o
 	$(call print,Linking:,,$@)
-	$(LD) -T $(LDSCRIPT) -T $(BUILD_DIR)/undefined_syms.txt --no-check-sections --accept-unknown-input-arch --emit-relocs -Map $(MAP) -o $@
+	$(V)$(LD) -T $(LDSCRIPT) -T $(BUILD_DIR)/undefined_syms.txt --no-check-sections --accept-unknown-input-arch --emit-relocs -Map $(MAP) -o $@
 
 ## Order-only prerequisites
 # These ensure e.g. the O_FILES are built before the OVL_RELOC_FILES.
