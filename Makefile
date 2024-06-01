@@ -713,28 +713,28 @@ F3DEX3/F3DEX3%.data: F3DEX3/F3DEX3%.data.bps F3DEX3/f3dzex2.data
 # first build samples...
 
 $(BUILD_DIR)/assets/audio/samples/%.half.aifc: assets/audio/samples/%.half.wav
-	$(SAMPLECONV) vadpcm-half $< $@
+	$(V)$(SAMPLECONV) vadpcm-half $< $@
 # TESTING:
 #	@(cmp $(<D)/aifc/$(<F:.half.wav=.half.aifc) $@ && echo "$(<F) OK") || (mkdir -p NONMATCHINGS/$(<D) && cp $(<D)/aifc/$(<F:.half.wav=.half.aifc) NONMATCHINGS/$(<D)/$(<F:.half.wav=.half.aifc))
 
 $(BUILD_DIR)/assets/audio/samples/%.aifc: assets/audio/samples/%.wav
-	$(SAMPLECONV) vadpcm $< $@
+	$(V)$(SAMPLECONV) vadpcm $< $@
 # TESTING:
 #	@(cmp $(<D)/aifc/$(<F:.wav=.aifc) $@ && echo "$(<F) OK") || (mkdir -p NONMATCHINGS/$(<D) && cp $(<D)/aifc/$(<F:.wav=.aifc) NONMATCHINGS/$(<D)/$(<F:.wav=.aifc))
 
 # then assemble the samplebanks...
 
 $(BUILD_DIR)/assets/audio/samplebanks/%.xml: assets/audio/samplebanks/%.xml
-	cat $< | $(BUILD_DIR_REPLACE) > $@
+	$(V)cat $< | $(BUILD_DIR_REPLACE) > $@
 
 .PRECIOUS: $(BUILD_DIR)/assets/audio/samplebanks/%.s
 $(BUILD_DIR)/assets/audio/samplebanks/%.s: $(BUILD_DIR)/assets/audio/samplebanks/%.xml | $(AIFC_FILES)
-	$(SBC) --makedepend $(@:.s=.d) $< $@
+	$(V)$(SBC) --makedepend $(@:.s=.d) $< $@
 
 -include $(SAMPLEBANK_DEP_FILES)
 
 $(BUILD_DIR)/assets/audio/samplebanks/%.o: $(BUILD_DIR)/assets/audio/samplebanks/%.s
-	$(AS) $(ASFLAGS) $< -o $@
+	$(V)$(AS) $(ASFLAGS) $< -o $@
 # TESTING:
 #	$(OBJCOPY) -O binary -j.rodata $@ $(@:.o=.bin)
 #	@cmp $(@:.o=.bin) $(patsubst $(BUILD_DIR)/assets/audio/samplebanks/%,$(EXTRACTED_DIR)/baserom_audiotest/audiotable_files/%,$(@:.o=.bin)) && echo "$(<F) OK"
@@ -742,19 +742,19 @@ $(BUILD_DIR)/assets/audio/samplebanks/%.o: $(BUILD_DIR)/assets/audio/samplebanks
 # also assemble the soundfonts and generate the associated headers...
 
 $(BUILD_DIR)/assets/audio/soundfonts/%.xml: assets/audio/soundfonts/%.xml
-	cat $< | $(BUILD_DIR_REPLACE) > $@
+	$(V)cat $< | $(BUILD_DIR_REPLACE) > $@
 
 .PRECIOUS: $(BUILD_DIR)/assets/audio/soundfonts/%.c $(BUILD_DIR)/assets/audio/soundfonts/%.h $(BUILD_DIR)/assets/audio/soundfonts/%.name
 $(BUILD_DIR)/assets/audio/soundfonts/%.c $(BUILD_DIR)/assets/audio/soundfonts/%.h $(BUILD_DIR)/assets/audio/soundfonts/%.name: $(BUILD_DIR)/assets/audio/soundfonts/%.xml | $(SAMPLEBANK_BUILD_XMLS) $(AIFC_FILES)
 # This rule can be triggered for either the .c or .h file, so $@ may refer to either the .c or .h file. A simple
 # substitution $(@:.c=.h) will fail ~50% of the time with -j. Instead, don't assume anything about the suffix of $@.
-	$(SFC) --makedepend $(basename $@).d $< $(basename $@).c $(basename $@).h $(basename $@).name
+	$(V)$(SFC) --makedepend $(basename $@).d $< $(basename $@).c $(basename $@).h $(basename $@).name
 
 -include $(SOUNDFONT_DEP_FILES)
 
 $(BUILD_DIR)/assets/audio/soundfonts/%.o: $(BUILD_DIR)/assets/audio/soundfonts/%.c $(BUILD_DIR)/assets/audio/soundfonts/%.name #$(SAMPLEBANK_O_FILES) # (for debugging only)
 # compile c to unlinked object
-	$(CC) -c $(CFLAGS) $(MIPS_VERSION) $(OPTFLAGS) -I include/audio -o $(@:.o=.tmp) $<
+	$(V)$(CC) -c $(CFLAGS) $(MIPS_VERSION) $(OPTFLAGS) -I include/audio -o $(@:.o=.tmp) $<
 # partial link
 	@$(LD) -r -T include/audio/sf.ld $(@:.o=.tmp) -o $(@:.o=.tmp2)
 # patch defined symbols to be ABS symbols so that they remain file-relative offsets forever
@@ -771,8 +771,8 @@ $(BUILD_DIR)/assets/audio/soundfonts/%.o: $(BUILD_DIR)/assets/audio/soundfonts/%
 # then assemble the sequences...
 
 $(BUILD_DIR)/assets/audio/sequences/%.o: assets/audio/sequences/%.seq include/audio/aseq.h | include/audio/sequence_ids.h $(SEQUENCE_TABLE) $(SOUNDFONT_HEADERS)
-	$(SEQ_CPP) $(SEQ_CPPFLAGS) $< -o $(@:.o=.S) -MMD -MT $@
-	$(AS) $(ASFLAGS) -I $(BUILD_DIR)/assets/audio/soundfonts -I include/audio $(@:.o=.S) -o $@
+	$(V)$(SEQ_CPP) $(SEQ_CPPFLAGS) $< -o $(@:.o=.S) -MMD -MT $@
+	$(V)$(AS) $(ASFLAGS) -I $(BUILD_DIR)/assets/audio/soundfonts -I include/audio $(@:.o=.S) -o $@
 # TESTING:
 #	$(OBJCOPY) -O binary -j.data $@ $(@:.o=.aseq)
 #	@(cmp $(@:.o=.aseq) $(patsubst $(BUILD_DIR)/assets/audio/sequences/%,$(EXTRACTED_DIR)/baserom_audiotest/audioseq_files/%,$(@:.o=.aseq)) && echo "$(<F) OK" || (mkdir -p NONMATCHINGS/sequences && cp $(@:.o=.aseq) NONMATCHINGS/sequences/$(@F:.o=.aseq)))
@@ -782,26 +782,26 @@ $(BUILD_DIR)/assets/audio/sequences/%.o: assets/audio/sequences/%.seq include/au
 # put together the tables
 
 $(BUILD_DIR)/assets/audio/samplebank_table.h: $(SAMPLEBANK_BUILD_XMLS)
-	$(ATBLGEN) -banks $@ $^
+	$(V)$(ATBLGEN) -banks $@ $^
 
 $(BUILD_DIR)/assets/audio/soundfont_table.h: $(SOUNDFONT_BUILD_XMLS)
-	$(ATBLGEN) -fonts $@ $^
+	$(V)$(ATBLGEN) -fonts $@ $^
 
 SEQ_ORDER_DEFS := -DDEFINE_SEQUENCE_PTR\(name,seqId,_2,_3,_4,_5\)=*\(name,seqId\) \
                   -DDEFINE_SEQUENCE\(name,seqId,_2,_3,_4,_5\)=\(name,seqId\)
 $(BUILD_DIR)/include/tables/sequence_order.in: $(SEQUENCE_TABLE)
-	$(CPP) $(CPPFLAGS) $< $(SEQ_ORDER_DEFS) -o $@
+	$(V)$(CPP) $(CPPFLAGS) $< $(SEQ_ORDER_DEFS) -o $@
 
 $(BUILD_DIR)/assets/audio/sequence_font_table.s: $(BUILD_DIR)/include/tables/sequence_order.in $(SEQUENCE_O_FILES)
-	$(ATBLGEN) -sequences $@ $^
+	$(V)$(ATBLGEN) -sequences $@ $^
 
 # build the tables into objects, move data -> rodata
 
 $(BUILD_DIR)/src/audio/tables/samplebank_table.o: src/audio/tables/samplebank_table.c $(BUILD_DIR)/assets/audio/samplebank_table.h
 ifneq ($(RUN_CC_CHECK),0)
-	$(CC_CHECK) $<
+	$(V)$(CC_CHECK) $<
 endif
-	$(CC) -c $(CFLAGS) $(MIPS_VERSION) $(OPTFLAGS) -o $(@:.o=.tmp) $<
+	$(V)$(CC) -c $(CFLAGS) $(MIPS_VERSION) $(OPTFLAGS) -o $(@:.o=.tmp) $<
 	@$(LD) -r -T include/audio/atbl_rdata.ld $(@:.o=.tmp) -o $@
 	@$(RM) $(@:.o=.tmp)
 # TESTING:
@@ -810,9 +810,9 @@ endif
 
 $(BUILD_DIR)/src/audio/tables/soundfont_table.o: src/audio/tables/soundfont_table.c $(BUILD_DIR)/assets/audio/soundfont_table.h $(SOUNDFONT_HEADERS)
 ifneq ($(RUN_CC_CHECK),0)
-	$(CC_CHECK) $<
+	$(V)$(CC_CHECK) $<
 endif
-	$(CC) -c $(CFLAGS) $(MIPS_VERSION) $(OPTFLAGS) -o $(@:.o=.tmp) $<
+	$(V)$(CC) -c $(CFLAGS) $(MIPS_VERSION) $(OPTFLAGS) -o $(@:.o=.tmp) $<
 	@$(LD) -r -T include/audio/atbl_rdata.ld $(@:.o=.tmp) -o $@
 	@$(RM) $(@:.o=.tmp)
 # TESTING:
@@ -821,9 +821,9 @@ endif
 
 $(BUILD_DIR)/src/audio/tables/sequence_table.o: src/audio/tables/sequence_table.c $(SEQUENCE_TABLE)
 ifneq ($(RUN_CC_CHECK),0)
-	$(CC_CHECK) $<
+	$(V)$(CC_CHECK) $<
 endif
-	$(CC) -c $(CFLAGS) $(MIPS_VERSION) $(OPTFLAGS) -I include/tables -o $(@:.o=.tmp) $<
+	$(V)$(CC) -c $(CFLAGS) $(MIPS_VERSION) $(OPTFLAGS) -I include/tables -o $(@:.o=.tmp) $<
 	@$(LD) -r -T include/audio/atbl_rdata.ld $(@:.o=.tmp) -o $@
 	@$(RM) $(@:.o=.tmp)
 # TESTING:
@@ -831,7 +831,7 @@ endif
 # Can't compare this due to pointers
 
 $(BUILD_DIR)/assets/audio/sequence_font_table.o: $(BUILD_DIR)/assets/audio/sequence_font_table.s
-	$(AS) $(ASFLAGS) $< -o $@
+	$(V)$(AS) $(ASFLAGS) $< -o $@
 # TESTING:
 #	$(OBJCOPY) -O binary -j.rodata $@ $(@:.o=.bin)
 #	@cmp $(@:.o=.bin) $(EXTRACTED_DIR)/baserom_audiotest/audio_code_tables/sequence_font_table.bin && echo "$(@F:.o=) OK"
@@ -841,14 +841,14 @@ $(BUILD_DIR)/assets/audio/sequence_font_table.o: $(BUILD_DIR)/assets/audio/seque
 $(BUILD_DIR)/src/audio/session_config.o: $(BUILD_DIR)/assets/audio/soundfont_sizes.h $(BUILD_DIR)/assets/audio/sequence_sizes.h
 
 $(BUILD_DIR)/assets/audio/soundfont_sizes.h: $(SOUNDFONT_O_FILES)
-	$(AFILE_SIZES) $@ NUM_SOUNDFONTS SOUNDFONT_SIZES $^
+	$(V)$(AFILE_SIZES) $@ NUM_SOUNDFONTS SOUNDFONT_SIZES $^
 
 $(BUILD_DIR)/assets/audio/sequence_sizes.h: $(SEQUENCE_O_FILES)
-	$(AFILE_SIZES) $@ NUM_SEQUENCES SEQUENCE_SIZES $^
+	$(V)$(AFILE_SIZES) $@ NUM_SEQUENCES SEQUENCE_SIZES $^
 
 # Extra audiobank padding that doesn't belong to any soundfont file
 $(BUILD_DIR)/assets/audio/audiobank_padding.o:
-	echo ".rdata; .fill 0x20" | $(AS) $(ASFLAGS) -o $@
+	$(V)echo ".rdata; .fill 0x20" | $(AS) $(ASFLAGS) -o $@
 
 -include $(DEP_FILES)
 
