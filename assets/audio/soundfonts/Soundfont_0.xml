@@ -423,7 +423,7 @@
         <Effect Name="EFFECT_130" Sample="SAMPLE_0_250"/>
         <Effect Name="EFFECT_131" Sample="SAMPLE_0_253"/>
         <Effect Name="EFFECT_132" Sample="SAMPLE_0_214"/>
-        <!-- <Effect/> -->
+        <Effect/>
         <Effect Name="EFFECT_134" Sample="SAMPLE_0_155"/>
         <Effect Name="EFFECT_135" Sample="SAMPLE_0_197"/>
         <Effect Name="EFFECT_FAUX_JETON" Sample="SAMPLE_0_FAUX_JETON"/>
