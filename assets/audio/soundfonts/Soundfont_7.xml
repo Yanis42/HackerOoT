@@ -1,0 +1,31 @@
+<Soundfont Name="Soundfont_7" Index="7" Medium="MEDIUM_CART" CachePolicy="CACHE_LOAD_TEMPORARY" SampleBank="$(BUILD_DIR)/assets/audio/samplebanks/SampleBank_3.xml" NumInstruments="10">
+    <Envelopes>
+        <Envelope Name="Env0" Release="248">
+            <Point Delay="2" Arg="32700"/>
+            <Point Delay="1" Arg="32700"/>
+            <Point Delay="32700" Arg="29430"/>
+        </Envelope>
+        <Envelope Name="Env1" Release="235">
+            <Point Delay="2" Arg="32700"/>
+            <Point Delay="1" Arg="32700"/>
+            <Point Delay="32700" Arg="29430"/>
+        </Envelope>
+    </Envelopes>
+    <Samples>
+        <Sample Name="SAMPLE_3_0"/>
+        <Sample Name="SAMPLE_3_1"/>
+        <Sample Name="SAMPLE_3_2"/>
+        <Sample Name="SAMPLE_3_3"/>
+        <Sample Name="SAMPLE_3_4"/>
+    </Samples>
+    <Drums>
+        <Drum Name="DRUM_0" Envelope="Env0" Pan="64" NoteStart="A0" NoteEnd="DF2" Sample="SAMPLE_3_1" BaseNote="A2"/>
+        <Drum Name="DRUM_1" Envelope="Env0" Pan="64" NoteStart="D2" NoteEnd="C6" Sample="SAMPLE_3_2"/>
+    </Drums>
+    <Instruments>
+        <Instrument ProgramNumber="0" Name="INST_0" Envelope="Env0" Sample="SAMPLE_3_0"/>
+        <Instrument ProgramNumber="2" Name="INST_2" Envelope="Env1" Sample="SAMPLE_3_3"/>
+        <Instrument ProgramNumber="3" Name="INST_3" Envelope="Env0" Sample="SAMPLE_3_4"/>
+        <Instrument ProgramNumber="4" Name="INST_4" Envelope="Env0" Sample="SAMPLE_3_4"/>
+    </Instruments>
+</Soundfont>

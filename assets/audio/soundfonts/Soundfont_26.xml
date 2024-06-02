@@ -1,0 +1,18 @@
+<Soundfont Name="Soundfont_26" Index="26" Medium="MEDIUM_CART" CachePolicy="CACHE_LOAD_TEMPORARY" SampleBank="$(BUILD_DIR)/assets/audio/samplebanks/SampleBank_0.xml" Indirect="1">
+    <Envelopes>
+        <Envelope Name="Env0" Release="93">
+            <Point Delay="2" Arg="32700"/>
+            <Point Delay="298" Arg="0"/>
+            <Point Delay="1" Arg="0"/>
+        </Envelope>
+    </Envelopes>
+    <Samples>
+        <Sample Name="SAMPLE_0_356"/>
+        <Sample Name="SAMPLE_0_357"/>
+        <Sample Name="SAMPLE_0_358"/>
+    </Samples>
+    <Instruments>
+        <Instrument ProgramNumber="14" Name="INST_14" Envelope="Env0" Sample="SAMPLE_0_357" RangeLo="G2" SampleLo="SAMPLE_0_356" RangeHi="F4" SampleHi="SAMPLE_0_358"/>
+        <Instrument ProgramNumber="13" Name="INST_13" Envelope="Env0" Sample="SAMPLE_0_357" RangeLo="G2" SampleLo="SAMPLE_0_356" RangeHi="F4" SampleHi="SAMPLE_0_358"/>
+    </Instruments>
+</Soundfont>

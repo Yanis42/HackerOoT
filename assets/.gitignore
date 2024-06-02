@@ -18,6 +18,3 @@
 *.wav
 *.seq
 !*.prg.seq
-
-audio/samplebanks/**/*.xml
-audio/soundfonts/**/*.xml
