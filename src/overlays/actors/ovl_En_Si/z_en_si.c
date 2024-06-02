@@ -97,7 +97,9 @@ void func_80AFB768(EnSi* this, PlayState* play) {
                     player->actor.freezeTimer = 10;
                 }
                 Message_StartTextbox(play, 0xB4, NULL);
-                Audio_PlayFanfare(NA_BGM_SMALL_ITEM_GET);
+                // Audio_PlayFanfare(NA_BGM_SMALL_ITEM_GET);
+                Audio_PlaySfxGeneral(NA_SE_VO_FAUX_JETON, &gSfxDefaultPos, 4, &gSfxDefaultFreqAndVolScale,
+                                &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
                 this->actionFunc = func_80AFB950;
             } else {
                 Collider_UpdateCylinder(&this->actor, &this->collider);
@@ -121,7 +123,9 @@ void func_80AFB89C(EnSi* this, PlayState* play) {
             player->actor.freezeTimer = 10;
         }
         Message_StartTextbox(play, 0xB4, NULL);
-        Audio_PlayFanfare(NA_BGM_SMALL_ITEM_GET);
+        // Audio_PlayFanfare(NA_BGM_SMALL_ITEM_GET);
+        Audio_PlaySfxGeneral(NA_SE_VO_FAUX_JETON, &gSfxDefaultPos, 4, &gSfxDefaultFreqAndVolScale,
+                                &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
         this->actionFunc = func_80AFB950;
     }
 }

@@ -1087,6 +1087,13 @@ skip:
         gSaveContext.cutsceneTrigger = 1;
     }
 #endif
+
+    if (CHECK_BTN_ALL(this->state.input[0].cur.button, BTN_L) &&
+        CHECK_BTN_ALL(this->state.input[0].press.button, BTN_A)) {
+            PRINTF("plays\n");
+        Audio_PlaySfxGeneral(NA_SE_VO_FAUX_JETON, &gSfxDefaultPos, 4, &gSfxDefaultFreqAndVolScale,
+                                &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
+    }
 }
 
 void Play_DrawOverlayElements(PlayState* this) {

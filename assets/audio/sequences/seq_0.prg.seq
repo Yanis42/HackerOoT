@@ -14780,6 +14780,16 @@ UNK_657B:
 /* 0x65A3 [0x78 0x30 0x41          ] */ notedv      PITCH_F5, 48, 65
 /* 0x65A6 [0xFF                    ] */ end
 
+.channel CHAN_FAUX_JETON
+    ldlayer 0, LAYER_FAUX_JETON
+    end
+
+.layer LAYER_FAUX_JETON
+    transpose   2
+    instr       FONTANY_INSTR_SFX
+    notedv      (SF0_EFFECT_FAUX_JETON - 2 * 64), 0, 100
+    end
+
 UNK_65A7:
     .byte 0x39, 0x3A, 0x3B
 
