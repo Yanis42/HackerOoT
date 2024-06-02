@@ -1,3 +1,11 @@
+# Faux Jeton Mod
+
+If you're not speaking french you won't get it so here's the joke explained: in french "token" means "jeton", and when you have a friend that betrays you, you can say "faux jeton", which literally means "fake token" but I guess you can translate this as "backstabber" in english. So, the joke is: "when you have an ice trap (skulltula) token, which can happen in tokensanity, it's a backstabber", which translated very bad in english but is very funny in french.
+
+The whole point of this mod is to integrate my joke as a new gold skulltula token sound, to finally achieve perfection.
+
+The original clip: https://clips.twitch.tv/ClumsyProudChimpanzeeBCWarrior
+
 # Hacker Zelda: Ocarina of Time (HackerOoT)
 
 [![Contributors][contributors-badge]][contributors]
