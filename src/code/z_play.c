@@ -1090,9 +1090,9 @@ skip:
 
     if (CHECK_BTN_ALL(this->state.input[0].cur.button, BTN_L) &&
         CHECK_BTN_ALL(this->state.input[0].press.button, BTN_A)) {
-            PRINTF("new sample plays\n");
+        PRINTF("new sample plays\n");
         Audio_PlaySfxGeneral(NA_SE_VO_WOOOO, &gSfxDefaultPos, 4, &gSfxDefaultFreqAndVolScale,
-                                &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
+                             &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
     }
 }
 
