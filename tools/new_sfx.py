@@ -155,7 +155,15 @@ if __name__ == "__main__":
         )
 
     # this is what makes other soundfounts ids unsupported
-    with open("assets/audio/sequences/seq_0.prg.seq", "a") as file:
-        file.write("\n" + channel_data + "\n" + layer_data)
+    new_data = ""
+    with open("assets/audio/sequences/seq_0.prg.seq", "r") as file:
+        for line in file.readlines():
+            if "SEQ_0_END:" in line:
+                new_data += channel_data + "\n" + layer_data + "\n" + line
+            else:
+                new_data += line
+
+    with open("assets/audio/sequences/seq_0.prg.seq", "w") as file:
+        file.write(new_data)
 
     print(f"Done! Your sample's channel ID is '{channel}'")
