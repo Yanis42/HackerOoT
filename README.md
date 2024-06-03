@@ -1,3 +1,9 @@
+# Audio Test Branch
+
+This branch is just for testing [the audio extraction](https://github.com/Thar0/oot/commits/audio-assets)
+
+To test the new_sfx script you can run ``./tools/new_sfx.py -s 0 mod_assets/audio/samples/SampleBank_0/woooo.wav`` then make
+
 # Hacker Zelda: Ocarina of Time (HackerOoT)
 
 [![Contributors][contributors-badge]][contributors]
