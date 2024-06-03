@@ -1,0 +1,3 @@
+<SampleBank Name="SampleBank_2" Index="2" Medium="MEDIUM_CART" CachePolicy="CACHE_LOAD_EITHER_NOSYNC">
+    <Sample Name="SAMPLE_2_0" Path="$(BUILD_DIR)/assets/audio/samples/SampleBank_2/Sample0.aifc"/>
+</SampleBank>

@@ -1,0 +1,7 @@
+<SampleBank Name="SampleBank_3" Index="3" Medium="MEDIUM_CART" CachePolicy="CACHE_LOAD_EITHER_NOSYNC">
+    <Sample Name="SAMPLE_3_0" Path="$(BUILD_DIR)/assets/audio/samples/SampleBank_3/Sample0.aifc"/>
+    <Sample Name="SAMPLE_3_1" Path="$(BUILD_DIR)/assets/audio/samples/SampleBank_3/Sample1.aifc"/>
+    <Sample Name="SAMPLE_3_2" Path="$(BUILD_DIR)/assets/audio/samples/SampleBank_3/Sample2.aifc"/>
+    <Sample Name="SAMPLE_3_3" Path="$(BUILD_DIR)/assets/audio/samples/SampleBank_3/Sample3.aifc"/>
+    <Sample Name="SAMPLE_3_4" Path="$(BUILD_DIR)/assets/audio/samples/SampleBank_3/Sample4.aifc"/>
+</SampleBank>

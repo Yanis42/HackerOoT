@@ -1,0 +1,25 @@
+<Soundfont Name="Soundfont_30" Index="30" Medium="MEDIUM_CART" CachePolicy="CACHE_LOAD_TEMPORARY" SampleBank="$(BUILD_DIR)/assets/audio/samplebanks/SampleBank_0.xml" Indirect="1">
+    <Envelopes>
+        <Envelope Name="Env0" Release="211">
+            <Point Delay="2" Arg="32700"/>
+            <Point Delay="1" Arg="32700"/>
+            <Point Delay="32700" Arg="29430"/>
+        </Envelope>
+        <Envelope Name="Env1" Release="239">
+            <Point Delay="2" Arg="32700"/>
+            <Point Delay="1" Arg="32700"/>
+            <Point Delay="32700" Arg="29430"/>
+        </Envelope>
+    </Envelopes>
+    <Samples>
+        <Sample Name="SAMPLE_0_385"/>
+        <Sample Name="SAMPLE_0_386"/>
+        <Sample Name="SAMPLE_0_387"/>
+    </Samples>
+    <Instruments>
+        <Instrument ProgramNumber="0" Name="INST_0" Envelope="Env0" Sample="SAMPLE_0_385" RangeHi="B4" SampleHi="SAMPLE_0_386"/>
+        <Instrument ProgramNumber="1" Name="INST_1" Envelope="Env0" Sample="SAMPLE_0_385" RangeHi="B4" SampleHi="SAMPLE_0_386"/>
+        <Instrument ProgramNumber="2" Name="INST_2" Envelope="Env0" Sample="SAMPLE_0_385" RangeHi="B4" SampleHi="SAMPLE_0_386"/>
+        <Instrument ProgramNumber="4" Name="INST_4" Envelope="Env1" Sample="SAMPLE_0_387"/>
+    </Instruments>
+</Soundfont>

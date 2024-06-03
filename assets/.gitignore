@@ -6,9 +6,16 @@
 *.vtx.inc
 *.dlist.inc
 
+*.png
+*.jpg
+*.mdli
+*.anmi
+*.obj
+*.mtl
+*.fbx
+
+*.aiff
 *.aifc
+*.wav
 *.seq
 !*.prg.seq
-
-audio/samplebanks/**/*.xml
-audio/soundfonts/**/*.xml

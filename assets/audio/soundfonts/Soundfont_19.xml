@@ -1,0 +1,32 @@
+<Soundfont Name="Soundfont_19" Index="19" Medium="MEDIUM_CART" CachePolicy="CACHE_LOAD_TEMPORARY" SampleBank="$(BUILD_DIR)/assets/audio/samplebanks/SampleBank_0.xml" Indirect="1">
+    <Envelopes>
+        <Envelope Name="Env0" Release="211">
+            <Point Delay="21" Arg="32700"/>
+            <Point Delay="1" Arg="32700"/>
+            <Point Delay="32700" Arg="29430"/>
+        </Envelope>
+        <Envelope Name="Env1" Release="211">
+            <Point Delay="2" Arg="32700"/>
+            <Point Delay="298" Arg="32700"/>
+            <Point Delay="32700" Arg="29430"/>
+        </Envelope>
+        <Envelope Name="Env2" Release="117">
+            <Point Delay="2" Arg="32700"/>
+            <Point Delay="127" Arg="5615"/>
+            <Point Delay="73" Arg="0"/>
+        </Envelope>
+    </Envelopes>
+    <Samples>
+        <Sample Name="SAMPLE_0_359"/>
+        <Sample Name="SAMPLE_0_360"/>
+        <Sample Name="SAMPLE_0_361"/>
+        <Sample Name="SAMPLE_0_117"/>
+        <Sample Name="SAMPLE_0_362"/>
+    </Samples>
+    <Instruments>
+        <Instrument ProgramNumber="0" Name="INST_0" Envelope="Env0" Sample="SAMPLE_0_359" RangeHi="GF4" SampleHi="SAMPLE_0_360"/>
+        <Instrument ProgramNumber="1" Name="INST_1" Envelope="Env0" Sample="SAMPLE_0_359" RangeHi="GF4" SampleHi="SAMPLE_0_360"/>
+        <Instrument ProgramNumber="2" Name="INST_2" Envelope="Env1" Sample="SAMPLE_0_361" RangeHi="AF4" SampleHi="SAMPLE_0_117" BaseNoteHi="C3"/>
+        <Instrument ProgramNumber="3" Name="INST_3" Envelope="Env2" Sample="SAMPLE_0_362"/>
+    </Instruments>
+</Soundfont>

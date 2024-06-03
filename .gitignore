@@ -54,16 +54,6 @@ tools/*dSYM/
 graphs/
 
 # Assets
-*.png
-*.jpg
-*.aiff
-*.aifc
-*.wav
-*.mdli
-*.anmi
-*.obj
-*.mtl
-*.fbx
 !*_custom*
 .extracted-assets.json
 extracted/
