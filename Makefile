@@ -515,7 +515,7 @@ $(O_FILES): | asset_files
 
 .PHONY: o_files asset_files
 
-$(BUILD_DIR)/$(SPEC): $(SPEC)
+$(BUILD_DIR)/$(SPEC): $(SPEC) mod_actors.spec.inc mod_objects.spec.inc
 	$(call print,Preprocessing:,$<,$@)
 	$(V)$(CPP) $(CPPFLAGS) $< | $(SPEC_REPLACE_VARS) > $@
 

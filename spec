@@ -4047,6 +4047,8 @@ beginseg
     include "$(BUILD_DIR)/src/overlays/actors/ovl_Shot_Sun/ovl_Shot_Sun_reloc.o"
 endseg
 
+#include "mod_actors.spec.inc"
+
 beginseg
     name "gameplay_keep"
     compress
@@ -7101,6 +7103,8 @@ beginseg
     include "$(BUILD_DIR)/assets/objects/object_zl4/object_zl4.o"
     number 6
 endseg
+
+#include "mod_objects.spec.inc"
 
 beginseg
     name "g_pn_01"
@@ -12200,3 +12204,35 @@ beginseg
     number 3
 endseg
 #endif
+
+beginseg
+    name "test_map_scene"
+    compress
+    romalign 0x1000
+    include "$(BUILD_DIR)/assets/scenes/test_map/test_map_scene.o"
+    number 2
+endseg
+
+beginseg
+    name "test_map_room_0"
+    compress
+    romalign 0x1000
+    include "$(BUILD_DIR)/assets/scenes/test_map/test_map_room_0.o"
+    number 3
+endseg
+
+beginseg
+    name "test_map_room_1"
+    compress
+    romalign 0x1000
+    include "$(BUILD_DIR)/assets/scenes/test_map/test_map_room_1.o"
+    number 3
+endseg
+
+beginseg
+    name "test_map_room_2"
+    compress
+    romalign 0x1000
+    include "$(BUILD_DIR)/assets/scenes/test_map/test_map_room_2.o"
+    number 3
+endseg

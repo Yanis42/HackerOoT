@@ -13,11 +13,12 @@ It builds the following ROM:
 
 * hackeroot-mq.z64
 
-This project is using the following tools:
+This project is using the following resources:
 - [F3DEX3](https://github.com/HackerN64/F3DEX3), *will make you want to finally ditch HLE*, by Sauraen
 - [gzinject](https://github.com/krimtonz/gzinject), *injector for gz*, by krimtonz
 - [z64compress](https://github.com/z64tools/z64compress), *the fastest Zelda 64 rom compressor*, by z64tools
 - [Flips](https://github.com/Alcaro/Flips), *patcher for IPS and BPS files*, by Alcaro
+- [Hylian Modding Actor Pack](https://github.com/hylian-modding/hm-actor-pack), *Hylian Modding actor pack for OoT decomp*, by CDi-Fails, kentonm, hiisuya, ZeeRoX, Syeo and Aegiker
 
 **Note: This repository does not include any of the assets necessary to build the ROM. A prior copy of the game is required to extract the needed assets.**
 

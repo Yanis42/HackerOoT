@@ -126,3 +126,5 @@
 #if INCLUDE_EXAMPLE_SCENE
 /* 0x6C */ DEFINE_SCENE(example_scene, none, SCENE_EXAMPLE, SDC_HAUNTED_WASTELAND, 0, 0)
 #endif
+
+/* 0x6D */ DEFINE_SCENE(test_map_scene, none, SCENE_TEST_MAP, SDC_DEFAULT, 0, 0)
