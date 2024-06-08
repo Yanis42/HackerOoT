@@ -6,7 +6,7 @@
  */
 
 #include "metal_crate.h"
-#include "assets_hm_pack/objects/object_metal_crate/object_metal_crate.h"
+#include "assets/objects/object_metal_crate/object_metal_crate.h"
 #include "overlays/effects/ovl_Effect_Ss_Kakera/z_eff_ss_kakera.h"
 
 #define FLAGS (0)
@@ -37,9 +37,9 @@ static ColliderCylinderInit sCylinderInit = {
         .ocFlags2 = OC2_TYPE_2,
         .shape = COLSHAPE_CYLINDER,
     },
-    .info = {
-        .bumper = { .dmgFlags = DMG_HAMMER },
-        .bumperFlags = BUMP_ON,
+    .elem = {
+        .acDmgInfo = { .dmgFlags = DMG_HAMMER },
+        .acElemFlags = ACELEM_ON,
     },
     .dim = { .radius = 31, .height = 48 },
 };

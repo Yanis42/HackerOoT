@@ -11,8 +11,8 @@
  */
 
 #include "z_obj_fan.h"
-#include "assets_hm_pack/objects/object_fan/object_fan.h"
-#include "assets_hm_pack/objects/object_fan/gWindDL.h"
+#include "assets/objects/object_fan/object_fan.h"
+#include "assets/objects/object_fan/gWindDL.h"
 
 #define FLAGS ACTOR_FLAG_4 | ACTOR_FLAG_5
 #define FAN_REACH 500.0f

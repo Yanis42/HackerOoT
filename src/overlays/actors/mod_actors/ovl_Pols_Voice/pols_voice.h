@@ -4,7 +4,7 @@
 #include "ultra64.h"
 #include "global.h"
 
-#include "assets_hm_pack/objects/object_pols_voice/object_pols_voice.h"
+#include "assets/objects/object_pols_voice/object_pols_voice.h"
 
 struct PolsVoice;
 

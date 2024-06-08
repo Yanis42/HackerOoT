@@ -7,7 +7,7 @@
  */
 
 #include "hammer_peg.h"
-#include "assets_hm_pack/objects/object_hammer_peg/object_hammer_peg.h"
+#include "assets/objects/object_hammer_peg/object_hammer_peg.h"
 #include "overlays/effects/ovl_Effect_Ss_Kakera/z_eff_ss_kakera.h"
 
 #define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_5)
@@ -46,8 +46,8 @@ static ColliderCylinderInit sCylinderBaseInit = {
         ELEMTYPE_UNK0,
         { 0x00100000, 0x00, 0x00 },
         { 0xEE01FFFF, 0x00, 0x00 },
-        TOUCH_NONE,
-        BUMP_ON,
+        ATELEM_NONE,
+        ACELEM_ON,
         OCELEM_ON,
     },
     { 20, 60, 0, { 0, 0, 0 } },
@@ -66,8 +66,8 @@ static ColliderCylinderInit sCylinderTopInit = {
         ELEMTYPE_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { DMG_HAMMER, 0x00, 0x00 },
-        TOUCH_NONE,
-        BUMP_ON | BUMP_NO_AT_INFO | BUMP_NO_DAMAGE | BUMP_NO_SWORD_SFX | BUMP_NO_HITMARK,
+        ATELEM_NONE,
+        ACELEM_ON | ACELEM_NO_AT_INFO | ACELEM_NO_DAMAGE | ACELEM_NO_SWORD_SFX | ACELEM_NO_HITMARK,
         OCELEM_NONE,
     },
     { 35, 20, 30, { 0, 0, 0 } },
@@ -138,7 +138,7 @@ void HammerPeg_IdleUp(HammerPeg* this, PlayState* play) {
 
     if (this->colliderTop.base.acFlags & AC_HIT && !Player_InCsMode(play)) {
         if (player->meleeWeaponAnimation != PLAYER_MWA_STAB_1H &&
-            this->colliderTop.info.acHitInfo->toucher.dmgFlags & DMG_HAMMER) {
+            this->colliderTop.elem.acHitElem->atDmgInfo.dmgFlags & DMG_HAMMER) {
             this->colliderTop.base.acFlags &= ~AC_HIT;
 
             Actor_PlaySfx(&this->dyna.actor, NA_SE_EV_WOOD_BOUND);

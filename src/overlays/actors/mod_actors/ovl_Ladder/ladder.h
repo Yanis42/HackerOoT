@@ -4,7 +4,7 @@
 #include "ultra64.h"
 #include "global.h"
 
-#include "assets_hm_pack/objects/object_ladder/object_ladder.h"
+#include "assets/objects/object_ladder/object_ladder.h"
 
 struct Ladder;
 

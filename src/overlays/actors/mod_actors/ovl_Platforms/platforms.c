@@ -5,7 +5,7 @@
  */
 
 #include "platforms.h"
-#include "assets_hm_pack/objects/object_platforms/object_platforms.h"
+#include "assets/objects/object_platforms/object_platforms.h"
 
 #define PLATFORM_TYPE(this) ((this->dyna.actor.params >> 0xC) & 0xF) // 0xF000
 #define SWITCH_FLAG(this) (this->dyna.actor.params & 0x3F)           // 0x00FF

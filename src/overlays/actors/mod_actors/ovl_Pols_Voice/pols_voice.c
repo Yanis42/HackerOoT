@@ -5,7 +5,7 @@
  */
 
 #include "pols_voice.h"
-#include "assets_hm_pack/objects/object_pols_voice/object_pols_voice.h"
+#include "assets/objects/object_pols_voice/object_pols_voice.h"
 
 #define FLAGS (ACTOR_FLAG_0 | ACTOR_FLAG_2 | ACTOR_FLAG_4 | ACTOR_FLAG_5)
 
@@ -90,8 +90,8 @@ static ColliderCylinderInit sCylinderInit = {
         ELEMTYPE_UNK0,
         { 0xFFCFFFFF, 0x08, 0x08 },
         { 0xFFCFFFFF, 0x00, 0x00 },
-        TOUCH_ON | TOUCH_SFX_NORMAL,
-        BUMP_ON,
+        ATELEM_ON | ATELEM_SFX_NORMAL,
+        ACELEM_ON,
         OCELEM_ON,
     },
     { 40, 75, 0, { 0, 0, 0 } },
@@ -377,8 +377,8 @@ void PolsVoice_Die(PolsVoice* this, PlayState* play) {
 }
 
 void PolsVoice_CheckDrowned(PolsVoice* this, PlayState* play) {
-    if (!this->drowned && (this->actor.bgCheckFlags & BGCHECKFLAG_WATER) && (this->actor.yDistToWater > 5.0f)) {
-        Actor_SetDropFlag(&this->actor, &this->collider.info, true);
+    if (!this->drowned && (this->actor.bgCheckFlags & BGCHECKFLAG_WATER) && (this->actor.depthInWater > 5.0f)) {
+        Actor_SetDropFlag(&this->actor, &this->collider.elem, true);
         Actor_PlaySfx(&this->actor, NA_SE_EN_DEADHAND_DEAD);
         Enemy_StartFinishingBlow(play, &this->actor);
         this->drowned = true;
@@ -396,7 +396,7 @@ void PolsVoice_CheckDamage(PolsVoice* this, PlayState* play) {
         if (this->invincibilityTimer == 0) {
             this->invincibilityTimer = 40;
         }
-        Actor_SetDropFlag(&this->actor, &this->collider.info, true);
+        Actor_SetDropFlag(&this->actor, &this->collider.elem, true);
 
         if (this->actionFunc != PolsVoice_Die && this->actionFunc != PolsVoice_Damaged && !this->isGnawing) {
             switch (this->actor.colChkInfo.damageEffect) {

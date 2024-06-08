@@ -5,7 +5,7 @@
  */
 
 #include "jumptoggle_platform.h"
-#include "assets_hm_pack/objects/object_jumptoggle_platform/object_jumptoggle_platform.h"
+#include "assets/objects/object_jumptoggle_platform/object_jumptoggle_platform.h"
 
 #define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_5)
 

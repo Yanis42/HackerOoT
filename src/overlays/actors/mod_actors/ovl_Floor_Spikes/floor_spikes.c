@@ -5,7 +5,7 @@
  */
 
 #include "floor_spikes.h"
-#include "assets_hm_pack/objects/object_floor_spikes/object_floor_spikes.h"
+#include "assets/objects/object_floor_spikes/object_floor_spikes.h"
 
 #define SPIKE_TYPE(this)    ((this->dyna.actor.params >> 0xC) & 0xF) // 0xF000
 #define SPIKE_SIZE(this)    ((this->dyna.actor.params >> 0x8) & 0xF) // 0x0F00
@@ -112,9 +112,9 @@ static ColliderQuadInit sDmgPlayerQuadInit = {
         .atFlags = AT_ON | AT_TYPE_ENEMY,
         .shape = COLSHAPE_QUAD,
     },
-    .info = {
-        .toucher = { .dmgFlags = DMG_UNBLOCKABLE, .damage = 16 },
-        .toucherFlags = TOUCH_ON,
+    .elem = {
+        .atDmgInfo = { .dmgFlags = DMG_UNBLOCKABLE, .damage = 16 },
+        .atElemFlags = ATELEM_ON,
     }
 };
 
@@ -124,9 +124,9 @@ static ColliderQuadInit sDmgOthersQuadInit = {
         .atFlags = AT_ON | AT_TYPE_PLAYER | AT_TYPE_OTHER,
         .shape = COLSHAPE_QUAD,
     },
-    .info = {
-        .toucher = { .dmgFlags = DMG_SLASH_MASTER, .damage = 16 },
-        .toucherFlags = TOUCH_ON,
+    .elem = {
+        .atDmgInfo = { .dmgFlags = DMG_SLASH_MASTER, .damage = 16 },
+        .atElemFlags = ATELEM_ON,
     }
 };
 

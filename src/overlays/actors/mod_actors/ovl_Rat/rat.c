@@ -5,7 +5,7 @@
  */
 
 #include "rat.h"
-#include "assets_hm_pack/objects/object_rat/object_rat.h"
+#include "assets/objects/object_rat/object_rat.h"
 
 #define FLAGS (ACTOR_FLAG_0 | ACTOR_FLAG_2 | ACTOR_FLAG_4 | ACTOR_FLAG_5)
 
@@ -90,8 +90,8 @@ static ColliderCylinderInit sCylinderInit = {
         ELEMTYPE_UNK0,
         { 0xFFCFFFFF, 0x08, 0x08 },
         { 0xFFCFFFFF, 0x00, 0x00 },
-        TOUCH_ON | TOUCH_SFX_NORMAL,
-        BUMP_ON,
+        ATELEM_ON | ATELEM_SFX_NORMAL,
+        ACELEM_ON,
         OCELEM_ON,
     },
     { 20, 30, 0, { 0, 0, 0 } },
@@ -340,8 +340,8 @@ void Rat_Die(Rat* this, PlayState* play) {
 }
 
 void Rat_CheckDrowned(Rat* this, PlayState* play) {
-    if (!this->drowned && (this->actor.bgCheckFlags & BGCHECKFLAG_WATER) && (this->actor.yDistToWater > 5.0f)) {
-        Actor_SetDropFlag(&this->actor, &this->collider.info, true);
+    if (!this->drowned && (this->actor.bgCheckFlags & BGCHECKFLAG_WATER) && (this->actor.depthInWater > 5.0f)) {
+        Actor_SetDropFlag(&this->actor, &this->collider.elem, true);
         Actor_PlaySfx(&this->actor, NA_SE_EN_EIER_ATTACK);
         Enemy_StartFinishingBlow(play, &this->actor);
         this->drowned = true;
@@ -356,7 +356,7 @@ void Rat_CheckDamage(Rat* this, PlayState* play) {
 
     if (!this->drowned && this->collider.base.acFlags & AC_HIT) {
         this->collider.base.acFlags &= ~AC_HIT;
-        Actor_SetDropFlag(&this->actor, &this->collider.info, true);
+        Actor_SetDropFlag(&this->actor, &this->collider.elem, true);
 
         if ((this->actionFunc != Rat_Die) && (this->actionFunc != Rat_Damaged)) {
             switch (this->actor.colChkInfo.damageEffect) {

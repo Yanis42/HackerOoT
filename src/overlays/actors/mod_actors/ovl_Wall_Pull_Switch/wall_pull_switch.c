@@ -8,7 +8,7 @@
  */
 
 #include "wall_pull_switch.h"
-#include "assets_hm_pack/objects/object_wall_pull_switch/object_wall_pull_switch.h"
+#include "assets/objects/object_wall_pull_switch/object_wall_pull_switch.h"
 
 #define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_5)
 

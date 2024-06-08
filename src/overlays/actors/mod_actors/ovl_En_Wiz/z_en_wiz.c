@@ -11,8 +11,8 @@
  */
 
 #include "z_en_wiz.h"
-#include "overlays/actors/hm_pack/ovl_En_Wiz/z_en_wiz_fire.h"
-#include "assets_hm_pack/objects/object_wiz/object_wiz.h"
+#include "overlays/actors/mod_actors/ovl_En_Wiz/z_en_wiz_fire.h"
+#include "assets/objects/object_wiz/object_wiz.h"
 
 #define FLAGS (ACTOR_FLAG_0 | ACTOR_FLAG_2 | ACTOR_FLAG_4)
 
@@ -84,8 +84,8 @@ static ColliderCylinderInit sCylinderInit = {
         ELEMTYPE_UNK0,
         { 0xFFCFFFFF, 0x00, 0x00 },
         { 0xFFCFFFFF, 0x00, 0x00 },
-        TOUCH_NONE,
-        BUMP_ON,
+        ATELEM_NONE,
+        ACELEM_ON,
         OCELEM_ON,
     },
     { 55, 70, 0, { 0 } },

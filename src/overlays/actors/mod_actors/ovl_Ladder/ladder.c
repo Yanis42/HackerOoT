@@ -28,7 +28,7 @@
  */
 
 #include "ladder.h"
-#include "assets_hm_pack/objects/object_ladder/object_ladder.h"
+#include "assets/objects/object_ladder/object_ladder.h"
 
 #define FLAGS (ACTOR_FLAG_4 | ACTOR_FLAG_5)
 
@@ -70,8 +70,8 @@ static ColliderCylinderInit sCylinderInit = {
         ELEMTYPE_UNK0,
         { 0x00000000, 0x00, 0x00 },
         { DMG_ARROW | DMG_SLINGSHOT, 0x00, 0x00 },
-        TOUCH_NONE,
-        BUMP_ON | BUMP_NO_AT_INFO | BUMP_NO_DAMAGE | BUMP_NO_SWORD_SFX | BUMP_NO_HITMARK,
+        ATELEM_NONE,
+        ACELEM_ON | ACELEM_NO_AT_INFO | ACELEM_NO_DAMAGE | ACELEM_NO_SWORD_SFX | ACELEM_NO_HITMARK,
         OCELEM_NONE,
     },
     { 20, 0, 0, { 0, 0, 0 } },

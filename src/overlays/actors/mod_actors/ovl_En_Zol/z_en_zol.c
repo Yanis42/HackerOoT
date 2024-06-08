@@ -11,7 +11,7 @@
 #define ENZOL_TYPE (this->actor.params & 0xFF)
 
 #include "z_en_zol.h"
-#include "assets_hm_pack/objects/object_zol/object_zol.h"
+#include "assets/objects/object_zol/object_zol.h"
 #include "overlays/effects/ovl_Effect_Ss_Dead_Sound/z_eff_ss_dead_sound.h"
 
 #define FLAGS (ACTOR_FLAG_0 | ACTOR_FLAG_2 | ACTOR_FLAG_4)
@@ -77,8 +77,8 @@ static ColliderCylinderInit sCylinderInit = {
         ELEMTYPE_UNK0,
             { 0xFFCFFFFE, 0x00, 0x08 },
             { 0xFFCFFFFE, 0x00, 0x00 },
-        TOUCH_ON | TOUCH_SFX_NORMAL,
-        BUMP_ON | BUMP_HOOKABLE,
+        ATELEM_ON | ATELEM_SFX_NORMAL,
+        ACELEM_ON | ACELEM_HOOKABLE,
         OCELEM_ON,
     },
     { 54, 60, 0, { 0, 0, 0 } },
@@ -541,7 +541,7 @@ void EnZol_DeathCry(EnZol* this, PlayState* play) {
 
 // water check
 void EnZol_CheckDrowned(EnZol* this) {
-    if (this->state != ZOL_DEATH && (this->actor.bgCheckFlags & BGCHECKFLAG_WATER) && (this->actor.yDistToWater > 5.0f)) {
+    if (this->state != ZOL_DEATH && (this->actor.bgCheckFlags & BGCHECKFLAG_WATER) && (this->actor.depthInWater > 5.0f)) {
         this->actor.gravity = -0.1f;
         EnZol_SetupDeathCry(this);
         return;

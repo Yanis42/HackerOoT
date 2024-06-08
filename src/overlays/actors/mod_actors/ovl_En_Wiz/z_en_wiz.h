@@ -3,7 +3,7 @@
 
 #include "ultra64.h"
 #include "global.h"
-#include "assets_hm_pack/objects/object_wiz/object_wiz.h"
+#include "assets/objects/object_wiz/object_wiz.h"
 
 struct EnWiz;
 
