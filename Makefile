@@ -209,26 +209,6 @@ else
     endif
 endif
 
-# Verbose toggle
-V := @
-ifeq (VERBOSE, 1)
-    V=
-endif
-
-# Colors
-NO_COL  := \033[0m
-GREEN   := \033[0;32m
-BLUE    := \033[0;36m
-YELLOW  := \033[0;33m
-BLINK   := \033[32;5m
-
-PRINT := printf
-
-# Generic print function for make rules
-define print
-  $(V)echo -e "$(GREEN)$(1) $(YELLOW)$(2)$(GREEN) -> $(BLUE)$(3)$(NO_COL)"
-endef
-
 #### Tools ####
 ifneq ($(shell type $(MIPS_BINUTILS_PREFIX)ld >/dev/null 2>/dev/null; echo $$?), 0)
   $(error Unable to find $(MIPS_BINUTILS_PREFIX)ld. Please install or build MIPS binutils, commonly mips-linux-gnu. (or set MIPS_BINUTILS_PREFIX if your MIPS binutils install uses another prefix))
