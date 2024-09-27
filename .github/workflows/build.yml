@@ -11,14 +11,14 @@ jobs:
     strategy:
       matrix:
         include:
-            - TARGET: "Debug, No F3DEX3"
-            MAKE_VARS: "RELEASE=0 CPP_DEFINES=-DENABLE_F3DEX3=0"
-            - TARGET: "Debug, F3DEX3"
-            MAKE_VARS: "RELEASE=0 CPP_DEFINES=-DENABLE_F3DEX3=1"
-            - TARGET: "Release, No F3DEX3"
-            MAKE_VARS: "RELEASE=1 CPP_DEFINES=-DENABLE_F3DEX3=0"
-            - TARGET: "Release, F3DEX3"
-            MAKE_VARS: "RELEASE=1 CPP_DEFINES=-DENABLE_F3DEX3=1"
+          - TARGET: "Debug, No F3DEX3"
+            MAKE_VARS: RELEASE=0 CPP_DEFINES=-DENABLE_F3DEX3=0
+          - TARGET: "Debug, F3DEX3"
+            MAKE_VARS: RELEASE=0 CPP_DEFINES=-DENABLE_F3DEX3=1
+          - TARGET: "Release, No F3DEX3"
+            MAKE_VARS: RELEASE=1 CPP_DEFINES=-DENABLE_F3DEX3=0
+          - TARGET: "Release, F3DEX3"
+            MAKE_VARS: RELEASE=1 CPP_DEFINES=-DENABLE_F3DEX3=1
     defaults:
       run:
         shell: bash
