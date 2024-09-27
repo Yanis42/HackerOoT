@@ -8,6 +8,12 @@ jobs:
   build:
     container: ghcr.io/yanis42/hackeroot-build-test:main
     runs-on: ubuntu-22.04
+    stategy:
+      matrix:
+        DEBUG_NO_F3DEX3: RELEASE=0 CPP_DEFINES=-DENABLE_F3DEX3=0
+        DEBUG_F3DEX3: RELEASE=0 CPP_DEFINES=-DENABLE_F3DEX3=1
+        RELEASE_NO_F3DEX3: RELEASE=1 CPP_DEFINES=-DENABLE_F3DEX3=0
+        RELEASE_F3DEX3: RELEASE=1 CPP_DEFINES=-DENABLE_F3DEX3=1
     defaults:
       run:
         shell: bash
@@ -34,8 +40,22 @@ jobs:
         python3 -m pip install --user colorama ansiwrap attrs watchdog python-Levenshtein "mapfile-parser>=1.2.1,<2.0.0" "rabbitizer>=1.0.0,<2.0.0"
         python3 -m pip install --upgrade attrs pycparser
     
+    # Setup the project
+    - name: Setup
+      run: make setup -j$(nproc)
+
     # Build the project
-    - name: Build
-      run: |
-        make setup -j$(nproc)
-        make -j$(nproc)
+    - name: Build (Debug, No F3DEX3)
+      run: ${{ matrix.DEBUG_NO_F3DEX3 }} make -j$(nproc)
+
+    # Build the project
+    - name: Build (Debug, F3DEX3)
+      run: make clean && ${{ matrix.DEBUG_F3DEX3 }} make -j$(nproc)
+
+    # Build the project
+    - name: Build (Release, No F3DEX3)
+      run: make clean && ${{ matrix.RELEASE_NO_F3DEX3 }} make -j$(nproc)
+
+    # Build the project
+    - name: Build (Release, F3DEX3)
+      run: make clean && ${{ matrix.RELEASE_F3DEX3 }} make -j$(nproc)

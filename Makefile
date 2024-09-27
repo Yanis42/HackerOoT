@@ -14,7 +14,7 @@ ARES_GDB := 1
 
 # Toggle release or debug mode. 1=Release, 0=Debug
 # Note: currently only used for HackerOoT
-RELEASE := 0
+RELEASE ?= 0
 
 # Valid compression algorithms are 'yaz', 'lzo' and 'aplib'
 COMPRESSION ?= yaz
@@ -61,11 +61,11 @@ CPP_DEFINES ?=
 TARGET ?=
 
 ifeq ($(TARGET),wad)
-CFLAGS := -DCONSOLE_WIIVC -fno-reorder-blocks -fno-optimize-sibling-calls
-CPPFLAGS := -DCONSOLE_WIIVC
+CFLAGS += -DCONSOLE_WIIVC -fno-reorder-blocks -fno-optimize-sibling-calls
+CPPFLAGS += -DCONSOLE_WIIVC
 else ifeq ($(TARGET),iso)
-CFLAGS := -DCONSOLE_GC -fno-reorder-blocks -fno-optimize-sibling-calls
-CPPFLAGS := -DCONSOLE_GC
+CFLAGS += -DCONSOLE_GC -fno-reorder-blocks -fno-optimize-sibling-calls
+CPPFLAGS += -DCONSOLE_GC
 endif
 
 # Version-specific settings
@@ -160,14 +160,6 @@ else ifeq ($(PLATFORM),GC)
   CPP_DEFINES += -DPLATFORM_N64=0 -DPLATFORM_GC=1
 else
   $(error Unsupported platform $(PLATFORM))
-endif
-
-ifeq ($(DEBUG),1)
-  CPP_DEFINES += -DOOT_DEBUG=1
-  OPTFLAGS := -O2
-else
-  CPP_DEFINES += -DOOT_DEBUG=0 -DNDEBUG
-  OPTFLAGS := -O2 -g3
 endif
 
 ifeq ($(VERSION),hackeroot-mq)
@@ -862,13 +854,16 @@ endif
 .PRECIOUS: $(BUILD_DIR)/assets/audio/samplebanks/%.xml
 
 $(BUILD_DIR)/assets/audio/samplebanks/%.xml: assets/audio/samplebanks/%.xml
+	$(call print,Assembling Samplebank:,$<,$@)
 	$(V)cat $< | $(BUILD_DIR_REPLACE) > $@
 
 $(BUILD_DIR)/assets/audio/samplebanks/%.xml: $(EXTRACTED_DIR)/assets/audio/samplebanks/%.xml
+	$(call print,Assembling Samplebank:,$<,$@)
 	$(V)cat $< | $(BUILD_DIR_REPLACE) > $@
 
 .PRECIOUS: $(BUILD_DIR)/assets/audio/samplebanks/%.s
 $(BUILD_DIR)/assets/audio/samplebanks/%.s: $(BUILD_DIR)/assets/audio/samplebanks/%.xml | $(AIFC_FILES)
+	$(call print,Assembling Samplebank:,$<,$@)
 	$(V)$(SBC) $(SBCFLAGS) --makedepend $(@:.s=.d) $< $@
 
 -include $(SAMPLEBANK_DEP_FILES)
@@ -884,33 +879,36 @@ endif
 # also assemble the soundfonts and generate the associated headers...
 
 $(BUILD_DIR)/assets/audio/soundfonts/%.xml: assets/audio/soundfonts/%.xml
-	cat $< | $(BUILD_DIR_REPLACE) > $@
+	$(call print,Assembling Soundfont:,$<,$@)
+	$(V)cat $< | $(BUILD_DIR_REPLACE) > $@
 
 $(BUILD_DIR)/assets/audio/soundfonts/%.xml: $(EXTRACTED_DIR)/assets/audio/soundfonts/%.xml
-	cat $< | $(BUILD_DIR_REPLACE) > $@
+	$(call print,Assembling Soundfont:,$<,$@)
+	$(V)cat $< | $(BUILD_DIR_REPLACE) > $@
 
 .PRECIOUS: $(BUILD_DIR)/assets/audio/soundfonts/%.c $(BUILD_DIR)/assets/audio/soundfonts/%.h $(BUILD_DIR)/assets/audio/soundfonts/%.name
 $(BUILD_DIR)/assets/audio/soundfonts/%.c $(BUILD_DIR)/assets/audio/soundfonts/%.h $(BUILD_DIR)/assets/audio/soundfonts/%.name: $(BUILD_DIR)/assets/audio/soundfonts/%.xml | $(SAMPLEBANK_BUILD_XMLS) $(AIFC_FILES)
 # This rule can be triggered for either the .c or .h file, so $@ may refer to either the .c or .h file. A simple
 # substitution $(@:.c=.h) will fail ~50% of the time with -j. Instead, don't assume anything about the suffix of $@.
-	$(SFC) $(SFCFLAGS) --makedepend $(basename $@).d $< $(basename $@).c $(basename $@).h $(basename $@).name
+	$(call print,Assembling Soundfont:,$<,$@)
+	$(V)$(SFC) $(SFCFLAGS) --makedepend $(basename $@).d $< $(basename $@).c $(basename $@).h $(basename $@).name
 
 -include $(SOUNDFONT_DEP_FILES)
 
 $(BUILD_DIR)/assets/audio/soundfonts/%.o: $(BUILD_DIR)/assets/audio/soundfonts/%.c $(BUILD_DIR)/assets/audio/soundfonts/%.name
 # compile c to unlinked object
-	$(CC) -c $(CFLAGS) $(MIPS_VERSION) $(OPTFLAGS) -I include/audio -o $(@:.o=.tmp) $<
+	$(V)$(CC) -c $(CFLAGS) $(MIPS_VERSION) $(OPTFLAGS) -I include/audio -o $(@:.o=.tmp) $<
 # partial link
-	$(LD) -r -T linker_scripts/soundfont.ld $(@:.o=.tmp) -o $(@:.o=.tmp2)
+	$(V)$(LD) -r -T linker_scripts/soundfont.ld $(@:.o=.tmp) -o $(@:.o=.tmp2)
 # patch defined symbols to be ABS symbols so that they remain file-relative offsets forever
-	$(SFPATCH) $(@:.o=.tmp2) $(@:.o=.tmp2)
+	$(V)$(SFPATCH) $(@:.o=.tmp2) $(@:.o=.tmp2)
 # write start and size symbols afterwards, filename != symbolic name so source symbolic name from the .name file written by sfc
-	$(OBJCOPY) --add-symbol $$(cat $(<:.c=.name))_Start=.rodata:0,global --redefine-sym __LEN__=$$(cat $(<:.c=.name))_Size $(@:.o=.tmp2) $@
+	$(V)$(OBJCOPY) --add-symbol $$(cat $(<:.c=.name))_Start=.rodata:0,global --redefine-sym __LEN__=$$(cat $(<:.c=.name))_Size $(@:.o=.tmp2) $@
 # cleanup temp files
 	@$(RM) $(@:.o=.tmp) $(@:.o=.tmp2)
 ifeq ($(AUDIO_BUILD_DEBUG),1)
-	$(LD) $(foreach f,$(SAMPLEBANK_O_FILES),-R $f) -T linker_scripts/soundfont.ld $@ -o $(@:.o=.elf)
-	$(OBJCOPY) -O binary -j.rodata $(@:.o=.elf) $(@:.o=.bin)
+	$(V)$(LD) $(foreach f,$(SAMPLEBANK_O_FILES),-R $f) -T linker_scripts/soundfont.ld $@ -o $(@:.o=.elf)
+	$(V)$(OBJCOPY) -O binary -j.rodata $(@:.o=.elf) $(@:.o=.bin)
 	@(cmp $(@:.o=.bin) $(patsubst $(BUILD_DIR)/assets/audio/soundfonts/%,$(EXTRACTED_DIR)/baserom_audiotest/audiobank_files/%,$(@:.o=.bin)) && echo "$(<F) OK" || (mkdir -p NONMATCHINGS/soundfonts && cp $(@:.o=.bin) NONMATCHINGS/soundfonts/$(@F:.o=.bin)))
 endif
 
@@ -936,15 +934,15 @@ $(BUILD_DIR)/assets/audio/samplebank_table.h: $(SAMPLEBANK_BUILD_XMLS)
 	$(V)$(ATBLGEN) --banks $@ $^
 
 $(BUILD_DIR)/assets/audio/soundfont_table.h: $(SOUNDFONT_BUILD_XMLS) $(SAMPLEBANK_BUILD_XMLS)
-	$(ATBLGEN) --fonts $@ $(SOUNDFONT_BUILD_XMLS)
+	$(V)$(ATBLGEN) --fonts $@ $(SOUNDFONT_BUILD_XMLS)
 
 SEQ_ORDER_DEFS := -DDEFINE_SEQUENCE_PTR\(name,seqId,_2,_3,_4\)=*\(name,seqId\) \
                   -DDEFINE_SEQUENCE\(name,seqId,_2,_3,_4\)=\(name,seqId\)
 $(BUILD_DIR)/assets/audio/sequence_order.in: $(SEQUENCE_TABLE)
-	$(CPP) $(CPPFLAGS) $< $(SEQ_ORDER_DEFS) -o $@
+	$(V)$(CPP) $(CPPFLAGS) $< $(SEQ_ORDER_DEFS) -o $@
 
 $(BUILD_DIR)/assets/audio/sequence_font_table.s: $(BUILD_DIR)/assets/audio/sequence_order.in $(SEQUENCE_O_FILES)
-	$(ATBLGEN) --sequences $@ $^
+	$(V)$(ATBLGEN) --sequences $@ $^
 
 # build the tables into objects, move data -> rodata
 
@@ -963,7 +961,7 @@ endif
 	@$(RM) $(@:.o=.tmp)
 
 $(BUILD_DIR)/assets/audio/sequence_font_table.o: $(BUILD_DIR)/assets/audio/sequence_font_table.s
-	$(AS) $(ASFLAGS) $< -o $@
+	$(V)$(AS) $(ASFLAGS) $< -o $@
 
 # Extra audiobank padding that doesn't belong to any soundfont file
 $(BUILD_DIR)/assets/audio/audiobank_padding.o:
