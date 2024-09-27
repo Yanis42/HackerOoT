@@ -8,7 +8,7 @@ jobs:
   build:
     container: ghcr.io/yanis42/hackeroot-build-test:main
     runs-on: ubuntu-22.04
-    stategy:
+    statregy:
       matrix:
         DEBUG_NO_F3DEX3: RELEASE=0 CPP_DEFINES=-DENABLE_F3DEX3=0
         DEBUG_F3DEX3: RELEASE=0 CPP_DEFINES=-DENABLE_F3DEX3=1
