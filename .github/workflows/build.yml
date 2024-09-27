@@ -31,8 +31,8 @@ jobs:
     # Install the required pip packages
     - name: Setup Python
       run: |
-        python -m pip install --user colorama ansiwrap attrs watchdog python-Levenshtein "mapfile-parser>=1.2.1,<2.0.0" "rabbitizer>=1.0.0,<2.0.0"
-        python -m pip install --upgrade attrs pycparser
+        python3 -m pip install --user colorama ansiwrap attrs watchdog python-Levenshtein "mapfile-parser>=1.2.1,<2.0.0" "rabbitizer>=1.0.0,<2.0.0"
+        python3 -m pip install --upgrade attrs pycparser
     
     # Build the project
     - name: Build
